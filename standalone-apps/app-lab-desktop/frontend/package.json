@@ -1,7 +1,7 @@
 {
   "name": "@bcmi-labs/app-lab-desktop",
   "private": true,
-  "version": "1.4.1",
+  "version": "1.4.3",
   "type": "module",
   "scripts": {
     "wails-dev": "./scripts/dev.sh",
@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@bcmi-labs/art-auth": "npm:@bcmi-labs/auth@1.4.1",
+    "@bcmi-labs/art-auth": "npm:@bcmi-labs/auth@1.4.3",
     "@tanstack/react-location": "3.7.4",
     "@tanstack/react-query": "4.12.0",
     "clsx": "1.2.1",
@@ -22,7 +22,7 @@
     "lodash": "4.17.21",
     "object-hash": "3.0.0",
     "react": "18.2.0",
-    "react-aria": "3.25.0",
+    "react-aria": "3.20.0",
     "react-dom": "18.2.0",
     "react-helmet-async": "2.0.4",
     "react-modal": "3.16.1",

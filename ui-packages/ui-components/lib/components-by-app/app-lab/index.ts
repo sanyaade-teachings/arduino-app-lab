@@ -30,11 +30,15 @@ export {
   ButtonType,
   ButtonVariant,
 } from '../../essential/app-lab-button';
+export * from '../../essential/checkbox';
 export * from '../../essential/dropdown-menu';
 export * from '../../essential/icon-button';
+export * from '../../essential/input';
 export * from '../../file-tree';
 export { type FormatMessage, useI18n } from '../../i18n/useI18n';
 export * from '../../serial-monitor';
+export * from '../../skeleton';
 export * from '../../snackbar';
+export * from '../../tooltip';
 export * from '../../typography';
 export * from '../../utils';

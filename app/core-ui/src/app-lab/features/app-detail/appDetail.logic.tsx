@@ -7,23 +7,28 @@ import {
   openFileExternal,
   openLinkExternal,
   updateAppBrick as updateAppBrickRequest,
+  updateAppDetail,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
+  AppDetailedInfo,
   BrickCreateUpdateRequest,
   BrickInstance,
+  UpdateAppDetailRequest,
 } from '@cloud-editor-mono/infrastructure';
 import {
   FileNode,
   isFileNode,
   TreeNode,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { resetModuleScopedState } from '../../../../lib/app-components/app-lab/utils';
 import { useFiles } from '../../../common/hooks/files';
+import { queryClient } from '../../../common/providers/data-fetching/QueryProvider';
 import { useIsBoard } from '../../hooks/board';
-import { AppsSection } from '../../routes/__root';
+import { AppsSection, DETAIL_PATH_BY_SECTION } from '../../routes/__root';
 import { EditorLogicParams } from '../editor/editor.type';
 import { UseAppDetailLogic } from './appDetail.type';
 import {
@@ -42,6 +47,19 @@ export const useAppDetailLogic = function (
   appId: string,
   section: AppsSection,
 ): UseAppDetailLogic {
+  const navigate = useNavigate({
+    from: DETAIL_PATH_BY_SECTION[(section as AppsSection) || 'examples'],
+  });
+
+  const openApp = useCallback(
+    (app: AppDetailedInfo) => {
+      navigate({
+        to: `/${app.example ? 'examples' : 'my-apps'}/${app.id}`,
+      });
+    },
+    [navigate],
+  );
+
   useEffect(() => {
     return () => resetModuleScopedState();
   }, []);
@@ -340,6 +358,28 @@ export const useAppDetailLogic = function (
     openLinkExternal(url);
   }, []);
 
+  const { mutateAsync: updateApp } = useMutation({
+    mutationFn: async (request: UpdateAppDetailRequest): Promise<boolean> => {
+      if (!app) return false;
+      const result = await updateAppDetail(app.id, request);
+      if (result === app.id) {
+        refetchAppDetail();
+
+        if (Object.hasOwn(request, 'default')) {
+          queryClient.invalidateQueries({
+            queryKey: ['get-default-app'],
+            exact: true,
+          });
+        }
+      } else if (result !== undefined) {
+        navigate({
+          to: `/${section}/${result}`,
+        });
+      }
+      return result !== undefined;
+    },
+  });
+
   const { data: bricks, isLoading: bricksAreLoading } = useQuery(
     ['list-bricks'],
     () => getBricks(),
@@ -437,7 +477,9 @@ export const useAppDetailLogic = function (
     selectedNode,
     defaultOpenFoldersState,
     editorLogicParams,
+    openApp,
     reloadApp: refetchAppDetail,
+    updateApp,
     setSelectedFile,
     openFilesFolder,
     openExternal,

@@ -1,7 +1,12 @@
+import { syntaxHighlighting, TagStyle } from '@codemirror/language';
 import { Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { RefCallback, useEffect, useRef } from 'react';
 
+import {
+  customTags as tags,
+  highlightStyle,
+} from '../../code-mirror/extensions/language/highlightStyle';
 import {
   FileExt,
   fileExtCodeMirrorExtensionMap,
@@ -14,8 +19,16 @@ export type UseCodeBlockCodeMirror = (code: string) => {
 
 export function createUseCodeBlockHook(
   setup: Extension,
-): (code: string, language?: string) => React.RefObject<HTMLDivElement> {
-  return function useCodeMirrorCodeBlock(code: string, language = 'cpp') {
+): (
+  code: string,
+  language?: string,
+  customTags?: TagStyle[],
+) => React.RefObject<HTMLDivElement> {
+  return function useCodeMirrorCodeBlock(
+    code: string,
+    language = 'cpp',
+    customTags,
+  ) {
     const ref = useRef<HTMLDivElement>(null);
     const viewInstance = useRef<EditorView | null>(null);
 
@@ -27,12 +40,18 @@ export function createUseCodeBlockHook(
       const ext = languageToFileExtMap[language] || FileExt.Other;
       const languageHighlight: Extension = fileExtCodeMirrorExtensionMap[ext];
 
+      const customSyntaxHighlighting = customTags
+        ? syntaxHighlighting(highlightStyle(customTags), {
+            fallback: true,
+          })
+        : syntaxHighlighting(highlightStyle(tags), { fallback: true });
+
       viewInstance.current = new EditorView({
         doc: code,
-        extensions: [setup, languageHighlight],
+        extensions: [setup, languageHighlight, customSyntaxHighlighting],
         parent: ref.current || undefined,
       });
-    }, [code, language]);
+    }, [code, language, customTags]);
 
     useEffect(() => {
       return () => {

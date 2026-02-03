@@ -27,6 +27,7 @@ export const SwapRunningAppDialog: React.FC<SwapRunningAppDialogProps> = ({
   return (
     <AppLabDialog
       open={open}
+      onOpenChange={setOpen}
       title="Swap Running App"
       footer={
         <>

@@ -49,13 +49,13 @@ const Tooltip: ElementType<TooltipRenderProps> = (
                 label={'back'}
                 Icon={OnboardingBack}
                 isDisabled={index === 0}
-                // {...backProps}
+                {...backProps}
               />
               <IconButton
                 label={'next'}
                 Icon={OnboardingNext}
                 isDisabled={isLastStep}
-                // {...primaryProps}
+                {...primaryProps}
               />
             </div>
           </div>

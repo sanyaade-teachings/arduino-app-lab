@@ -4,6 +4,7 @@ import "os"
 
 var feature_flags = []string{
 	"SHOW_VERSION_IN_FOOTER",
+	"UPDATE_IN_DEV_MODE",
 }
 
 func enabled(ff string) bool {

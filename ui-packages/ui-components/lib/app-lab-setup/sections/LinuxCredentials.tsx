@@ -38,9 +38,6 @@ const LinuxCredentials = forwardRef((props: LinuxCredentialsProps, ref) => {
 
   return (
     <div className={styles['container']}>
-      <XSmall className={styles['description']}>
-        {formatMessage(linuxCredentialsMessages.descriptionLabel)}
-      </XSmall>
       <div className={setupStyles['input-container']}>
         <Input
           id="username"

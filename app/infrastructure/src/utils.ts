@@ -1,5 +1,13 @@
+import { AppDetailedInfo, AppStatus } from './orchestrator-api';
+
 export const ORGANIZATION_HEADER = 'X-Organization';
 const CLASSROOM_SHARE_URL = 'https://classroom.google.com/u/0/share';
+
+export const STATUSES_WHERE_RENAME_ALLOWED = [
+  'stopped',
+  'failed',
+  'uninitialized',
+] as const;
 
 export function createUUID(): string {
   let dt = new Date().getTime();
@@ -21,4 +29,17 @@ export function buildShareToClassroomURL(
     target.toString(),
   )}&title=${title}&body=${body}
   `;
+}
+
+export function canRenameApp(
+  app: AppDetailedInfo | undefined,
+  appStatus: AppStatus | undefined,
+): boolean {
+  return (
+    !app?.example &&
+    appStatus != null &&
+    STATUSES_WHERE_RENAME_ALLOWED.includes(
+      appStatus as typeof STATUSES_WHERE_RENAME_ALLOWED[number],
+    )
+  );
 }

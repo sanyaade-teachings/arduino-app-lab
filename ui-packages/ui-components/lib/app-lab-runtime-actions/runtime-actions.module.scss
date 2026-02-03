@@ -1,3 +1,6 @@
+@use "@cloud-editor-mono/arduino-sass/src/variables" as vars;
+@use "@cloud-editor-mono/arduino-sass/src/breakpoints" as bp;
+
 .actions {
     display: flex;
     gap: 16px;
@@ -78,6 +81,11 @@
             height: auto;
             padding-top: 8px;
             padding-bottom: 8px;
+            cursor: default;
+
+            &:hover {
+                background-color: initial;
+            }
         }
 
         .dropdown-menu-item {
@@ -93,6 +101,8 @@
             width: 100%;
 
             svg {
+                cursor: pointer;
+
                 path {
                     fill: var(--text-default, #ffffff);
                 }
@@ -108,7 +118,10 @@
             text-align: left;
 
             .app-name {
+                background-color: transparent;
+                border: none;
                 color: var(--text-accent, #25c2c7);
+                cursor: pointer;
             }
         }
 
@@ -133,6 +146,15 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
+    max-width: 300px;
+
+    @include bp.breakpoint(vars.$breakpoint-xl) {
+        max-width: 200px;
+    }
+
+    @include bp.breakpoint(vars.$breakpoint-lg) {
+        max-width: 70px;
+    }
 
     span {
         white-space: nowrap;

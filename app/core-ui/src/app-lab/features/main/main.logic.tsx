@@ -1,4 +1,6 @@
 import {
+  boardNeedsImageUpdate,
+  boardNeedsOSUpdate,
   login,
   logout,
   openLinkExternal,
@@ -6,7 +8,7 @@ import {
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   BoardUpdateDialogLogic,
-  ImageWarningDialogLogic,
+  FlashBoardDialogLogic,
   SidePanelItemInterface,
   sidePanelItems,
   SidePanelLogic,
@@ -14,7 +16,6 @@ import {
   UpdaterStatus,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useLocation } from '@tanstack/react-router';
-import * as IDB from 'idb-keyval';
 import {
   useCallback,
   useEffect,
@@ -34,6 +35,8 @@ export type DialogSkippedStore = { [key: string]: boolean };
 
 const FLASHER_TOOL_URL = 'https://www.arduino.cc/en/software/#flasher-tool';
 const ARDUINO_SUPPORT_URL = 'https://www.arduino.cc/en/contact-us/';
+const FLASHER_TUTORIAL_URL =
+  'https://docs.arduino.cc/tutorials/uno-q/update-image/';
 
 export const useMainLogic: UseMainLogic =
   function (): ReturnType<UseMainLogic> {
@@ -79,75 +82,6 @@ export const useMainLogic: UseMainLogic =
     };
     const sidePanelLogic = useCallback(useSidePanelLogic, []);
 
-    const [imageWarningDialogOpen, setImageWarningDialogOpen] = useState(false);
-
-    const useImageWarningDialog = (): ReturnType<ImageWarningDialogLogic> => {
-      // undefined = still loading the value from idb index
-      const [skipped, setSkipped] = useState<boolean | undefined>(undefined);
-
-      const { selectedConnectedBoard } = useBoardLifecycleStore();
-
-      useEffect(() => {
-        const fetchSkipped = async (): Promise<void> => {
-          if (!selectedConnectedBoard) {
-            return;
-          }
-          const dialogSkippedStore = await IDB.get<DialogSkippedStore>(
-            DIALOG_SKIPPED_KEY,
-          );
-          setSkipped(!!dialogSkippedStore?.[selectedConnectedBoard.serial]);
-        };
-        fetchSkipped();
-      }, [selectedConnectedBoard]);
-
-      const storeDialogIsSkipped = useCallback(async () => {
-        if (!selectedConnectedBoard) {
-          return;
-        }
-        return IDB.update(
-          DIALOG_SKIPPED_KEY,
-          (prevValue?: DialogSkippedStore) => {
-            return {
-              ...prevValue,
-              [selectedConnectedBoard.serial]: true,
-            };
-          },
-        );
-      }, [selectedConnectedBoard]);
-
-      const onOpenChange = (value: boolean): void =>
-        setImageWarningDialogOpen(value);
-
-      const skipAction = async (): Promise<void> => {
-        setSkipped(true);
-        setImageWarningDialogOpen(false);
-        await storeDialogIsSkipped();
-      };
-
-      const confirmAction = async (): Promise<void> => {
-        openLinkExternal(FLASHER_TOOL_URL);
-      };
-
-      const { needsImageUpdate } = useBoardLifecycleStore();
-
-      useEffect(() => {
-        if (needsImageUpdate && !imageWarningDialogOpen && skipped === false) {
-          setImageWarningDialogOpen(true);
-        }
-      }, [needsImageUpdate, skipped]);
-
-      return {
-        open: imageWarningDialogOpen,
-        onOpenChange,
-        skipAction,
-        confirmAction,
-      };
-    };
-
-    const imageWarningDialogLogic = useCallback(useImageWarningDialog, [
-      imageWarningDialogOpen,
-    ]);
-
     const useBoardUpdateDialogLogic =
       (): ReturnType<BoardUpdateDialogLogic> => {
         const [open, setOpen] = useState(false);
@@ -183,8 +117,7 @@ export const useMainLogic: UseMainLogic =
             status === UpdaterStatus.None ||
             status === UpdaterStatus.Skipped ||
             status === UpdaterStatus.AlreadyUpToDate ||
-            (status === UpdaterStatus.Checking && !isCheckUpdateBlocking) ||
-            imageWarningDialogOpen
+            (status === UpdaterStatus.Checking && !isCheckUpdateBlocking)
           ) {
             setOpen(false);
           } else {
@@ -247,13 +180,50 @@ export const useMainLogic: UseMainLogic =
         };
       };
 
-    const boardUpdateDialogLogic = useCallback(useBoardUpdateDialogLogic, [
-      imageWarningDialogOpen,
-    ]);
+    const boardUpdateDialogLogic = useCallback(useBoardUpdateDialogLogic, []);
+
+    const useFlashBoardDialogLogic = (): ReturnType<FlashBoardDialogLogic> => {
+      const [open, setOpen] = useState(false);
+
+      const { data: isBoard } = useIsBoard();
+      const { selectedConnectedBoard, boardIsFlashing, setBoardIsFlashing } =
+        useBoardLifecycleStore();
+
+      useEffect(() => {
+        const setNeedsOSUpdateAsync = async (): Promise<void> => {
+          const isR0Build = await boardNeedsImageUpdate();
+          if (!isR0Build) return;
+
+          const needsUpdate = await boardNeedsOSUpdate();
+          setOpen(needsUpdate);
+        };
+
+        if (
+          isBoard === false &&
+          selectedConnectedBoard &&
+          boardIsFlashing === undefined
+        ) {
+          setNeedsOSUpdateAsync();
+        }
+      }, [selectedConnectedBoard, boardIsFlashing, isBoard]);
+
+      return {
+        open,
+        onOpenChange: setOpen,
+        confirmAction: (): void => {
+          setBoardIsFlashing(true);
+        },
+        openFlasherTutorial: (): void => {
+          openLinkExternal(FLASHER_TUTORIAL_URL);
+        },
+      };
+    };
+
+    const flashBoardDialogLogic = useCallback(useFlashBoardDialogLogic, []);
 
     return {
       sidePanelLogic,
       boardUpdateDialogLogic,
-      imageWarningDialogLogic,
+      flashBoardDialogLogic,
     };
   };

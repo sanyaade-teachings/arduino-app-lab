@@ -1,11 +1,13 @@
 import { cpp } from '@codemirror/lang-cpp';
+import { css } from '@codemirror/lang-css';
+import { html } from '@codemirror/lang-html';
+import { javascript } from '@codemirror/lang-javascript';
+import { json } from '@codemirror/lang-json';
 import { python } from '@codemirror/lang-python';
 import { yaml } from '@codemirror/lang-yaml';
-import { syntaxHighlighting } from '@codemirror/language';
+import { indentUnit } from '@codemirror/language';
 import { Extension } from '@codemirror/state';
 import { highlightSpecialChars } from '@codemirror/view';
-
-import { customTags, highlightStyle } from './highlightStyle';
 
 export enum FileExt {
   Ino = 'ino',
@@ -16,6 +18,12 @@ export enum FileExt {
   Txt = 'txt',
   Py = 'py',
   Yaml = 'yaml',
+  Js = 'js',
+  Ts = 'ts',
+  Json = 'json',
+  Html = 'html',
+  Css = 'css',
+  Scss = 'scss',
   Other = '*',
 }
 
@@ -23,22 +31,13 @@ type FileExtCodeMirrorExtensionMap = {
   [k in FileExt]: Extension;
 };
 
-const codeExts = [
-  cpp(),
-  syntaxHighlighting(highlightStyle(customTags), { fallback: true }),
-  highlightSpecialChars(),
-];
-
-const pyCodeExts = [
-  python(),
-  highlightSpecialChars(),
-  syntaxHighlighting(highlightStyle(customTags), { fallback: true }),
-];
-const yamlCodeExts = [
-  yaml(),
-  highlightSpecialChars(),
-  syntaxHighlighting(highlightStyle(customTags), { fallback: true }),
-];
+const codeExts = [cpp(), highlightSpecialChars()];
+const pyCodeExts = [python(), highlightSpecialChars(), indentUnit.of('    ')];
+const yamlCodeExts = [yaml(), highlightSpecialChars()];
+const jsCodeExts = [javascript(), highlightSpecialChars()];
+const htmlCodeExts = [html(), highlightSpecialChars()];
+const cssCodeExts = [css(), highlightSpecialChars()];
+const jsonCodeExts = [json(), highlightSpecialChars()];
 
 export const fileExtCodeMirrorExtensionMap: FileExtCodeMirrorExtensionMap = {
   [FileExt.Ino]: codeExts,
@@ -48,6 +47,12 @@ export const fileExtCodeMirrorExtensionMap: FileExtCodeMirrorExtensionMap = {
   [FileExt.Cpp]: codeExts,
   [FileExt.Py]: pyCodeExts,
   [FileExt.Yaml]: yamlCodeExts,
+  [FileExt.Js]: jsCodeExts,
+  [FileExt.Ts]: jsCodeExts,
+  [FileExt.Html]: htmlCodeExts,
+  [FileExt.Css]: cssCodeExts,
+  [FileExt.Scss]: cssCodeExts,
+  [FileExt.Json]: jsonCodeExts,
   [FileExt.Txt]: [],
   [FileExt.Other]: [],
 };
@@ -63,5 +68,11 @@ export const languageToFileExtMap: { [key: string]: FileExt } = {
   py: FileExt.Py,
   yaml: FileExt.Yaml,
   yml: FileExt.Yaml,
+  js: FileExt.Js,
+  ts: FileExt.Ts,
+  html: FileExt.Html,
+  css: FileExt.Css,
+  scss: FileExt.Scss,
+  json: FileExt.Json,
   txt: FileExt.Txt,
 };

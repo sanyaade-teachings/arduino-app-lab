@@ -71,6 +71,10 @@
     button[class*="input-eye"] {
       margin-top: -16px;
     }
+
+    .error-message {
+      top: 48px !important;
+    }
   }
 
   &.disabled {

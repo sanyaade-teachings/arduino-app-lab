@@ -95,6 +95,9 @@ export type UseNetworkLogic = () => {
   setSelectedNetwork: (network?: NetworkItem) => void;
   manualNetworkSetup: boolean;
   setManualNetworkSetup: (manualSetup: boolean) => void;
+  onSkipNetworkSetup?: () => void;
+  draftNetworkCredentials?: NetworkCredentials;
+  setDraftNetworkCredentials?: (v: NetworkCredentials) => void;
 };
 
 export type UseConnectionLost = (

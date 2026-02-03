@@ -22,12 +22,24 @@ export function CreateFolder(arg1) {
   return window['go']['app']['App']['CreateFolder'](arg1);
 }
 
+export function ExportApp(arg1, arg2, arg3) {
+  return window['go']['app']['App']['ExportApp'](arg1, arg2, arg3);
+}
+
+export function Flash(arg1, arg2) {
+  return window['go']['app']['App']['Flash'](arg1, arg2);
+}
+
 export function GetAboutMessage() {
   return window['go']['app']['App']['GetAboutMessage']();
 }
 
 export function GetAssetMiddleware() {
   return window['go']['app']['App']['GetAssetMiddleware']();
+}
+
+export function GetAvailableFreeSpace() {
+  return window['go']['app']['App']['GetAvailableFreeSpace']();
 }
 
 export function GetBoardList() {
@@ -86,6 +98,10 @@ export function GetLearnResourceList() {
   return window['go']['app']['App']['GetLearnResourceList']();
 }
 
+export function GetOSImageVersion() {
+  return window['go']['app']['App']['GetOSImageVersion']();
+}
+
 export function GetOrchestratorURL() {
   return window['go']['app']['App']['GetOrchestratorURL']();
 }
@@ -102,12 +118,32 @@ export function GetWiFiStatus() {
   return window['go']['app']['App']['GetWiFiStatus']();
 }
 
+export function ImportApp() {
+  return window['go']['app']['App']['ImportApp']();
+}
+
+export function ImportAppFromPath(arg1) {
+  return window['go']['app']['App']['ImportAppFromPath'](arg1);
+}
+
+export function InferOrchestratorURL() {
+  return window['go']['app']['App']['InferOrchestratorURL']();
+}
+
 export function IsBoard() {
   return window['go']['app']['App']['IsBoard']();
 }
 
+export function IsUserPartitionPreservationSupported(arg1, arg2) {
+  return window['go']['app']['App']['IsUserPartitionPreservationSupported'](arg1, arg2);
+}
+
 export function IsUserPasswordSet() {
   return window['go']['app']['App']['IsUserPasswordSet']();
+}
+
+export function ListAvailableOSImages() {
+  return window['go']['app']['App']['ListAvailableOSImages']();
 }
 
 export function ListKeyboardLayouts() {
@@ -144,6 +180,10 @@ export function RemoveFile(arg1) {
 
 export function RenameFile(arg1, arg2) {
   return window['go']['app']['App']['RenameFile'](arg1, arg2);
+}
+
+export function SaveTempFile(arg1, arg2) {
+  return window['go']['app']['App']['SaveTempFile'](arg1, arg2);
 }
 
 export function SelectBoard(arg1, arg2) {

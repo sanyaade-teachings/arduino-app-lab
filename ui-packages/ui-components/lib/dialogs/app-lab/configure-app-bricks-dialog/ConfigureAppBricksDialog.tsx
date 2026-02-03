@@ -62,7 +62,7 @@ export const ConfigureAppBricksDialog: React.FC<
           ...acc,
           {
             brick,
-            model: brick.model,
+            modelId: brick.model,
             variables:
               brick.config_variables?.map((config) => ({
                 ...config,
@@ -123,11 +123,13 @@ export const ConfigureAppBricksDialog: React.FC<
             uppercase={false}
             loading={loading}
             onClick={handleConfirm}
-            disabled={params.some(({ variables }) =>
-              variables.some(
-                (variable) =>
-                  variable.required && !variable.value.trim().length,
-              ),
+            disabled={params.some(
+              ({ brick, modelId, variables }) =>
+                (brick.require_model && !modelId) ||
+                variables.some(
+                  (variable) =>
+                    variable.required && !variable.value.trim().length,
+                ),
             )}
             classes={{
               button: styles['action-button'],
@@ -198,7 +200,7 @@ export const ConfigureAppBricksDialog: React.FC<
                           it.brick.id === brick.id
                             ? {
                                 ...it,
-                                model: modelId,
+                                modelId,
                               }
                             : it,
                         ),

@@ -48,6 +48,7 @@ const RuntimeActions = <T extends string>(
     currentAction,
     currentActionStatus,
     setAsDefaultApp,
+    openApp,
     runApp,
     stopApp,
     isBannerEnabled = true,
@@ -117,7 +118,7 @@ const RuntimeActions = <T extends string>(
         })}
       >
         {icon}
-        <span>{message}</span>
+        <span title={message}>{message}</span>
       </div>
     );
   };
@@ -162,6 +163,9 @@ const RuntimeActions = <T extends string>(
 
     return () => clearTimeout(timeoutRef.current || undefined);
   }, [currentAction, currentActionStatus, isBannerEnabled]);
+
+  const SwitchIcon =
+    appDefault?.id === appId ? AppLabToggleOn : AppLabToggleOff;
 
   return (
     <div className={styles['actions']}>
@@ -222,11 +226,11 @@ const RuntimeActions = <T extends string>(
                           <XXSmall>
                             {formatMessage(messages.runAtStartup)}
                           </XXSmall>
-                          {appDefault?.id === appId ? (
-                            <AppLabToggleOn />
-                          ) : (
-                            <AppLabToggleOff />
-                          )}
+                          <SwitchIcon
+                            onClick={(): void =>
+                              setAsDefaultApp(appDefault?.id !== appId)
+                            }
+                          />
                         </div>
                         <XXXSmall
                           className={styles['dropdown-menu-item-content']}
@@ -234,9 +238,12 @@ const RuntimeActions = <T extends string>(
                           {appDefault && appDefault.id !== appId
                             ? formatMessage(messages.overrideAsDefault, {
                                 appName: (
-                                  <span className={styles['app-name']}>
+                                  <button
+                                    className={styles['app-name']}
+                                    onClick={(): void => openApp?.(appDefault)}
+                                  >
                                     {appDefault.name}
-                                  </span>
+                                  </button>
                                 ),
                                 bold: (text: string) => <b>{text}</b>,
                               })
@@ -253,7 +260,6 @@ const RuntimeActions = <T extends string>(
             ]}
             buttonChildren={<CaretDown />}
             useStaticPosition={false}
-            onAction={(): void => setAsDefaultApp(appDefault?.id !== appId)}
             isOpen={open}
             onOpen={setOpen}
             classes={{

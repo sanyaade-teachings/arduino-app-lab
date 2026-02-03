@@ -1,18 +1,20 @@
 import {
   Bin,
   CaretDown,
+  Download,
   Duplicate,
   Pencil,
   Spinner,
 } from '@cloud-editor-mono/images/assets/icons';
+import { canRenameApp } from '@cloud-editor-mono/infrastructure';
 import clsx from 'clsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { AppLabEmojiPicker } from '../app-lab-emoji-picker';
-import { CreateAppDialog, DeleteAppDialog } from '../dialogs';
+import { CreateAppDialog, DeleteAppDialog, ExportAppDialog } from '../dialogs';
 import { DropdownMenuButton } from '../essential/dropdown-menu/DropdownMenuButton';
 import { Input } from '../essential/input';
-import { InputStyle } from '../essential/input/input.type';
+import { InputStyle } from '../essential/input';
 import { useI18n } from '../i18n/useI18n';
 import { XSmall, XXSmall } from '../typography';
 import styles from './app-title.module.scss';
@@ -43,7 +45,9 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
   const [open, setOpen] = useState(false);
   const {
     app,
+    appStatus,
     deleteAppDialogLogic,
+    exportAppDialogLogic,
     createAppDialogLogic,
     name,
     editing,
@@ -56,9 +60,13 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
   } = appTitleLogic();
   const { formatMessage } = useI18n();
 
+  const canRename = canRenameApp(app, appStatus);
+
   const measureWidth = (): void => {
     const width = nameRef.current?.getBoundingClientRect().width ?? 0;
-    setInputWidth(Math.min(Math.ceil(width) + 4, 300));
+    setInputWidth(
+      Math.min(Math.ceil(width) + 4, window.innerWidth < 1024 ? 100 : 200),
+    );
   };
 
   useLayoutEffect(() => {
@@ -96,6 +104,7 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
       })}
     >
       <DeleteAppDialog logic={deleteAppDialogLogic} />
+      <ExportAppDialog logic={exportAppDialogLogic} />
       <CreateAppDialog logic={createAppDialogLogic} />
       <div className={styles['app-icon']}>
         {app?.example ? (
@@ -113,12 +122,16 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
           className={clsx(styles['app-name-text-container'], {
             [styles['hidden']]: editing,
           })}
-          {...(!app?.example && {
+          {...(canRename && {
             onClick: (): void => onAppAction(AppAction.Rename),
             onKeyUp: (): void => onAppAction(AppAction.Rename),
           })}
         >
-          <XSmall ref={nameRef} className={styles['app-name-text']}>
+          <XSmall
+            ref={nameRef}
+            className={styles['app-name-text']}
+            title={name}
+          >
             {name}
           </XSmall>
         </div>
@@ -167,7 +180,7 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
             {
               name: 'Actions',
               items: [
-                ...(!app?.example
+                ...(canRename
                   ? [
                       {
                         id: AppAction.Rename,
@@ -180,6 +193,11 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
                   id: AppAction.Duplicate,
                   label: formatMessage(appTitleMessages.actionDuplicate),
                   labelPrefix: <Duplicate />,
+                },
+                {
+                  id: AppAction.Export,
+                  label: formatMessage(appTitleMessages.actionExport),
+                  labelPrefix: <Download />,
                 },
                 ...(!app?.example
                   ? [

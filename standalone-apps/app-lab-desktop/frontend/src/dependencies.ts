@@ -5,6 +5,7 @@ import {
   setBrowserService,
   setFeatureFlagService,
   setFileOpenerService,
+  setFlasherService,
   setLearnService,
   setOrchestratorService,
   setSettingsService,
@@ -18,6 +19,7 @@ import * as StandaloneBoardService from './services/boardService.impl.standalone
 import * as StandaloneBrowserService from './services/browserService.impl.standalone';
 import * as FeatureFlagService from './services/featureFlagsService.impl.standalone';
 import * as StandaloneFileOpenerService from './services/fileOpenerService.impl.standalone';
+import * as StandaloneFlasherService from './services/flasherService.impl.standalone';
 import * as StandaloneLearnService from './services/learnService.impl.standalone';
 import * as StandaloneOrchestratorService from './services/orchestratorService.impl.standalone';
 import * as StandaloneSettingsService from './services/settingsService.impl.standalone';
@@ -32,6 +34,7 @@ export const injectDependencies = (): void => {
   setBrowserService(StandaloneBrowserService);
   setFeatureFlagService(FeatureFlagService);
   setFileOpenerService(StandaloneFileOpenerService);
+  setFlasherService(StandaloneFlasherService);
   setOrchestratorService(StandaloneOrchestratorService);
   setSettingsService(StandaloneSettingsService);
   setUpdaterService(StandaloneUpdaterService);

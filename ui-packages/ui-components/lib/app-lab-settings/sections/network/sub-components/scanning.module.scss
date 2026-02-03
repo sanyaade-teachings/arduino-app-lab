@@ -12,6 +12,7 @@
 
     .title {
       display: flex;
+      font-weight: 700;
       flex-direction: column;
     }
   }
@@ -22,17 +23,19 @@
   }
 
   .add-network {
-    display: flex;
-    height: 46px;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: flex-start;
     align-self: stretch;
+    padding: 16px;
     color: #ffffff;
     cursor: pointer;
-
+    font-weight: 600;
+    font-size: 12px;
+    width: 100%;
     border: none;
-    border-bottom: 1px solid #434f54;
+    border-radius: unset;
+    border-bottom: 1px solid #232b2e;
     background: transparent;
 
     &:hover {

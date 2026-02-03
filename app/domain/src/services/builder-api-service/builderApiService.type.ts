@@ -94,7 +94,6 @@ export type RetrieveExampleFileContentsResult = Omit<
   fullName: string;
   data: string;
   path: string;
-  href: string;
   content: string;
   scopedContent?: string;
   extension: string;

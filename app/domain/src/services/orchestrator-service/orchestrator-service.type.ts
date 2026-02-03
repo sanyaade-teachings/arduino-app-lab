@@ -1,3 +1,4 @@
+import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app-list/importAppDialog.type';
 import {
   AppConfig,
   AppDetailedInfo,
@@ -34,6 +35,11 @@ export interface OrchestratorService {
   createApp(body: CreateAppRequest): Promise<string | undefined>;
   cloneApp(id: string, body?: CloneAppRequest): Promise<string | undefined>;
   deleteApp(id: string): Promise<boolean>;
+  exportApp(
+    id: string,
+    appName: string,
+    includeData: boolean,
+  ): Promise<boolean>;
   getFiles(path: string): Promise<TreeNode[]>;
   getFileContent(path: string): Promise<string>;
   startApp(
@@ -91,4 +97,7 @@ export interface OrchestratorService {
   getAppSketchLibraries(appId: string): Promise<{ libraries: string[] }>;
   addAppSketchLibrary(appId: string, libRef: string): Promise<void>;
   deleteAppSketchLibrary(appId: string, libRef: string): Promise<void>;
+  importApp(): Promise<ImportAppResult | null>;
+  importAppFromPath(filePath: string): Promise<ImportAppResult>;
+  importAppFromFile(file: File): Promise<ImportAppResult>;
 }

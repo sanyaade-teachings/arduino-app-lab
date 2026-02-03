@@ -4,9 +4,15 @@ package app
 // This file should only contain the method signatures and no or very little logic
 
 import (
+	"fmt"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+
 	"app-lab-desktop/internal/appui"
+	"app-lab-desktop/internal/arduinoapps"
 	"app-lab-desktop/internal/board"
 	"app-lab-desktop/internal/featureflags"
+	"app-lab-desktop/internal/flasher"
 	"app-lab-desktop/internal/fs"
 	"app-lab-desktop/internal/fs/opener"
 	"app-lab-desktop/internal/learn"
@@ -15,8 +21,6 @@ import (
 	"app-lab-desktop/internal/network/wifi"
 	"app-lab-desktop/internal/terminal"
 	"app-lab-desktop/internal/update"
-
-	"fmt"
 )
 
 // Board check management
@@ -183,4 +187,73 @@ func (a *App) GetTags() ([]learn.Tag, error) {
 // Open Terminal
 func (a *App) OpenBoardTerminal() error {
 	return terminal.OpenTerminal(a.ctx(), a.selectedBoard)
+}
+
+// Flasher endpoints
+func (a *App) GetOSImageVersion() string {
+	return a.selectedBoard.GetOSImageVersion()
+}
+
+func (a *App) IsUserPartitionPreservationSupported(currentImageVersion string, targetImageVersion string) bool {
+	return flasher.IsUserPartitionPreservationSupported(currentImageVersion, targetImageVersion)
+}
+
+func (a *App) ListAvailableOSImages() ([]flasher.OSImageRelease, error) {
+	return flasher.ListAvailableOSImages(a.ctx())
+}
+
+func (a *App) GetAvailableFreeSpace() (uint64, error) {
+	return flasher.GetAvailableFreeSpace(a.ctx())
+}
+
+func (a *App) Flash(imageVersion flasher.OSImageRelease, preserveUserPartition bool) error {
+	return flasher.Flash(a.selectedBoard.Info.Serial, imageVersion, preserveUserPartition, func(event flasher.FlashEvent) {
+		runtime.EventsEmit(a.ctx(), "flash-progress", event)
+	})
+}
+
+func (a *App) InferOrchestratorURL() (string, error) {
+	orchestratorURL := ""
+	if a.IsBoard() {
+		orchestratorURL = "http://localhost:8800"
+	} else {
+		tunlOrchestratorURL, err := a.GetOrchestratorURL()
+		if err != nil {
+			return "", err
+		}
+		orchestratorURL = tunlOrchestratorURL
+	}
+
+	return orchestratorURL, nil
+}
+
+func (a *App) ExportApp(appID string, appName string, includeData bool) (string, error) {
+	orchestratorURL, err := a.InferOrchestratorURL()
+	if err != nil {
+		return "", fmt.Errorf("failed to get orchestrator URL for export app: %w", err)
+	}
+
+	return arduinoapps.ExportApp(a.ctx(), orchestratorURL, appID, appName, includeData)
+}
+
+func (a *App) ImportApp() (string, error) {
+	orchestratorURL, err := a.InferOrchestratorURL()
+	if err != nil {
+		return "", fmt.Errorf("failed to get orchestrator URL for import app: %w", err)
+	}
+
+	return arduinoapps.ImportApp(a.ctx(), orchestratorURL)
+}
+
+func (a *App) ImportAppFromPath(filePath string) (string, error) {
+	orchestratorURL, err := a.InferOrchestratorURL()
+	if err != nil {
+		return "", fmt.Errorf("failed to get orchestrator URL for import app from path: %w", err)
+	}
+
+	return arduinoapps.ImportAppFromPath(a.ctx(), orchestratorURL, filePath)
+}
+
+func (a *App) SaveTempFile(fileName string, data []byte) (string, error) {
+	return arduinoapps.SaveTempFile(fileName, data)
 }

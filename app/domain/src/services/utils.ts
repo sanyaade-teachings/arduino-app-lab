@@ -2,15 +2,12 @@ import { Config } from '@cloud-editor-mono/common';
 import { UAParser } from 'ua-parser-js';
 
 function transformDataToContent(base64String: string): string {
-  try {
-    return decodeURIComponent(escape(atob(base64String)));
-  } catch {
-    return atob(base64String);
-  }
+  return decodeBase64ToString(base64String);
 }
 
 function transformBinDataToContent(base64String: string): string {
-  return decodeURIComponent(escape(base64String));
+  const decoded = decodeBase64ToString(base64String);
+  return decodeURIComponent(escape(decoded));
 }
 
 function transformContentToData(code: string): string {
@@ -64,8 +61,7 @@ export function getOS(): string | undefined {
   if (!parser) {
     parser = new UAParser();
   }
-  const os = parser.getOS().name;
-  return os;
+  return parser.getOS().name;
 }
 
 export const isChromeOs =
@@ -77,8 +73,7 @@ export function getBrowser(): string | undefined {
   if (!parser) {
     parser = new UAParser();
   }
-  const browser = parser.getBrowser().name;
-  return browser;
+  return parser.getBrowser().name;
 }
 
 export function isPlayStoreApp(): boolean {
@@ -93,10 +88,12 @@ export function replaceFileNameInvalidCharacters(fileName: string): string {
   return fileName.replace(/[^a-zA-Z0-9-_]{1}[^a-zA-Z0-9-_.]{0,35}/g, '_');
 }
 
-export function decodeBase64ToString(base64: string): string {
+function decodeBase64ToString(base64: string): string {
   try {
     return Buffer.from(base64, 'base64').toString('utf8');
   } catch {
     return base64;
   }
 }
+
+export { decodeBase64ToString };

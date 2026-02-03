@@ -8,68 +8,160 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ModelsRouteImport } from './routes/models'
-import { Route as BricksRouteImport } from './routes/bricks'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as MyAppsIndexRouteImport } from './routes/my-apps/index'
-import { Route as LearnIndexRouteImport } from './routes/learn/index'
-import { Route as ExamplesIndexRouteImport } from './routes/examples/index'
-import { Route as MyAppsAppIdRouteImport } from './routes/my-apps/$appId'
-import { Route as LearnResourceIdRouteImport } from './routes/learn/$resourceId'
-import { Route as ExamplesAppIdRouteImport } from './routes/examples/$appId'
+// Import Routes
 
-const SettingsRoute = SettingsRouteImport.update({
+import { Route as rootRoute } from './routes/__root'
+import { Route as SettingsImport } from './routes/settings'
+import { Route as ModelsImport } from './routes/models'
+import { Route as BricksImport } from './routes/bricks'
+import { Route as IndexImport } from './routes/index'
+import { Route as MyAppsIndexImport } from './routes/my-apps/index'
+import { Route as LearnIndexImport } from './routes/learn/index'
+import { Route as ExamplesIndexImport } from './routes/examples/index'
+import { Route as MyAppsAppIdImport } from './routes/my-apps/$appId'
+import { Route as LearnResourceIdImport } from './routes/learn/$resourceId'
+import { Route as ExamplesAppIdImport } from './routes/examples/$appId'
+
+// Create/Update Routes
+
+const SettingsRoute = SettingsImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const ModelsRoute = ModelsRouteImport.update({
+
+const ModelsRoute = ModelsImport.update({
   id: '/models',
   path: '/models',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const BricksRoute = BricksRouteImport.update({
+
+const BricksRoute = BricksImport.update({
   id: '/bricks',
   path: '/bricks',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+
+const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const MyAppsIndexRoute = MyAppsIndexRouteImport.update({
+
+const MyAppsIndexRoute = MyAppsIndexImport.update({
   id: '/my-apps/',
   path: '/my-apps/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const LearnIndexRoute = LearnIndexRouteImport.update({
+
+const LearnIndexRoute = LearnIndexImport.update({
   id: '/learn/',
   path: '/learn/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const ExamplesIndexRoute = ExamplesIndexRouteImport.update({
+
+const ExamplesIndexRoute = ExamplesIndexImport.update({
   id: '/examples/',
   path: '/examples/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const MyAppsAppIdRoute = MyAppsAppIdRouteImport.update({
+
+const MyAppsAppIdRoute = MyAppsAppIdImport.update({
   id: '/my-apps/$appId',
   path: '/my-apps/$appId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const LearnResourceIdRoute = LearnResourceIdRouteImport.update({
+
+const LearnResourceIdRoute = LearnResourceIdImport.update({
   id: '/learn/$resourceId',
   path: '/learn/$resourceId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
-const ExamplesAppIdRoute = ExamplesAppIdRouteImport.update({
+
+const ExamplesAppIdRoute = ExamplesAppIdImport.update({
   id: '/examples/$appId',
   path: '/examples/$appId',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => rootRoute,
 } as any)
+
+// Populate the FileRoutesByPath interface
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/bricks': {
+      id: '/bricks'
+      path: '/bricks'
+      fullPath: '/bricks'
+      preLoaderRoute: typeof BricksImport
+      parentRoute: typeof rootRoute
+    }
+    '/models': {
+      id: '/models'
+      path: '/models'
+      fullPath: '/models'
+      preLoaderRoute: typeof ModelsImport
+      parentRoute: typeof rootRoute
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsImport
+      parentRoute: typeof rootRoute
+    }
+    '/examples/$appId': {
+      id: '/examples/$appId'
+      path: '/examples/$appId'
+      fullPath: '/examples/$appId'
+      preLoaderRoute: typeof ExamplesAppIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/learn/$resourceId': {
+      id: '/learn/$resourceId'
+      path: '/learn/$resourceId'
+      fullPath: '/learn/$resourceId'
+      preLoaderRoute: typeof LearnResourceIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/my-apps/$appId': {
+      id: '/my-apps/$appId'
+      path: '/my-apps/$appId'
+      fullPath: '/my-apps/$appId'
+      preLoaderRoute: typeof MyAppsAppIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/examples/': {
+      id: '/examples/'
+      path: '/examples'
+      fullPath: '/examples'
+      preLoaderRoute: typeof ExamplesIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/learn/': {
+      id: '/learn/'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/my-apps/': {
+      id: '/my-apps/'
+      path: '/my-apps'
+      fullPath: '/my-apps'
+      preLoaderRoute: typeof MyAppsIndexImport
+      parentRoute: typeof rootRoute
+    }
+  }
+}
+
+// Create and export the route tree
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -83,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/learn': typeof LearnIndexRoute
   '/my-apps': typeof MyAppsIndexRoute
 }
+
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bricks': typeof BricksRoute
@@ -95,8 +188,9 @@ export interface FileRoutesByTo {
   '/learn': typeof LearnIndexRoute
   '/my-apps': typeof MyAppsIndexRoute
 }
+
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
+  __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/bricks': typeof BricksRoute
   '/models': typeof ModelsRoute
@@ -108,6 +202,7 @@ export interface FileRoutesById {
   '/learn/': typeof LearnIndexRoute
   '/my-apps/': typeof MyAppsIndexRoute
 }
+
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
@@ -147,6 +242,7 @@ export interface FileRouteTypes {
     | '/my-apps/'
   fileRoutesById: FileRoutesById
 }
+
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BricksRoute: typeof BricksRoute
@@ -158,81 +254,6 @@ export interface RootRouteChildren {
   ExamplesIndexRoute: typeof ExamplesIndexRoute
   LearnIndexRoute: typeof LearnIndexRoute
   MyAppsIndexRoute: typeof MyAppsIndexRoute
-}
-
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/models': {
-      id: '/models'
-      path: '/models'
-      fullPath: '/models'
-      preLoaderRoute: typeof ModelsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bricks': {
-      id: '/bricks'
-      path: '/bricks'
-      fullPath: '/bricks'
-      preLoaderRoute: typeof BricksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-apps/': {
-      id: '/my-apps/'
-      path: '/my-apps'
-      fullPath: '/my-apps'
-      preLoaderRoute: typeof MyAppsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/learn/': {
-      id: '/learn/'
-      path: '/learn'
-      fullPath: '/learn'
-      preLoaderRoute: typeof LearnIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/examples/': {
-      id: '/examples/'
-      path: '/examples'
-      fullPath: '/examples'
-      preLoaderRoute: typeof ExamplesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/my-apps/$appId': {
-      id: '/my-apps/$appId'
-      path: '/my-apps/$appId'
-      fullPath: '/my-apps/$appId'
-      preLoaderRoute: typeof MyAppsAppIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/learn/$resourceId': {
-      id: '/learn/$resourceId'
-      path: '/learn/$resourceId'
-      fullPath: '/learn/$resourceId'
-      preLoaderRoute: typeof LearnResourceIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/examples/$appId': {
-      id: '/examples/$appId'
-      path: '/examples/$appId'
-      fullPath: '/examples/$appId'
-      preLoaderRoute: typeof ExamplesAppIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -247,6 +268,59 @@ const rootRouteChildren: RootRouteChildren = {
   LearnIndexRoute: LearnIndexRoute,
   MyAppsIndexRoute: MyAppsIndexRoute,
 }
-export const routeTree = rootRouteImport
+
+export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+/* ROUTE_MANIFEST_START
+{
+  "routes": {
+    "__root__": {
+      "filePath": "__root.tsx",
+      "children": [
+        "/",
+        "/bricks",
+        "/models",
+        "/settings",
+        "/examples/$appId",
+        "/learn/$resourceId",
+        "/my-apps/$appId",
+        "/examples/",
+        "/learn/",
+        "/my-apps/"
+      ]
+    },
+    "/": {
+      "filePath": "index.tsx"
+    },
+    "/bricks": {
+      "filePath": "bricks.tsx"
+    },
+    "/models": {
+      "filePath": "models.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.tsx"
+    },
+    "/examples/$appId": {
+      "filePath": "examples/$appId.tsx"
+    },
+    "/learn/$resourceId": {
+      "filePath": "learn/$resourceId.tsx"
+    },
+    "/my-apps/$appId": {
+      "filePath": "my-apps/$appId.tsx"
+    },
+    "/examples/": {
+      "filePath": "examples/index.tsx"
+    },
+    "/learn/": {
+      "filePath": "learn/index.tsx"
+    },
+    "/my-apps/": {
+      "filePath": "my-apps/index.tsx"
+    }
+  }
+}
+ROUTE_MANIFEST_END */

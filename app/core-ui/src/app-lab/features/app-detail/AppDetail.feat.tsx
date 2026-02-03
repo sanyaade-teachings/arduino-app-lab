@@ -39,7 +39,8 @@ const AppDetail: React.FC<AppDetailProps> = (props: AppDetailProps) => {
     selectedFile,
     selectedNode,
     defaultOpenFoldersState,
-    reloadApp,
+    openApp,
+    updateApp,
     setSelectedFile,
     openFilesFolder,
     openExternal,
@@ -62,9 +63,6 @@ const AppDetail: React.FC<AppDetailProps> = (props: AppDetailProps) => {
   const tabs = ['editor', 'console'] as const;
   const [activeTab, setTab] = useState<typeof tabs[number]>('editor');
 
-  const appTitleLogic = useCreateAppTitleLogic(app, section, reloadApp);
-  const { onAppAction, onAppDefaultChange } = appTitleLogic();
-
   const {
     configureAppBricksDialogLogic,
     swapRunningAppDialogLogic,
@@ -74,9 +72,19 @@ const AppDetail: React.FC<AppDetailProps> = (props: AppDetailProps) => {
     app,
     appBricks,
     fileTree,
-    onAppDefaultChange,
+    openApp,
+    updateApp,
     updateAppBricks,
   );
+  const { appStatus } = runtimeActionsLogic();
+
+  const appTitleLogic = useCreateAppTitleLogic(
+    app,
+    appStatus,
+    section,
+    updateApp,
+  );
+  const { onAppAction } = appTitleLogic();
 
   return (
     <section className={styles['main']}>
@@ -88,31 +96,31 @@ const AppDetail: React.FC<AppDetailProps> = (props: AppDetailProps) => {
           <AppLabAppTitle key="app-title" appTitleLogic={appTitleLogic} />,
         ]}
       >
-        <div className={styles['top-bar-container']}>
-          <AppLabTabs tabs={tabs} setTab={setTab} activeTab={activeTab} />
-          <div className={styles['actions']}>
-            {app?.id && (
-              <RuntimeActions
-                runtimeActionsLogic={runtimeActionsLogic}
-                setTab={setTab}
-                runtimeDisable={!fileTree}
-              />
-            )}
-            {app?.example && (
-              <Button
-                onClick={(): void => onAppAction(AppAction.Duplicate)}
-                type={ButtonType.Secondary}
-                size={ButtonSize.Small}
-                Icon={Duplicate}
-                variant={ButtonVariant.Action}
-                classes={{
-                  button: styles['actions--duplicate'],
-                }}
-              >
-                Copy and edit app
-              </Button>
-            )}
-          </div>
+        <AppLabTabs tabs={tabs} setTab={setTab} activeTab={activeTab} />
+        <div className={styles['actions']}>
+          {app?.id && (
+            <RuntimeActions
+              runtimeActionsLogic={runtimeActionsLogic}
+              setTab={setTab}
+              runtimeDisable={!fileTree}
+            />
+          )}
+          {app?.example && (
+            <Button
+              onClick={(): void => onAppAction(AppAction.Duplicate)}
+              type={ButtonType.Secondary}
+              size={ButtonSize.Small}
+              Icon={Duplicate}
+              variant={ButtonVariant.Action}
+              title="Copy and edit app"
+              classes={{
+                button: styles['actions--duplicate'],
+                textButtonText: styles['actions--duplicate-text'],
+              }}
+            >
+              Copy and edit app
+            </Button>
+          )}
         </div>
       </AppLabTopBar>
       {activeTab === 'editor' && (

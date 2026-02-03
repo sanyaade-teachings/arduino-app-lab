@@ -1,13 +1,15 @@
 package app
 
 import (
-	"app-lab-desktop/internal/board"
-	"app-lab-desktop/internal/update"
 	"context"
 	"fmt"
 	"os"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"app-lab-desktop/internal/board"
+	"app-lab-desktop/internal/flasher"
+	"app-lab-desktop/internal/update"
 )
 
 func (a *App) Startup(ctx context.Context) {
@@ -19,6 +21,7 @@ func (a *App) Startup(ctx context.Context) {
 	}
 
 	// TODO: this should be either a build or runtime flag
+	var userAgent string = fmt.Sprintf("App Lab %s; Desktop", a.version)
 	if board.IsSBC() {
 		b, err := board.GetSbcBoard(ctx)
 		if err != nil {
@@ -26,17 +29,32 @@ func (a *App) Startup(ctx context.Context) {
 			return
 		}
 		a.selectedBoard = b
-	} else {
-		u, err := update.NewUpdater(a.version, os.Getenv("UPDATE_URL"))
-		if err != nil {
-			runtime.LogErrorf(ctx, "failed to initialize updater: %v", err)
+		userAgent = fmt.Sprintf("App Lab %s; %s; %s", a.version, b.Info.BoardName, b.GetOSImageVersion())
+	}
+
+	u, err := update.NewUpdater(a.version, userAgent, os.Getenv("ARDUINO_APP_LAB_UPDATE_URL"))
+	if err != nil {
+		runtime.LogErrorf(ctx, "failed to initialize updater: %v", err)
+	}
+	a.updater = u
+
+	// checking for updates is best-effort in SBC mode, we just log errors
+	// in Desktop mode, `NewVersion` is driven by the UI (see api.go) so we don't call it here
+	if board.IsSBC() {
+		_, versionErr := u.NewVersion(ctx)
+		if versionErr == nil {
+			runtime.LogInfof(ctx, "Successfully checked for updates (SBC)")
 		} else {
-			a.updater = u
+			runtime.LogInfof(ctx, "Failed to check for updates (SBC), skipping...")
 		}
 	}
 }
 
 func (a *App) Shutdown(ctx context.Context) {
+	daemon, err := flasher.FlashDaemonService()
+	if err == nil {
+		daemon.DaemonShutDown()
+	}
 	a.selectedBoard.CloseTunnels(ctx)
 }
 

@@ -20,14 +20,9 @@ export let getInternetStatus: SettingsService['getInternetStatus'] =
   };
 
 export let connectToWiFi: SettingsService['connectToWiFi'] = async function (
-  ssid: string,
-  password: string,
+  _ssid: string,
+  _password: string,
 ) {
-  await new Promise(() =>
-    setTimeout(() => {
-      console.log('connectToWiFi called with:', ssid, password);
-    }, 10000),
-  );
   throw new Error('connectToWiFi service not implemented');
 };
 

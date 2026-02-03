@@ -45,6 +45,10 @@ const searchKeyMapExt = ViewPlugin.fromClass(
             cmOpenSearchPanel(view);
           }
         }
+
+        if (event.key === 'Escape' && searchPanelOpen(view.state)) {
+          cmCloseSearchPanel(view);
+        }
       };
 
       window.addEventListener('keydown', this.searchKeymapHandler);

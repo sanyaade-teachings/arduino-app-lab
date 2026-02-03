@@ -3,6 +3,7 @@ import {
   BrickCreateUpdateRequest,
   BrickInstance,
   BrickListItem,
+  UpdateAppDetailRequest,
 } from '@cloud-editor-mono/infrastructure';
 import {
   AddSketchLibraryDialogLogic,
@@ -27,7 +28,9 @@ export interface UseAppDetailLogic {
   selectedFile: SelectableFileData | undefined;
   selectedNode: FileNode | undefined;
   defaultOpenFoldersState: { [key: string]: boolean } | undefined;
+  openApp: (app: AppDetailedInfo) => void;
   reloadApp: () => void;
+  updateApp: (request: UpdateAppDetailRequest) => Promise<boolean>;
   setSelectedFile: (id: string | TreeNode | undefined) => void;
   openFilesFolder: () => void;
   openExternal: () => void;

@@ -38,4 +38,14 @@ export const appListMessages = defineMessages({
     defaultMessage: 'Create new app',
     description: 'Create a new app',
   },
+  createNewApp: {
+    id: 'app-lab.app-list.create-new-app',
+    defaultMessage: 'Create New App',
+    description: 'Dropdown option to create a new app',
+  },
+  importApp: {
+    id: 'app-lab.app-list.import-app',
+    defaultMessage: 'Import App',
+    description: 'Dropdown option to import an app',
+  },
 });

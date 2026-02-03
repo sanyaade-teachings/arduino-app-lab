@@ -1,13 +1,20 @@
-import { NavigationGroup, Plus } from '@cloud-editor-mono/images/assets/icons';
+import {
+  NavigationGroup,
+  Plus,
+  UploadLight,
+} from '@cloud-editor-mono/images/assets/icons';
 import {
   AppItem as Card,
   AppLabTopBar,
   Button,
   ButtonType,
   CreateAppDialog,
+  DropdownMenuButton,
+  ImportAppDialog,
   useI18n,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { Link } from '@tanstack/react-router';
+import React, { Key } from 'react';
 
 import { AppsSection } from '../../routes/__root';
 import styles from './app-list.module.scss';
@@ -29,7 +36,10 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
     apps,
     isLoading: appsLoading,
     createAppDialogLogic,
+    importAppDialogLogic,
     openCreateAppDialog,
+    openImportAppDialog,
+    importedAppId,
   } = useAppListLogic(section);
 
   const { formatMessage } = useI18n();
@@ -37,17 +47,52 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
   return (
     <section className={styles['main']}>
       <CreateAppDialog logic={createAppDialogLogic} />
+      <ImportAppDialog logic={importAppDialogLogic} />
       <AppLabTopBar pathItems={[section]}>
-        <div className={styles['top-bar-container']}>
+        <div />
+        <div className={styles['actions']}>
           {section === 'my-apps' && (
-            <Button
-              type={ButtonType.Primary}
-              onClick={openCreateAppDialog}
-              Icon={Plus}
-              iconPosition="right"
-            >
-              {formatMessage(messages.actionCreate)}
-            </Button>
+            <DropdownMenuButton
+              sections={[
+                {
+                  name: 'Apps actions',
+                  items: [
+                    {
+                      id: 'create-app',
+                      label: formatMessage(messages.createNewApp),
+                      labelPrefix: <Plus />,
+                    },
+                    {
+                      id: 'import-app',
+                      label: formatMessage(messages.importApp),
+                      labelPrefix: <UploadLight />,
+                    },
+                  ],
+                },
+              ]}
+              classes={{
+                dropdownMenu: styles['dropdown-menu'],
+                dropdownMenuButtonWrapper:
+                  styles['dropdown-menu-button-wrapper'],
+                dropdownMenuItem: styles['dropdown-menu-item'],
+              }}
+              onAction={(key: Key): void =>
+                key === 'create-app'
+                  ? openCreateAppDialog()
+                  : openImportAppDialog()
+              }
+              useStaticPosition
+              buttonChildren={
+                <Button
+                  type={ButtonType.Primary}
+                  Icon={Plus}
+                  iconPosition="right"
+                  title={formatMessage(messages.actionCreate)}
+                >
+                  {formatMessage(messages.actionCreate)}
+                </Button>
+              }
+            />
           )}
         </div>
       </AppLabTopBar>
@@ -69,7 +114,11 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
           ? apps.map((app, i) => (
               <Link
                 key={i}
-                className={styles['app-link']}
+                className={`${styles['app-link']} ${
+                  app.id === importedAppId
+                    ? styles['app-link--highlighted']
+                    : ''
+                }`}
                 to={`/${section}/$appId`}
                 params={{ appId: app.id || '' }}
               >

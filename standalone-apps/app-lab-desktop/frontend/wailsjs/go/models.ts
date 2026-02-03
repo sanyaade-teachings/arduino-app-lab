@@ -70,6 +70,27 @@ export namespace board {
 
 }
 
+export namespace flasher {
+	
+	export class OSImageRelease {
+	    VersionLabel: string;
+	    ID: string;
+	    Latest: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new OSImageRelease(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.VersionLabel = source["VersionLabel"];
+	        this.ID = source["ID"];
+	        this.Latest = source["Latest"];
+	    }
+	}
+
+}
+
 export namespace fs {
 	
 	export class FSNode {

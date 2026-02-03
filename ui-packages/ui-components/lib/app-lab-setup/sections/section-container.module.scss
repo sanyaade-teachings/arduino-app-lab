@@ -1,5 +1,3 @@
-@use "../../../public/shared.module.scss";
-
 .section-container {
   width: 100%;
   height: 100%;
@@ -20,7 +18,8 @@
       height: 60px;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
+      padding: 16px;
     }
 
     .section-content {
@@ -30,10 +29,56 @@
       flex-direction: column;
       gap: 16px;
 
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+      }
+
       .title {
         display: flex;
+        align-items: center;
+      }
+
+      .tooltip-content {
         flex-direction: column;
         gap: 8px;
+        padding: 16px 24px;
+        border-radius: 4px;
+        background: var(--surface-bg-above, #374146);
+        color: #ffffff;
+
+        box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.25);
+        top: unset;
+        right: unset;
+      }
+      .tooltip-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+        color: #25C2C7;
+      }
+
+      .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        svg {
+          path {
+            fill: #25C2C7;
+          }
+          width: 14px;
+          height: 14px;
+        }
+      }
+
+      .sub-title {
+        color: #95a5a6;
       }
 
       .content {
@@ -49,9 +94,43 @@
     align-items: center;
     justify-content: center;
     border-top: 1px solid #232b2e;
+    gap: 16px;
 
     .connect-button {
       height: 36px;
+    }
+  }
+
+  .back-button {
+    color: #ffffff ;
+
+    svg {
+      color: #ffffff ;
+      fill: #ffffff ;
+    }
+
+    path {
+      fill: #ffffff ;
+      stroke: #ffffff ;
+    }
+
+    span {
+      color: #ffffff ;
+      margin-left: 6px;
+    }
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+
+  .skip-button-header {
+    color: #00d3d3;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

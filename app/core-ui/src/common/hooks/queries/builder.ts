@@ -1063,24 +1063,26 @@ const toLegacyId = (name: string, version: string): string =>
 
 const mapExampleFilesToLegacy = (
   legacyId: string,
-  examplePath: string, // es. "arduino/LVGL_Arduino"
-  files: { name: string; path: string; mimetype: string }[],
+  examplePath: string,
+  files: { name: string; path: string; mimetype: string; data?: string }[],
 ) => {
   const segs = examplePath.split('/').filter(Boolean);
   const exampleName = segs[segs.length - 1] || examplePath;
   const folder = segs[0] || '';
 
   const ino = pickMainIno(files);
-  const inoLegacy = ino && {
-    href: `/v1/files/${encodeURIComponent(
-      `${legacyId}/examples/${examplePath}/${ino.name}`,
-    )}`,
-    mimetype:
-      files.find((f) => f.name === ino.name)?.mimetype ||
-      'text/x-c++src; charset=utf-8',
-    name: ino.name,
-    path: `${legacyId}/examples/${examplePath}/${ino.name}`,
-  };
+  const inoFile = files.find((f) => f.name === ino?.name);
+
+  const inoLegacy = ino &&
+    inoFile && {
+      href: `/v1/files/${encodeURIComponent(
+        `${legacyId}/examples/${examplePath}/${ino.name}`,
+      )}`,
+      mimetype: inoFile.mimetype || 'text/x-c++src; charset=utf-8',
+      name: ino.name,
+      path: `${legacyId}/examples/${examplePath}/${ino.name}`,
+      data: inoFile.data,
+    };
 
   return {
     folder,
@@ -1088,6 +1090,17 @@ const mapExampleFilesToLegacy = (
     name: exampleName,
     path: `${legacyId}/${examplePath}`,
     types: ['library'],
+    files: files
+      .filter((f) => f.name !== ino?.name)
+      .map((f) => ({
+        name: f.name,
+        path: `${legacyId}/examples/${examplePath}/${f.name}`,
+        href: `/v1/files/${encodeURIComponent(
+          `${legacyId}/examples/${examplePath}/${f.name}`,
+        )}`,
+        mimetype: f.mimetype,
+        data: f.data,
+      })),
   };
 };
 
@@ -1179,6 +1192,8 @@ export const useRetrieveExampleInoContents: UseRetrieveExampleInoContents =
     exampleIno,
     scope,
   ): ReturnType<UseRetrieveExampleInoContents> {
+    const queryClient = useQueryClient();
+
     const { data: exampleInoContents, isLoading } = useQuery(
       ['get-main-example-content', exampleIno?.path, scope],
       () => {
@@ -1186,6 +1201,7 @@ export const useRetrieveExampleInoContents: UseRetrieveExampleInoContents =
           ? retrieveExampleFileContents(
               exampleIno.path,
               exampleIno.name,
+              queryClient,
               undefined,
               scope,
             )
@@ -1213,6 +1229,8 @@ export const useRetrieveExampleFileContents: UseRetrieveExampleFileContents =
     exampleInoPath?,
     exampleFiles?,
   ): ReturnType<UseRetrieveExampleFileContents> {
+    const queryClient = useQueryClient();
+
     const [exampleFileContents, setExampleFileContents] = useState<{
       contents: RetrieveExampleFileContentsResult[];
       isComplete: boolean;
@@ -1227,6 +1245,7 @@ export const useRetrieveExampleFileContents: UseRetrieveExampleFileContents =
         setExampleFileContents({ contents: [], isComplete: true });
       }
     }, [exampleFiles]);
+
     const results = useQueries({
       queries: (exampleFiles ?? [])
         .filter((exampleFile) => exampleFile && exampleFile.path)
@@ -1236,6 +1255,7 @@ export const useRetrieveExampleFileContents: UseRetrieveExampleFileContents =
             retrieveExampleFileContents(
               exampleFile?.path || '',
               exampleFile?.name || '',
+              queryClient,
               exampleInoPath,
             ),
           onSuccess: (data: RetrieveExampleFileContentsResult): void => {
@@ -1270,7 +1290,6 @@ export const useRetrieveExampleFileContents: UseRetrieveExampleFileContents =
       refetchAll,
     };
   };
-
 export const useRetrieveLibraryFilesContents: UseRetrieveLibraryFileContents =
   function (
     enabled,

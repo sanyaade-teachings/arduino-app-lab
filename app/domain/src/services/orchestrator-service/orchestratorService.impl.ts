@@ -26,6 +26,10 @@ export let deleteApp: OrchestratorService['deleteApp'] = async function () {
   throw new Error('deleteApp service not implemented');
 };
 
+export let exportApp: OrchestratorService['exportApp'] = async function () {
+  throw new Error('exportApp service not implemented');
+};
+
 export let getFiles: OrchestratorService['getFiles'] = async function () {
   throw new Error('getFiles service not implemented');
 };
@@ -161,6 +165,20 @@ export let deleteAppSketchLibrary: OrchestratorService['deleteAppSketchLibrary']
     throw new Error('deleteAppSketchLibrary service not implemented');
   };
 
+export let importApp: OrchestratorService['importApp'] = async function () {
+  throw new Error('importApp service not implemented');
+};
+
+export let importAppFromPath: OrchestratorService['importAppFromPath'] =
+  async function () {
+    throw new Error('importAppFromPath service not implemented');
+  };
+
+export let importAppFromFile: OrchestratorService['importAppFromFile'] =
+  async function () {
+    throw new Error('importAppFromFile service not implemented');
+  };
+
 export const setOrchestratorService = (service: OrchestratorService): void => {
   getApps = service.getApps;
   getAppStatus = service.getAppsStatus;
@@ -169,6 +187,7 @@ export const setOrchestratorService = (service: OrchestratorService): void => {
   createApp = service.createApp;
   cloneApp = service.cloneApp;
   deleteApp = service.deleteApp;
+  exportApp = service.exportApp;
   getFiles = service.getFiles;
   getFileContent = service.getFileContent;
   getAppBricks = service.getAppBricks;
@@ -197,4 +216,7 @@ export const setOrchestratorService = (service: OrchestratorService): void => {
   getAppSketchLibraries = service.getAppSketchLibraries;
   addAppSketchLibrary = service.addAppSketchLibrary;
   deleteAppSketchLibrary = service.deleteAppSketchLibrary;
+  importApp = service.importApp;
+  importAppFromPath = service.importAppFromPath;
+  importAppFromFile = service.importAppFromFile;
 };
