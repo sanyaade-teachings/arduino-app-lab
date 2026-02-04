@@ -1,3 +1,4 @@
+import { TagStyle } from '@codemirror/language';
 import clsx from 'clsx';
 
 import { CopyToClipboard } from '../essential/copy-to-clipboard';
@@ -8,17 +9,19 @@ import CodeBlockElement from './CodeBlockElement';
 interface CodeBlockProps {
   code: string;
   onCopyCode?: (code: string) => void;
+  customSyntaxHighlightingTags?: TagStyle[];
   classes?: { container: string };
 }
 
 const CodeBlock: React.FC<CodeBlockProps> = (props: CodeBlockProps) => {
-  const { code, onCopyCode, classes } = props;
+  const { code, onCopyCode, customSyntaxHighlightingTags, classes } = props;
 
   return (
     <div className={clsx(styles['code-block-space'], classes?.container)}>
       <CodeBlockElement
         classes={{ container: styles['code-block-container'] }}
         code={code}
+        customTags={customSyntaxHighlightingTags}
       />
       <CopyToClipboard
         text={code}

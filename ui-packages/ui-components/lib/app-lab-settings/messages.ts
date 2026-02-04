@@ -57,7 +57,7 @@ export const networkMessages = defineMessages({
   },
   scanningForNetworks: {
     id: 'appLabSettings.network.scanningForNetworks',
-    defaultMessage: 'Scanning for available networks...',
+    defaultMessage: 'Scanning Networks...',
     description: 'Message displayed while scanning for Wi-Fi networks',
   },
   chooseNetwork: {
@@ -83,7 +83,7 @@ export const networkMessages = defineMessages({
   },
   setupManualNetwork: {
     id: 'appLabSettings.network.setupManualNetwork',
-    defaultMessage: 'Manual setup',
+    defaultMessage: 'Setup manually',
     description: 'Title for the manual network setup section',
   },
   wpa2: {

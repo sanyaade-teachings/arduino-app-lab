@@ -178,13 +178,24 @@ export const useAppDetailFiles: UseAppDetailFiles = function (
   );
 
   const _filesContents = useMemo(() => {
-    const files = filesContents || [];
+    const files = [...(filesContents ?? [])];
+
     if (firstSelectedFileData && !firstSelectedFileIsSketchIno) {
-      files.push(firstSelectedFileData);
+      const alreadyIncluded = files.some(
+        (file) => file.path === firstSelectedFileData.path,
+      );
+      if (!alreadyIncluded) {
+        files.push(firstSelectedFileData);
+      }
     }
 
     if (appYamlFileData) {
-      files.push(appYamlFileData);
+      const alreadyIncluded = files.some(
+        (file) => file.path === appYamlFileData.path,
+      );
+      if (!alreadyIncluded) {
+        files.push(appYamlFileData);
+      }
     }
 
     return files;

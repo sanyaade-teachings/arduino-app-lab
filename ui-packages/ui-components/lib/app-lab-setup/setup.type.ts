@@ -37,6 +37,8 @@ export type UseSetupLogic = () => {
   boardItem?: FooterItem;
   onOpenTerminal?: () => Promise<void>;
   terminalError?: string | null;
+  onBackStep?: () => void;
+  unlockAutoFlow?: () => void;
 };
 
 export enum AppLabSetupItemId {

@@ -140,7 +140,7 @@ export const sectionTitleMessages = defineMessages<AppLabSetupItemId>({
 export const sectionActionMessages = defineMessages<AppLabSetupItemId>({
   [AppLabSetupItemId.BoardConfiguration]: {
     id: 'appLabSetup.boardName.action',
-    defaultMessage: 'Confirm',
+    defaultMessage: 'Next',
     description: 'Action for the board configuration setup section',
   },
   [AppLabSetupItemId.NetworkSetup]: {
@@ -158,14 +158,14 @@ export const sectionActionMessages = defineMessages<AppLabSetupItemId>({
 export const tooltipMessages = defineMessages({
   tooltipTitle: {
     id: 'appLabSetup.tooltip.title',
-    defaultMessage: 'Why do we ask for wi-fi connections?',
+    defaultMessage: 'Why we ask for this',
     description:
       'Title for the tooltip explaining network connection requirements',
   },
   tooltipContent: {
     id: 'appLabSetup.tooltip.content',
     defaultMessage:
-      'A network connection is required for the initial device configuration. Subsequently, you may work offline if a disconnected experience is preferred',
+      'App Lab requires a network connection only during the initial configuration to ensure the most up-to-date experience.',
     description:
       'Content for the tooltip explaining network connection requirements',
   },

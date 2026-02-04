@@ -5,6 +5,7 @@ export * from '../../board-service';
 export * from '../../browser-service';
 export * from '../../feature-flags-service';
 export * from '../../file-opener-service';
+export * from '../../flasher-service';
 export * from '../../learn-service';
 export * from '../../names-generator-service';
 export * from '../../orchestrator-service';

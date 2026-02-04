@@ -36,8 +36,47 @@
   }
 
   &--success {
-    background-color: vars.$notifysuccess;
-    --color: white;
+    background-color: var(--feedback-success-default, #16a588) !important;
+    --color: #171e21 !important;
+    color: #171e21 !important;
+
+    .Snackbar_content {
+      color: #171e21 !important;
+      
+      .Snackbar_content-text {
+        color: #171e21 !important;
+        
+        * {
+          color: #171e21 !important;
+        }
+      }
+      
+      .Snackbar_content-icon {
+        color: #171e21 !important;
+        
+        svg {
+          color: #171e21 !important;
+          fill: #171e21 !important;
+        }
+      }
+    }
+
+    .Snackbar_actions {
+      color: #171e21 !important;
+      
+      * {
+        color: #171e21 !important;
+      }
+    }
+
+    svg {
+      color: #171e21 !important;
+      fill: #171e21 !important;
+    }
+
+    * {
+      color: #171e21 !important;
+    }
   }
 
   &--error {

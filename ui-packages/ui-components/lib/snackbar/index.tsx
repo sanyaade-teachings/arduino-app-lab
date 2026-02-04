@@ -58,10 +58,10 @@ const icons: Record<Variants, React.ComponentType> = {
 };
 
 const variantStyles: Record<Variants, string> = {
-  info: 'Snackbar--info',
-  error: 'Snackbar--error',
-  success: 'Snackbar--success',
-  warning: 'Snackbar--warning',
+  info: styles['Snackbar--info'],
+  error: styles['Snackbar--error'],
+  success: styles['Snackbar--success'],
+  warning: styles['Snackbar--warning'],
 };
 
 export type SnackbarProps = ComponentPropsWithRef<'div'> & {

@@ -4,10 +4,17 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useState,
 } from 'react';
 
-import { UseNetworkLogic } from '../../../components-by-app/app-lab';
+import {
+  AppLabDialog,
+  Button,
+  ButtonSize,
+  ButtonType,
+  UseNetworkLogic,
+} from '../../../components-by-app/app-lab';
 import Item from '../../item/Item';
 import {
   NetworkCredentials,
@@ -20,7 +27,11 @@ import NetworksList from './sub-components/NetworksList';
 import Scanning from './sub-components/Scanning';
 
 interface NetworkProps {
-  logic: ReturnType<UseNetworkLogic>;
+  logic: ReturnType<UseNetworkLogic> & {
+    onSkipNetworkSetup?: () => void;
+    draftNetworkCredentials?: NetworkCredentials;
+    setDraftNetworkCredentials?: (v: NetworkCredentials) => void;
+  };
   isSetupFlow?: boolean;
   handleChange?: (value: {
     isValid: boolean;
@@ -46,17 +57,24 @@ const Network = forwardRef((props: NetworkProps, ref) => {
     setSelectedNetwork,
     manualNetworkSetup,
     setManualNetworkSetup,
+    onSkipNetworkSetup,
   } = logic;
 
-  const [networkCredentials, setNetworkCredentials] =
-    useState<NetworkCredentials>({
+  const initialCredentials: NetworkCredentials =
+    logic.draftNetworkCredentials ?? {
       name: '',
       password: '',
       security: SecurityProtocols.WPA2,
-    });
+    };
+
+  const [networkCredentials, setNetworkCredentials] =
+    useState<NetworkCredentials>(initialCredentials);
+
+  const [skipModalOpen, setSkipModalOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
     confirm: (): void => connectToWifiNetwork(networkCredentials),
+    skip: (): void => setSkipModalOpen(true),
   }));
 
   useEffect(() => {
@@ -81,21 +99,80 @@ const Network = forwardRef((props: NetworkProps, ref) => {
   const resetNetworkState = useCallback((): void => {
     setSelectedNetwork(undefined);
     setManualNetworkSetup(false);
-    setNetworkCredentials({
+
+    const next = {
       name: '',
       password: '',
       security: SecurityProtocols.WPA2,
-    });
+    };
+
+    setNetworkCredentials(next);
+    logic.setDraftNetworkCredentials?.(next);
+
     scanNetworkList();
-  }, [scanNetworkList, setManualNetworkSetup, setSelectedNetwork]);
+  }, [scanNetworkList, setManualNetworkSetup, setSelectedNetwork, logic]);
+
+  const skipFooter = useMemo(
+    () => (
+      <>
+        <Button
+          type={ButtonType.Secondary}
+          size={ButtonSize.Small}
+          classes={{
+            button: styles['skip-wifi-continue-button'],
+          }}
+          onClick={() => {
+            setSkipModalOpen(false);
+            onSkipNetworkSetup?.();
+          }}
+        >
+          Continue Offline
+        </Button>
+
+        <Button
+          type={ButtonType.Primary}
+          size={ButtonSize.Small}
+          onClick={() => setSkipModalOpen(false)}
+        >
+          Choose a Network
+        </Button>
+      </>
+    ),
+    [onSkipNetworkSetup],
+  );
 
   return (
     <div className={styles['network']}>
+      <AppLabDialog
+        open={skipModalOpen}
+        onOpenChange={setSkipModalOpen}
+        title="Wi-Fi connection"
+        footer={skipFooter}
+      >
+        <div className={styles['skip-modal-content']}>
+          <h2 className={styles['skip-modal-title']}>
+            {"Don't want to connect your board to a network?"}
+          </h2>
+
+          <p className={styles['skip-modal-subtitle']}>
+            App Lab will still run, but some features won’t be available:
+          </p>
+
+          <ul className={styles['skip-modal-list']}>
+            <li>Updates and downloads</li>
+            <li>Sketch libraries</li>
+            <li>Apps or Examples that requires internet connection</li>
+            <li>Open External links (only in SBC mode)</li>{' '}
+          </ul>
+        </div>
+      </AppLabDialog>
+
       {!isSetupFlow ? (
         <div className={styles['icon']}>
           {isScanning ? <WifiOff /> : <WifiOn />}
         </div>
       ) : null}
+
       {selectedNetwork || manualNetworkSetup ? (
         <ConnectToNetwork
           connectToWifiNetwork={connectToWifiNetwork}
@@ -107,9 +184,10 @@ const Network = forwardRef((props: NetworkProps, ref) => {
           manualNetworkSetup={manualNetworkSetup}
           isSetupFlow={isSetupFlow}
           networkCredentials={networkCredentials}
-          onChangeCredentials={(credentials: NetworkCredentials): void =>
-            setNetworkCredentials(credentials)
-          }
+          onChangeCredentials={(credentials: NetworkCredentials): void => {
+            setNetworkCredentials(credentials);
+            logic.setDraftNetworkCredentials?.(credentials);
+          }}
         />
       ) : (
         <>
@@ -124,10 +202,15 @@ const Network = forwardRef((props: NetworkProps, ref) => {
               networkList={networkList}
               onSelectNetwork={(network: NetworkItem): void => {
                 setSelectedNetwork(network);
-                setNetworkCredentials({
+
+                const next = {
                   ...networkCredentials,
                   name: network,
-                });
+                };
+
+                setNetworkCredentials(next);
+                logic.setDraftNetworkCredentials?.(next);
+
                 setManualNetworkSetup(false);
               }}
               onManualNetworkSetup={(): void => setManualNetworkSetup(true)}

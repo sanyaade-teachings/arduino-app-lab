@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+
+  .subtitle {
+    font-weight: 700;
+  }
+
+  .description {
+    text-align: center;
+  }
+
+  .link {
+    all: unset;
+    color: var(--text-link, #25c2c7);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}

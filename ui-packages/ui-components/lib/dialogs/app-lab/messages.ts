@@ -262,3 +262,141 @@ export const addSketchLibraryDialogMessages = defineMessages({
     description: 'Placeholder for the text input in the library search dialog',
   },
 });
+
+export const exportAppDialogMessages = defineMessages({
+  dialogTitle: {
+    id: 'app-lab.export-app-dialog.title',
+    defaultMessage: 'Export app',
+    description: 'Title of the export app dialog',
+  },
+  dialogBodyTitle: {
+    id: 'app-lab.export-app-dialog.body-title',
+    defaultMessage: 'Export your {appName} App',
+    description: 'Title in the body of the export dialog',
+  },
+  dialogBodyDescription: {
+    id: 'app-lab.export-app-dialog.body-description',
+    defaultMessage:
+      'Download a package with your <strong>app code</strong>, <strong>assets</strong>, <strong>configuration</strong>, and <strong>dependencies</strong>. Share it, move it to another board, or upload it to Project Hub.',
+    description: 'Description of what will be exported',
+  },
+  includeDataLabel: {
+    id: 'app-lab.export-app-dialog.include-data-label',
+    defaultMessage: 'Include data associated with the App',
+    description: 'Label for the checkbox to include app data',
+  },
+  includeDataTooltipTitle: {
+    id: 'app-lab.export-app-dialog.include-data-tooltip-title',
+    defaultMessage: 'App Data',
+    description: 'Title for the tooltip explaining app data inclusion',
+  },
+  includeDataTooltipContent: {
+    id: 'app-lab.export-app-dialog.include-data-tooltip-content',
+    defaultMessage:
+      'When enabled, any data stored by your app will be included in the export package.',
+    description: 'Content for the tooltip explaining app data inclusion',
+  },
+  cancelButton: {
+    id: 'app-lab.export-app-dialog.cancel-button',
+    defaultMessage: 'Cancel',
+    description: 'Cancel button text',
+  },
+  confirmButton: {
+    id: 'app-lab.export-app-dialog.confirm-button',
+    defaultMessage: 'Export .zip',
+    description: 'Confirm button text to export the app as zip',
+  },
+  goBackButton: {
+    id: 'app-lab.export-app-dialog.go-back-button',
+    defaultMessage: 'Go back to App',
+    description: 'Button text to close the error dialog',
+  },
+  exportFailed: {
+    id: 'app-lab.export-app-dialog.export-failed',
+    defaultMessage: 'This App is invalid',
+    description: 'Title shown when export fails',
+  },
+  exportFailedDescription: {
+    id: 'app-lab.export-app-dialog.export-failed-description',
+    defaultMessage: 'This app is broken or misconfigured.',
+    description: 'Description shown when export fails',
+  },
+  errorLabel: {
+    id: 'app-lab.export-app-dialog.error-label',
+    defaultMessage: 'Error:',
+    description: 'Label for error details',
+  },
+});
+export const importAppDialogMessages = defineMessages({
+  title: {
+    id: 'app-lab.import-app-dialog.title',
+    defaultMessage: 'Import an App',
+    description: 'Title of the import app dialog',
+  },
+  uploadTitle: {
+    id: 'app-lab.import-app-dialog.upload-title',
+    defaultMessage: 'Upload local App files',
+    description: 'Title for the upload section',
+  },
+  uploadDescriptionLine1: {
+    id: 'app-lab.import-app-dialog.upload-description-line1',
+    defaultMessage: 'Import an App Lab project.',
+    description: 'First line of import description',
+  },
+  uploadDescriptionLine2: {
+    id: 'app-lab.import-app-dialog.upload-description-line2',
+    defaultMessage:
+      'The app will be added to your workspace with its files, Bricks, and libraries.',
+    description: 'Second line of import description',
+  },
+  dragDrop: {
+    id: 'app-lab.import-app-dialog.drag-drop',
+    defaultMessage: 'Drag & drop your file here',
+    description: 'Text for drag and drop area',
+  },
+  or: {
+    id: 'app-lab.import-app-dialog.or',
+    defaultMessage: 'or',
+    description: 'Text between drag drop and button',
+  },
+  importFromComputer: {
+    id: 'app-lab.import-app-dialog.import-from-computer',
+    defaultMessage: 'Import from computer',
+    description: 'Button text to open file picker',
+  },
+  supportZip: {
+    id: 'app-lab.import-app-dialog.support-zip',
+    defaultMessage: 'Only .zip files supported',
+    description: 'Text indicating supported file types',
+  },
+  uploadingFile: {
+    id: 'app-lab.import-app-dialog.uploading-file',
+    defaultMessage: 'Uploading file',
+    description: 'Text shown during upload',
+  },
+  processTakesTime: {
+    id: 'app-lab.import-app-dialog.process-takes-time',
+    defaultMessage: 'just few seconds...',
+    description: 'Text shown during upload process',
+  },
+  uploadFailed: {
+    id: 'app-lab.import-app-dialog.upload-failed',
+    defaultMessage: 'This App is invalid',
+    description: 'Title shown when upload fails',
+  },
+  uploadFailedDescription: {
+    id: 'app-lab.import-app-dialog.upload-failed-description',
+    defaultMessage: 'This app is broken or misconfigured.',
+    description: 'Description shown when upload fails',
+  },
+  errorLabel: {
+    id: 'app-lab.import-app-dialog.error-label',
+    defaultMessage: 'Error:',
+    description: 'Label for error details',
+  },
+  goToMyApp: {
+    id: 'app-lab.import-app-dialog.go-to-my-app',
+    defaultMessage: 'Go back to Apps',
+    description: 'Button text to close error dialog',
+  },
+});

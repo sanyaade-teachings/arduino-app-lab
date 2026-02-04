@@ -18,26 +18,24 @@ type Updater struct {
 	version  string
 }
 
-func NewUpdater(version, updateURL string) (*Updater, error) {
+func NewUpdater(version, userAgent, updateURL string) (*Updater, error) {
+
 	if updateURL == "" {
 		updateURL = "https://downloads.arduino.cc/"
 	}
 	parsedURL, err := url.Parse(updateURL)
 	if err != nil {
-		fmt.Println("Invalid UPDATE_URL:", err)
-		return nil, fmt.Errorf("invalid UPDATE_URL: %w", err)
+		fmt.Println("Invalid ARDUINO_APP_LAB_UPDATE_URL:", err)
+		return nil, fmt.Errorf("invalid ARDUINO_APP_LAB_UPDATE_URL: %w", err)
 	}
 
 	headers := map[string]string{}
-
-	if os.Getenv("BASIC_AUTH_TOKEN") != "" {
-		headers["Authorization"] = "Basic " + os.Getenv("BASIC_AUTH_TOKEN")
-	}
+	headers["User-Agent"] = userAgent
 
 	s3Path := "AppLab/Stable"
 
-	if os.Getenv("UPDATE_S3_PATH") != "" {
-		s3Path = os.Getenv("UPDATE_S3_PATH")
+	if os.Getenv("ARDUINO_APP_LAB_UPDATE_S3_PATH") != "" {
+		s3Path = os.Getenv("ARDUINO_APP_LAB_UPDATE_S3_PATH")
 	}
 
 	client := releaser.NewClient(
@@ -53,11 +51,7 @@ func NewUpdater(version, updateURL string) (*Updater, error) {
 }
 
 func (u *Updater) NewVersion(ctx context.Context) (string, error) {
-	isBoard := board.IsSBC()
-	if isBoard {
-		return "", nil
-	}
-
+	runtime.LogInfof(ctx, "Checking new version with user agent '%v'", u.releaser.Headers["User-Agent"])
 	if u.releaser == nil {
 		return "", fmt.Errorf("updater client is not initialized")
 	}
@@ -65,11 +59,20 @@ func (u *Updater) NewVersion(ctx context.Context) (string, error) {
 	env := runtime.Environment(ctx)
 
 	plat := releaser.NewPlatform(env.Platform, env.Arch)
+	runtime.LogInfof(ctx, "Checking updates for platform '%s'", plat.String())
 
 	nextVersionManifest, err := u.releaser.GetLatestVersion(plat)
 	if err != nil {
 		return "", err // no new version available
 	}
+
+	// here we check if a new version is actually available
+	// but for SBC we dont proceed with the actual update
+	isBoard := board.IsSBC()
+	if isBoard {
+		return "", nil
+	}
+
 	nextSemVer, err := semver.Parse(nextVersionManifest.Version.String())
 	if err != nil {
 		fmt.Println("error parsing next version:", err)

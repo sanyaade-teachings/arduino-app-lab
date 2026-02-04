@@ -316,7 +316,7 @@ function lastChangeInTimeFrame(duration: number) {
 }
 
 export function createCodeSubject(
-  data: RetrieveFileContentsResult,
+  data: RetrieveFileContentsResult | RetrieveExampleFileContentsResult,
   debounceInterval = codeSubjectDebounceInterval,
 ): BehaviorSubject<CodeChange> {
   const fileId = data.path;
@@ -328,7 +328,7 @@ export function createCodeSubject(
       initialChange: true,
       instanceId: uniqueId(),
       ext: data.extension,
-      hash: data.hash,
+      hash: 'hash' in data ? data.hash : undefined,
     },
     value: initialCode,
   };
@@ -888,7 +888,7 @@ export async function saveCustomLibrary<
     }
     return {
       nameWithExt: file.fullName,
-      textContent: file.content,
+      textContent: decodedContent,
     };
   });
 

@@ -32,11 +32,8 @@ import {
   CompileSketch_Response,
 } from './builderApi.compilations.type';
 import {
-  ArduinoBuilderExampleFile_BuilderApi,
   BuiltinExampleDetailResponse,
   BuiltinExampleFile,
-  GetExampleFileContents_Params,
-  GetExampleFileContents_Response,
   GetExamples_Params,
   GetExamples_Response,
 } from './builderApi.examples.type';
@@ -58,13 +55,10 @@ import {
   mapGetBoardByFqbn,
   mapGetBoards,
   mapGetBoardsByVidPid,
-  mapGetExampleFileContentsResponse,
   mapGetExamplesDataResponse,
   mapGetLibrariesNewToLegacy,
   mapSketchCompilationResponse,
 } from './mapper';
-
-// const BOARDS_ENDPOINT = '/boards/v1/boards';
 
 export function builderAliveRequest(token: string): Promise<Response | void> {
   const endpoint = '/alive';
@@ -183,10 +177,10 @@ export async function getLibrariesRequest(
 export async function getLibraryRequest(
   params: GetLibrary_Params,
 ): Promise<LibraryDetails_Response> {
-  // releases (nuova API)
+  // releases (new API)
   const newBase = Config.LIBRARIES_API_URL_NEW;
 
-  // Version specifica: /v1/releases/{name@x.y.z}
+  // Specific version: /v1/releases/{name@x.y.z}
   const endpoint = `/v1/releases/${params.id}`;
   const res = await httpGet<Library>(newBase, undefined, endpoint, undefined);
   if (!res) {
@@ -349,26 +343,13 @@ export function removeFavoriteLibraryRequest(
   return httpDelete(Config.CREATE_FAVORITE_NEW, undefined, endpoint, token);
 }
 
-export async function getBuilderFileContentsRequest(
-  params: GetExampleFileContents_Params,
-): Promise<GetExampleFileContents_Response> {
-  const endpoint = `/v1/files/${params.path}`;
-  const response = await httpGet<ArduinoBuilderExampleFile_BuilderApi>(
-    Config.BUILDER_API_URL,
-    undefined,
-    endpoint,
-  );
-
-  if (!response) {
-    throw new Error(
-      `Call to "${endpoint}" did not respond with the expected result`,
-    );
-  }
-
-  return mapGetExampleFileContentsResponse(response);
-}
-
-const builderV2CFHeaders = undefined;
+const builderV2CFHeaders =
+  Config.MODE === 'development'
+    ? {
+        'CF-Access-Client-Id': Config.BUILDER_API_V2_CF_CLIENT_ID,
+        'CF-Access-Client-Secret': Config.BUILDER_V2_CF_SECRET,
+      }
+    : undefined;
 
 const BASE_COMPILATION_URL = '/v1/compilations';
 export async function postCreateSketchCompilationRequest(
@@ -376,12 +357,11 @@ export async function postCreateSketchCompilationRequest(
   token: string,
   abortController?: AbortController,
 ): Promise<ArduinoBuilderV2CompilationsResponse_BuilderApi> {
-  const endpoint = BASE_COMPILATION_URL;
   const response =
     await httpPost<ArduinoBuilderV2CompilationsResponse_BuilderApi>(
       Config.BUILDER_API_V2_URL,
       undefined,
-      endpoint,
+      BASE_COMPILATION_URL,
       body,
       token,
       abortController,

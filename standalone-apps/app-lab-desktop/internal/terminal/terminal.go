@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	oBoard "github.com/arduino/arduino-app-cli/pkg/board"
@@ -24,12 +26,20 @@ func OpenTerminal(ctx context.Context, b *board.Board) error {
 
 	switch b.Info.Protocol {
 	case oBoard.SerialProtocol:
-		err := openTerminalWithArgs([]string{adb.FindAdbPath(), "-s", b.Info.Serial, "shell"}...)
+		validSerial, err := SanitizeSerialNumber(b.Info.Serial)
+		if err != nil {
+			return fmt.Errorf("invalid board serial port: %v", err)
+		}
+		err = openTerminalWithArgs([]string{adb.FindAdbPath(), "-s", validSerial, "shell"}...)
 		if err != nil {
 			return err
 		}
 	case oBoard.NetworkProtocol:
-		err := openTerminalWithArgs([]string{"ssh", fmt.Sprintf("arduino@%s", b.Info.Address)}...)
+		validAddress, err := SanitizeIPAddress(b.Info.Address)
+		if err != nil {
+			return fmt.Errorf("invalid board address: %v", err)
+		}
+		err = openTerminalWithArgs([]string{"ssh", fmt.Sprintf("arduino@%s", validAddress)}...)
 		if err != nil {
 			return err
 		}
@@ -41,12 +51,13 @@ func OpenTerminal(ctx context.Context, b *board.Board) error {
 }
 
 func openTerminalWithArgs(args ...string) error {
-	switch runtime.GOOS {
+	runtimeOs := runtime.GOOS
+	switch runtimeOs {
 	case "windows":
 		cmdArgs := append([]string{"cmd.exe", "/C", "start", "cmd.exe", "/K"}, args...)
 		cmd, err := paths.NewProcess(nil, cmdArgs...)
 		if err != nil {
-			slog.Error("failed to strt cmd.exe terminal", "err", err, "args", cmdArgs)
+			slog.Error("failed to start cmd.exe terminal", "err", err, "args", cmdArgs)
 			return errors.New("fail to open terminal")
 		}
 		slog.Info("Opening terminal", "cmd", cmd.GetArgs())
@@ -77,7 +88,7 @@ func openTerminalWithArgs(args ...string) error {
 	case "linux":
 		return openLinuxTerminal(args...)
 	default:
-		return fmt.Errorf("unsupported OS: %s", runtime.GOOS)
+		return fmt.Errorf("unsupported OS: %s", runtimeOs)
 	}
 	return nil
 }
@@ -130,4 +141,18 @@ func openLinuxTerminal(args ...string) error {
 		}
 	}
 	return fmt.Errorf("not supported terminal found: %s", strings.Join(terminalNames, ","))
+}
+
+func SanitizeIPAddress(address string) (string, error) {
+	if sanitized := net.ParseIP(address); sanitized != nil {
+		return address, nil
+	}
+	return "", fmt.Errorf("invalid IP address")
+}
+
+func SanitizeSerialNumber(serial string) (string, error) {
+	if _, err := strconv.ParseUint(serial, 10, 32); err != nil {
+		return "", fmt.Errorf("invalid serial number")
+	}
+	return serial, nil
 }

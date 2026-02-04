@@ -270,7 +270,7 @@ export interface components {
       models?: components['schemas']['AIModelItem'][] | null;
     };
     AppBrickInstancesResult: {
-      bricks?: components['schemas']['BrickInstanceListItem'][] | null;
+      bricks?: components['schemas']['BrickInstance'][] | null;
     };
     AppDetailedBrick: {
       category?: string;
@@ -345,26 +345,12 @@ export interface components {
       /** @description Deprecated: use config_variables instead. This field is kept for backward compatibility. */
       variables?: {
         [key: string]: components['schemas']['BrickVariable'];
-      } | null;
+      };
     };
     BrickInstance: {
       author?: string;
       category?: string;
       compatible_models?: components['schemas']['AIModel'][] | null;
-      config_variables?: components['schemas']['BrickConfigVariable'][];
-      id?: string;
-      model?: string;
-      name?: string;
-      require_model?: boolean;
-      status?: string;
-      /** @description Deprecated: use config_variables instead. This field is kept for backward compatibility. */
-      variables?: {
-        [key: string]: string;
-      };
-    };
-    BrickInstanceListItem: {
-      author?: string;
-      category?: string;
       config_variables?: components['schemas']['BrickConfigVariable'][];
       id?: string;
       model?: string;
@@ -540,7 +526,13 @@ export interface components {
      * @description Application status
      * @enum {string}
      */
-    Status: 'starting' | 'running' | 'stopping' | 'stopped' | 'failed';
+    Status:
+      | 'starting'
+      | 'running'
+      | 'stopping'
+      | 'stopped'
+      | 'failed'
+      | 'uninitialized';
     UpdateCheckResult: {
       updates?: components['schemas']['UpgradablePackage'][] | null;
     };
@@ -860,6 +852,10 @@ export interface operations {
    */
   appSketchRemoveLibrary: {
     parameters: {
+      query?: {
+        /** @description if set to "true", the library's dependencies will be removed as well if not needed anymore. */
+        remove_deps?: string;
+      };
       path: {
         /** @description application identifier. */
         appID: string;

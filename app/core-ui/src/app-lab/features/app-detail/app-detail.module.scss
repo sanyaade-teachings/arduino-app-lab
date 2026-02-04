@@ -1,4 +1,6 @@
 @use "@cloud-editor-mono/ui-components/public/shared.module.scss";
+@use "@cloud-editor-mono/arduino-sass/src/variables" as vars;
+@use "@cloud-editor-mono/arduino-sass/src/breakpoints" as bp;
 
 .main {
   background: var(--surface-bg-below-2, #090f11);
@@ -13,24 +15,21 @@
   flex-direction: column;
 }
 
-.top-bar {
-  &-container {
-    margin-left: auto;
-    width: calc(55vw - 54px); //Half of the viewport width minus the width of the left sidebar
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 16px;
 
-    .actions {
-      display: flex;
-      flex-direction: row;
-      gap: 16px;
-
-      &--duplicate {
-        svg path {
-            fill: var(--text-accent, #25c2c7);
-        }
+  &--duplicate {
+    @include bp.breakpoint(vars.$breakpoint-xl) {
+      .actions--duplicate-text {
+        display: none;
       }
+    }
+
+    svg path {
+        fill: var(--text-accent, #25c2c7);
     }
   }
 }

@@ -119,7 +119,7 @@
       }
 
       .copy-button {
-        color: #fff
+        color: #fff;
       }
     }
   }
@@ -131,8 +131,8 @@
       margin-right: 8px;
     }
 
-    [class*='cm-content'] {
-      [class*='cm-line']:last-child {
+    [class*="cm-content"] {
+      [class*="cm-line"]:last-child {
         display: none;
       }
     }
@@ -159,7 +159,8 @@
     gap: 16px;
     margin-bottom: 1rem;
     border-radius: 8px;
-    background: linear-gradient(0deg, rgba(174, 184, 184, 0.15) 0%, rgba(174, 184, 184, 0.15) 100%),
+    background:
+      linear-gradient(0deg, rgba(174, 184, 184, 0.15) 0%, rgba(174, 184, 184, 0.15) 100%),
       var(--surface-bg-below-1, #171e21);
 
     svg {
@@ -185,7 +186,7 @@
     justify-content: center;
 
     img {
-      max-width: 650px;
+      max-width: min(100%, 650px);
     }
   }
 }

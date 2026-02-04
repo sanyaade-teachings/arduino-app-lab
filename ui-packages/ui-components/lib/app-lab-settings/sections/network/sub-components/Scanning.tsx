@@ -1,7 +1,11 @@
+import { ChevronRight } from '@bcmi-labs/cloud-editor-images/assets/icons';
+
 import {
   Button,
   ButtonSize,
   ButtonType,
+  IconButton,
+  Small,
 } from '../../../../components-by-app/app-lab';
 import { ProgressBar } from '../../../../essential/progress-bar';
 import { useI18n } from '../../../../i18n/useI18n';
@@ -29,10 +33,10 @@ const Scanning: React.FC<ScanningProps> = (props: ScanningProps) => {
         {networkList?.length === 0 && !isScanning ? (
           <XSmall>{formatMessage(networkMessages.noAvailableNetworks)}</XSmall>
         ) : (
-          <XSmall className={styles['title']}>
+          <Small className={styles['title']}>
             {formatMessage(networkMessages.scanningForNetworks)}
             <XXSmall>{formatMessage(networkMessages.chooseNetwork)}</XXSmall>
-          </XSmall>
+          </Small>
         )}
         <Button
           type={ButtonType.Tertiary}
@@ -49,12 +53,14 @@ const Scanning: React.FC<ScanningProps> = (props: ScanningProps) => {
             active={isScanning}
             classes={{ progressBar: styles['progress-bar'] }}
           />
-          <button
-            className={styles['add-network']}
-            onClick={onManualNetworkSetup}
+          <IconButton
+            Icon={ChevronRight}
+            classes={{ button: styles['add-network'] }}
+            onPress={onManualNetworkSetup}
+            label={''}
           >
             <div>{formatMessage(networkMessages.addNetworkManually)}</div>
-          </button>
+          </IconButton>
         </>
       ) : null}
     </div>

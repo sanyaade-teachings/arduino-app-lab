@@ -64,39 +64,6 @@
       height: 24px;
       line-height: 24px;
 
-      .info-icon {
-        width: 16px;
-        height: 16px;
-        border-radius: 32px;
-        background: #374146;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        svg {
-          path {
-            fill: #ffffff;
-          }
-        }
-      }
-
-      .tooltip-content {
-        width: 240px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        padding: 16px 24px;
-        align-items: flex-start;
-        border-radius: 3px;
-        background: var(--surface-bg-above, #374146);
-        color: #ffffff;
-
-        box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.25);
-        top: unset;
-        right: unset;
-        margin-top: 4px;
-      }
-
       &.selected {
         color: #ffffff;
         font-weight: 700;

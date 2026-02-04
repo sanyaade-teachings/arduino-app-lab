@@ -71,7 +71,7 @@ interface SketchInfoV1_CreateApi {
 
 interface FileV2_CreateApi {
   children?: number;
-  href: string;
+  href?: string;
   mimetype?: string;
   modified_at: string;
   name: string;

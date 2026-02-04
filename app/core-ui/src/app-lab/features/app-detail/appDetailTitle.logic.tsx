@@ -1,10 +1,11 @@
 import {
   cloneApp,
   deleteApp,
-  updateAppDetail,
+  exportApp,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   AppDetailedInfo,
+  AppStatus,
   CloneAppRequest,
   UpdateAppDetailRequest,
 } from '@cloud-editor-mono/infrastructure';
@@ -13,18 +14,24 @@ import {
   AppTitleLogic,
   CreateAppDialogLogic,
   DeleteAppDialogLogic,
+  ExportAppDialogLogic,
   UseCreateAppTitleLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AppsSection, DETAIL_PATH_BY_SECTION } from '../../routes/__root';
+import { sendAppLabNotification } from '../notifications';
+
+const createSuccessfulExportMessage = (appName?: string): string =>
+  appName ? `${appName} Correctly exported` : 'App correctly exported';
 
 export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
   app: AppDetailedInfo | undefined,
+  appStatus?: AppStatus,
   section?: string,
-  reloadApp?: () => void,
+  updateApp?: (request: UpdateAppDetailRequest) => Promise<boolean>,
 ): AppTitleLogic {
   const redirectSection = !!section;
   const navigate = useNavigate({
@@ -33,11 +40,10 @@ export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
 
   const [deleteAppDialogOpen, setDeleteAppDialogOpen] = useState(false);
   const [createAppDialogOpen, setCreateAppDialogOpen] = useState(false);
+  const [exportAppDialogOpen, setExportAppDialogOpen] = useState(false);
   const [name, setName] = useState(app?.name ?? '');
   const [editing, setEditing] = useState(false);
   const [hasError, setHasError] = useState(false);
-
-  const queryClient = useQueryClient();
 
   const useDeleteAppDialogLogic = (): ReturnType<DeleteAppDialogLogic> => {
     const { mutateAsync: handleDeleteApp } = useMutation({
@@ -97,42 +103,50 @@ export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
     redirectSection,
   ]);
 
-  const { mutateAsync: handleUpdateApp } = useMutation({
-    mutationFn: async (request: UpdateAppDetailRequest): Promise<boolean> => {
-      if (!app) return false;
-      const result = await updateAppDetail(app.id, request);
-      if (result === app.id) {
-        reloadApp && reloadApp();
+  const useExportAppDialogLogic = (): ReturnType<ExportAppDialogLogic> => {
+    const {
+      mutate: onExport,
+      isLoading,
+      error,
+      reset,
+    } = useMutation({
+      mutationFn: async (includeData: boolean) => {
+        if (!app) return false;
 
-        if (Object.hasOwn(request, 'default')) {
-          queryClient.invalidateQueries({
-            queryKey: ['get-default-app'],
-            exact: true,
-          });
+        const result = await exportApp(app.id, app.name, includeData);
+        return result;
+      },
+      onSuccess: (result) => {
+        if (!result) {
+          return;
         }
-      } else if (result !== undefined && redirectSection) {
-        navigate({
-          to: `/${section}/${result}`,
+        setExportAppDialogOpen(false);
+        sendAppLabNotification({
+          message: createSuccessfulExportMessage(app?.name),
+          variant: 'success',
         });
-      }
-      return result !== undefined;
-    },
-  });
+      },
+    });
+
+    return {
+      open: exportAppDialogOpen,
+      appName: [app?.icon, app?.name].join(' '),
+      onExport,
+      onOpenChange: setExportAppDialogOpen,
+      isLoading,
+      error,
+      reset,
+    };
+  };
+  const exportAppDialogLogic = useCallback(useExportAppDialogLogic, [
+    app,
+    exportAppDialogOpen,
+  ]);
 
   const onAppNameChange = useCallback((value: string): void => {
     setName(value);
     setHasError(false);
   }, []);
-
-  const onAppDefaultChange = useMemo(
-    () =>
-      async (isSelected: boolean): Promise<void> => {
-        await handleUpdateApp({
-          default: isSelected,
-        });
-      },
-    [handleUpdateApp],
-  );
 
   useEffect((): void => {
     setName(app?.name || '');
@@ -148,6 +162,10 @@ export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
         setCreateAppDialogOpen(true);
         break;
 
+      case AppAction.Export:
+        setExportAppDialogOpen(true);
+        break;
+
       case AppAction.Delete:
         setDeleteAppDialogOpen(true);
         break;
@@ -161,7 +179,8 @@ export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
   }, [app?.name]);
 
   const onRenameApp = useCallback(async (): Promise<void> => {
-    const result = await handleUpdateApp({
+    if (!updateApp) return;
+    const result = await updateApp({
       name,
     });
     if (result) {
@@ -169,23 +188,25 @@ export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
     } else {
       setHasError(true);
     }
-  }, [handleUpdateApp, name]);
+  }, [updateApp, name]);
 
   const onUpdateAppIcon = useCallback(
-    async (emoji: string): Promise<boolean> =>
-      handleUpdateApp({
+    async (emoji: string): Promise<boolean> => {
+      if (!updateApp) return false;
+      return updateApp({
         icon: emoji,
-      }),
-    [handleUpdateApp],
+      });
+    },
+    [updateApp],
   );
 
   const appTitleLogic: AppTitleLogic = useCallback(
     () => ({
       app,
+      appStatus,
       name,
       editing,
       hasError,
-      onAppDefaultChange,
       onAppNameChange,
       onAppAction,
       onResetAppName,
@@ -193,15 +214,17 @@ export const useCreateAppTitleLogic: UseCreateAppTitleLogic = function (
       onUpdateAppIcon,
       deleteAppDialogLogic,
       createAppDialogLogic,
+      exportAppDialogLogic,
     }),
     [
       app,
+      appStatus,
       createAppDialogLogic,
       deleteAppDialogLogic,
+      exportAppDialogLogic,
       editing,
       hasError,
       name,
-      onAppDefaultChange,
       onAppNameChange,
       onAppAction,
       onRenameApp,

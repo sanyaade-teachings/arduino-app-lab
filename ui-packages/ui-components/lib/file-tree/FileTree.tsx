@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -15,6 +16,8 @@ import FileNode from './FileNode';
 import FileRow from './FileRow';
 import { FileTreeApi, TreeNode } from './fileTree.type';
 import { insertNewNode, isFileNode } from './utils';
+
+const TEMP_CREATED_NODE_NAME = '__CREATE__';
 
 interface FileTreeProps {
   height: number | undefined;
@@ -55,9 +58,27 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
   } | null>(null);
   const [isEditingAt, setIsEditingAt] = useState<string | null>(null);
 
+  const scrollToNode = (nodeId: string): void => {
+    treeApiRef.current!.scrollTo(nodeId, 'smart');
+  };
+
+  // automatically scroll to selected node and open parent folders when node is auto-selected
+  useEffect(() => {
+    if (!treeApiRef.current || !selectedNode) {
+      return;
+    }
+    scrollToNode(selectedNode.path);
+    treeApiRef.current.openParents(selectedNode.path);
+  }, [selectedNode]);
+
   const data = useMemo(() => {
     return nodes && isCreating !== null
-      ? insertNewNode(nodes, isCreating.path, isCreating.type)
+      ? insertNewNode(
+          nodes,
+          isCreating.path,
+          isCreating.type,
+          TEMP_CREATED_NODE_NAME,
+        )
       : nodes;
   }, [isCreating, nodes]);
 
@@ -69,42 +90,50 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
     }
   };
 
-  const handleNodeCreation = (
-    nodeType: TreeNode['type'],
-    isReadOnly: boolean,
-    path?: string,
-    selectedNode?: TreeNode,
-  ): void => {
-    if (isReadOnly) {
-      console.warn('File tree is read-only. Cannot create new folders.');
-      return;
-    }
-    let createAtPath = path || '';
-    if (!path) {
-      createAtPath = selectedNode?.path || '';
-      if (selectedNode && isFileNode(selectedNode)) {
-        // If a file is selected, get its parent folder path
-        const parts = selectedNode.path.split('/');
-        parts.pop();
-        createAtPath = parts.join('/');
+  const handleNodeCreation = useCallback(
+    (
+      nodeType: TreeNode['type'],
+      isReadOnly: boolean,
+      path?: string,
+      selectedNode?: TreeNode,
+    ): void => {
+      if (isReadOnly) {
+        console.warn('File tree is read-only. Cannot create new folders.');
+        return;
       }
-    }
-    setIsCreating({
-      path: createAtPath,
-      type: nodeType,
-    });
-  };
+
+      let createAtPath = path || '';
+
+      if (!path) {
+        createAtPath = selectedNode?.path || '';
+        if (selectedNode && isFileNode(selectedNode)) {
+          // If a file is selected, get its parent folder path
+          const parts = selectedNode.path.split('/');
+          parts.pop();
+          createAtPath = parts.join('/');
+        }
+      }
+
+      setIsCreating({
+        path: createAtPath,
+        type: nodeType,
+      });
+
+      scrollToNode(`${createAtPath}/${TEMP_CREATED_NODE_NAME}`);
+    },
+    [],
+  );
 
   const handleFileCreate = useCallback(
     (path?: string): void =>
       handleNodeCreation('file', isReadOnly, path, selectedNode),
-    [isReadOnly, selectedNode],
+    [handleNodeCreation, isReadOnly, selectedNode],
   );
 
   const handleFolderCreate = useCallback(
     (path?: string): void =>
       handleNodeCreation('folder', isReadOnly, path, selectedNode),
-    [isReadOnly, selectedNode],
+    [handleNodeCreation, isReadOnly, selectedNode],
   );
 
   useImperativeHandle(ref, () => ({
@@ -157,7 +186,8 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
                 {...nodeProps}
                 isEditing={
                   nodeProps.node.data.path === isEditingAt ||
-                  nodeProps.node.data.path === `${isCreating?.path}/__CREATE__`
+                  nodeProps.node.data.path ===
+                    `${isCreating?.path}/${TEMP_CREATED_NODE_NAME}`
                 }
                 isReadOnly={isReadOnly}
                 onEditStart={(): void => {
@@ -168,7 +198,6 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
                     const path = isCreating?.path
                       ? `${isCreating.path}/${newName}`
                       : newName;
-
                     if (isCreating.type === 'file') {
                       await onFileCreate(path);
                     } else {

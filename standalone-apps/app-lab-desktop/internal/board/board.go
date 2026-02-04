@@ -1,7 +1,6 @@
 package board
 
 import (
-	"app-lab-desktop/internal/tunnel"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -11,6 +10,8 @@ import (
 	"github.com/arduino/arduino-app-cli/pkg/board"
 	"github.com/arduino/arduino-app-cli/pkg/board/remote"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
+
+	"app-lab-desktop/internal/tunnel"
 )
 
 const (
@@ -230,7 +231,11 @@ func (b *Board) GetOrchestratorURL() (string, error) {
 }
 
 func (b *Board) IsR0Build() bool {
-	_, err := b.Conn.Stats("/etc/buildinfo")
-	// if the file does not exist, it's an R0 build
-	return err != nil
+	return board.GetOSImageVersion(b.Conn) == board.R0_IMAGE_VERSION_ID
+}
+
+// GetOSImageVersion returns the OS image version of the board.
+// It will return R0 image version in case of any error.
+func (b *Board) GetOSImageVersion() string {
+	return board.GetOSImageVersion(b.Conn)
 }

@@ -106,6 +106,7 @@ function appConfig(port, envDir, pathLevel, isWails) {
           }),
         react(),
         svgr(),
+        injectReloadInHtml(mode, isWails),
       ],
       base: baseRoute ? `/${baseRoute}` : undefined,
       preview: {
@@ -157,7 +158,13 @@ function appConfig(port, envDir, pathLevel, isWails) {
             },
       optimizeDeps:
         mode === 'test' || mode === 'production'
-          ? undefined
+          ? {
+              exclude: [
+                '@codemirror/language',
+                '@codemirror/lang-html',
+                '@lezer/highlight',
+              ],
+            }
           : {
               exclude: [
                 '@bcmi-labs/cloud-editor-images',
@@ -169,7 +176,11 @@ function appConfig(port, envDir, pathLevel, isWails) {
                 '@bcmi-labs/cloud-editor-board-communication-tools',
                 '@bcmi-labs/cloud-editor-domain',
                 '@bcmi-labs/cloud-editor-infrastructure',
+                '@bcmi-labs/cloud-editor-component',
                 '@bcmi-labs/app-lab-desktop',
+                '@codemirror/language',
+                '@codemirror/lang-html',
+                '@lezer/highlight',
               ],
             },
       envDir: envDir || DEFAULT_ENV_DIR,
@@ -219,6 +230,28 @@ function getRoutesRootDir(type, prefix) {
     // return '../../app/core-ui/src/cloud-editor';
   }
   return undefined;
+}
+
+function injectReloadInHtml(mode, isWails) {
+  if (isWails && mode !== 'production') {
+    return {
+      name: 'inject-reload-in-html',
+      apply: 'serve',
+      transformIndexHtml() {
+        return [
+          {
+            tag: 'script',
+            children: `
+              if (!('go' in window)) {
+                location.replace('/');
+              }`,
+            injectTo: 'head',
+            order: 'post',
+          },
+        ];
+      },
+    };
+  }
 }
 
 module.exports = { appConfig, libConfig };

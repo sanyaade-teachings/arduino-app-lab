@@ -1,10 +1,18 @@
 import { AppLabSetup } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useCallback } from 'react';
 
+import { UseBoards } from '../../store/boards/boards';
 import { createUseSetupLogic } from './setup.logic';
 
-const Setup: React.FC = () => {
-  const setupLogic = useCallback(() => createUseSetupLogic()(), []);
+interface SetupProps {
+  boardsProps: ReturnType<UseBoards>;
+}
+
+const Setup: React.FC<SetupProps> = ({ boardsProps }: SetupProps) => {
+  const setupLogic = useCallback(
+    () => createUseSetupLogic(boardsProps)(),
+    [boardsProps],
+  );
   return <AppLabSetup setupLogic={setupLogic} />;
 };
 

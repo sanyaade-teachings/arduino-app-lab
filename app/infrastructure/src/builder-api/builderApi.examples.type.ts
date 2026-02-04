@@ -31,7 +31,7 @@ export type ArduinoBuilderLibraryFile_BuilderApi = ArduinoBuilderFile;
 export interface BuiltinExampleFile {
   name: string;
   path: string;
-  mimetype: string;
+  mimetype?: string;
   data?: string; // base64
   href?: string;
   last_modified?: string;

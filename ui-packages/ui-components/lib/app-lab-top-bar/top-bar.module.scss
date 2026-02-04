@@ -1,11 +1,13 @@
 @use "@cloud-editor-mono/ui-components/public/shared.module.scss";
+@use "@cloud-editor-mono/arduino-sass/src/variables" as vars;
+@use "@cloud-editor-mono/arduino-sass/src/breakpoints" as bp;
 
 $topBarHeight: 74px !default;
 
 .top-bar {
   height: $topBarHeight;
   display: grid;
-  grid-template-columns: min-content 1fr;
+  grid-template-columns: 1fr min-content 1fr;
   align-items: center;
   background-color: #090f11;
   gap: 16px;
@@ -16,6 +18,18 @@ $topBarHeight: 74px !default;
     color: #5d6a6b;
     height: 36px;
     overflow: visible;
+
+    @include bp.breakpoint(vars.$breakpoint-lg) {
+      .wrapper:not(.wrapper-active) {
+        .item-label {
+          display: none;
+        }
+      }
+
+      .breadcrumb-separator {
+        display: none;
+      }
+    }
 
     .wrapper {
       display: flex;

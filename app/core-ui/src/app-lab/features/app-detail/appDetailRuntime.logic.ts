@@ -7,6 +7,7 @@ import {
   BrickCreateUpdateRequest,
   BrickInstance,
   MessageData,
+  UpdateAppDetailRequest,
 } from '@cloud-editor-mono/infrastructure';
 import {
   AL_PYTHON_KEY,
@@ -32,7 +33,8 @@ export type UseAppDetailRuntimeLogic = (
   app?: AppDetailedInfo,
   appBricks?: BrickInstance[],
   fileTree?: TreeNode[],
-  onAppDefaultChange?: (isSelected: boolean) => Promise<void>,
+  openApp?: (app: AppDetailedInfo) => void,
+  updateApp?: (request: UpdateAppDetailRequest) => Promise<boolean>,
   updateAppBricks?: (
     bricks: Record<string, BrickCreateUpdateRequest>,
   ) => Promise<boolean>,
@@ -47,7 +49,8 @@ export const useAppDetailRuntimeLogic: UseAppDetailRuntimeLogic = function (
   app?: AppDetailedInfo,
   appBricks?: BrickInstance[],
   fileTree?: TreeNode[],
-  onAppDefaultChange?: (isSelected: boolean) => Promise<void>,
+  openApp?: (app: AppDetailedInfo) => void,
+  updateApp?: (request: UpdateAppDetailRequest) => Promise<boolean>,
   updateAppBricks?: (
     bricks: Record<string, BrickCreateUpdateRequest>,
   ) => Promise<boolean>,
@@ -211,24 +214,14 @@ export const useAppDetailRuntimeLogic: UseAppDetailRuntimeLogic = function (
   useEffect(() => {
     const keysToRemain: string[] = [];
 
-    if (runningApp?.id === app?.id) {
+    if (currentAction !== null || !!prevCurrentAction) {
       keysToRemain.push(AL_SERIAL_MONITOR_KEY);
       keysToRemain.push(AL_PYTHON_KEY);
-    }
-
-    if (currentAction !== null || !!prevCurrentAction) {
       keysToRemain.push(AL_STARTUP_KEY);
     }
 
     resetConsoleSources(keysToRemain);
-  }, [
-    app?.id,
-    consoleSources,
-    currentAction,
-    prevCurrentAction,
-    resetConsoleSources,
-    runningApp?.id,
-  ]);
+  }, [currentAction, prevCurrentAction, resetConsoleSources]);
 
   const useConfigureAppBricksDialogLogic =
     (): ReturnType<ConfigureAppBricksDialogLogic> => ({
@@ -299,23 +292,29 @@ export const useAppDetailRuntimeLogic: UseAppDetailRuntimeLogic = function (
       appStatus: getAppStatusById(app?.id || ''),
       currentAction,
       currentActionStatus,
+      openApp,
       runApp,
       stopApp,
-      setAsDefaultApp: onAppDefaultChange,
+      setAsDefaultApp: async (isSelected: boolean): Promise<void> => {
+        await updateApp?.({
+          default: isSelected,
+        });
+      },
       showStop: isActiveApp,
       isBannerEnabled: isActiveApp,
     }),
     [
       app?.id,
       app?.name,
-      defaultApp,
-      getAppStatusById,
       currentAction,
       currentActionStatus,
+      defaultApp,
+      getAppStatusById,
+      isActiveApp,
+      openApp,
       runApp,
       stopApp,
-      onAppDefaultChange,
-      isActiveApp,
+      updateApp,
     ],
   );
 

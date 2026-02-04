@@ -6,6 +6,10 @@ import (
 	"errors"
 	"io"
 	"io/fs"
+	"os"
+	"reflect"
+	"time"
+
 	"net/http"
 	"path"
 	"strings"
@@ -22,6 +26,7 @@ type fileContentAssetMiddleware struct {
 var _ http.Handler = (*fileContentAssetMiddleware)(nil)
 
 const pathPrefix = "/file-content-assets/"
+const sshTimeout = 100 * time.Millisecond
 
 func (m *fileContentAssetMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -30,12 +35,11 @@ func (m *fileContentAssetMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 
 	ctx := m.ctxHolder.Get()
-
 	p := strings.TrimPrefix(r.URL.Path, pathPrefix)
-
 	dir, file := path.Dir(p), path.Base(p)
+	runtime.LogInfof(ctx, "Serving asset %s", file)
+	f, err := m.getAsset(dir, file)
 
-	f, err := getFS(dir, m.selectedBoard.Conn).Open(file)
 	if err != nil {
 		if errors.Is(err, fs.ErrInvalid) {
 			w.WriteHeader(http.StatusNotFound)
@@ -69,5 +73,19 @@ func FileContentAssetMiddleware(ctxHolder *context.Holder, selectedBoard *board.
 			}
 			next.ServeHTTP(w, r)
 		})
+	}
+}
+
+func (m *fileContentAssetMiddleware) getAsset(dir string, file string) (fs.File, error) {
+	selectedConn := m.selectedBoard.Conn
+
+	if reflect.DeepEqual(selectedConn, board.NoopConn()) {
+		filesDir := os.DirFS(dir) // <- this prevents navigating outside the assets dir
+		return filesDir.Open(file)
+	} else {
+		remoteFS := getFS(dir, selectedConn)
+		selectedConn.Stats("/")    // warm up the connection
+		time.Sleep(sshTimeout)     // add a small delay
+		return remoteFS.Open(file) // and finally open the file
 	}
 }

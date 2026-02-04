@@ -1,4 +1,6 @@
 @use "@cloud-editor-mono/ui-components/public/shared.module.scss";
+@use "@cloud-editor-mono/arduino-sass/src/variables" as vars;
+@use "@cloud-editor-mono/arduino-sass/src/breakpoints" as bp;
 
 .app-title {
   display: flex;
@@ -57,11 +59,15 @@
     &-text {
       color: var(--text-default, #fff);
       display: block;
-      max-width: 300px;
+      max-width: 200px;
       font-weight: 700;
       white-space: pre;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      @include bp.breakpoint(vars.$breakpoint-lg) {
+        max-width: 100px;
+      }
       
       &-container.hidden {
         position: absolute;
@@ -152,6 +158,10 @@
         background-color: #aeb8b826;
       }
 
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--grayscale-dust, #434f54);
+      }
+      
       &.danger {
         color: var(--feedback-error-default, #ff8878);
       }
@@ -164,6 +174,11 @@
         svg {
           width: 16px;
           height: 16px;
+          fill: white !important;
+          
+          path {
+            fill: white !important;
+          }
         }
       }
     }

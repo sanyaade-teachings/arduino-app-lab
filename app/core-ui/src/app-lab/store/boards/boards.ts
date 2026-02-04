@@ -6,6 +6,7 @@ import {
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import { Board } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useQuery } from '@tanstack/react-query';
+import { del, get, set } from 'idb-keyval';
 import { useCallback, useEffect, useReducer } from 'react';
 import { useIntl } from 'react-intl';
 import { create } from 'zustand';
@@ -14,6 +15,9 @@ import { sendAppLabNotification } from '../../features/notifications';
 import { useIsBoard } from '../../hooks/board';
 import { messages } from './messages';
 
+const CONNECT_TIMEOUT_MS = 15_000;
+const AUTO_SELECT_BOARD_ID = 'arduino:auto-select-board-id';
+
 type BoardLifecycleState = {
   boardIsReachable: boolean;
   setBoardIsReachable: (isReachable: boolean) => void;
@@ -21,6 +25,8 @@ type BoardLifecycleState = {
   setSelectedConnectedBoard: (board: Board | undefined) => void;
   needsImageUpdate?: boolean;
   setNeedsImageUpdate: (value: boolean) => void;
+  boardIsFlashing?: boolean;
+  setBoardIsFlashing: (value: boolean) => void;
 };
 
 export const useBoardLifecycleStore = create<BoardLifecycleState>((set) => ({
@@ -33,9 +39,12 @@ export const useBoardLifecycleStore = create<BoardLifecycleState>((set) => ({
   needsImageUpdate: undefined,
   setNeedsImageUpdate: (needsImageUpdate: boolean): void =>
     set({ needsImageUpdate }),
+  boardIsFlashing: undefined,
+  setBoardIsFlashing: (boardIsFlashing: boolean): void =>
+    set({ boardIsFlashing }),
 }));
 
-type UseBoards = () => {
+export type UseBoards = () => {
   boards: Board[];
   selectBoard: (board: Board) => Promise<void>;
   showBoardConnPswPrompt: boolean;
@@ -46,6 +55,7 @@ type UseBoards = () => {
   connToBoardCompleted: boolean;
   selectedBoard?: Board;
   setSelectedBoardCheckingStatus: () => void;
+  autoSelectBoard: (boardId: string) => Promise<void>;
 };
 
 type BoardsState = {
@@ -86,6 +96,7 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
   switch (action.type) {
     case 'SET_BOARDS':
       return { ...state, boards: action.payload };
+
     case 'START_BOARD_SELECTION':
       return {
         ...state,
@@ -99,6 +110,7 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
           error: undefined,
         },
       };
+
     case 'START_BOARD_CONN':
       return {
         ...state,
@@ -108,15 +120,21 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
           error: undefined,
         },
       };
+
     case 'BOARD_CONN_ERROR':
       return {
         ...state,
+        boards: state.boards.map((b) => ({
+          ...b,
+          isSelecting: false,
+        })),
         selected: {
           ...state.selected,
           status: 'conn-error',
           error: action.payload,
         },
       };
+
     case 'COMPLETE_BOARD_CONN_AND_SELECTION':
       return {
         ...state,
@@ -130,6 +148,7 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
           error: undefined,
         },
       };
+
     case 'UNSELECT_BOARD':
       return {
         ...state,
@@ -139,6 +158,7 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
         })),
         selected: { ...boardsInitialState.selected },
       };
+
     case 'SET_SELECTED_BOARD_CHECKING_STATUS':
       return {
         ...state,
@@ -147,13 +167,35 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
           checkingStatus: b.id === state.selected.board?.id,
         })),
       };
+
     default:
       return state;
   }
 }
 
+const withTimeout = async <T>(p: Promise<T>, timeoutMs: number): Promise<T> => {
+  let t: number | undefined;
+
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    t = window.setTimeout(
+      () => reject(new Error('CONNECTION_TIMEOUT')),
+      timeoutMs,
+    );
+  });
+
+  try {
+    return await Promise.race([p, timeoutPromise]);
+  } finally {
+    if (typeof t !== 'undefined') window.clearTimeout(t);
+  }
+};
+
+const isAuthFailed = (err: unknown): boolean =>
+  Boolean((err as { isSSHErrorAuthFailed?: boolean })?.isSSHErrorAuthFailed);
+
 export const useBoards: UseBoards = () => {
   const {
+    boardIsFlashing,
     setBoardIsReachable,
     setSelectedConnectedBoard,
     selectedConnectedBoard,
@@ -186,6 +228,7 @@ export const useBoards: UseBoards = () => {
   useEffect(() => {
     let timeout: NodeJS.Timeout | void;
     if (
+      !boardIsFlashing &&
       selectedBoard &&
       selectedBoard.connectionType === 'USB' && //! manage disconnect only for USB boards, as we don't have serial in network mode tes
       retrievedBoards &&
@@ -197,7 +240,7 @@ export const useBoards: UseBoards = () => {
     }
 
     return () => timeout && clearTimeout(timeout);
-  }, [retrievedBoards, selectedBoard]);
+  }, [boardIsFlashing, retrievedBoards, selectedBoard]);
 
   useEffect(() => {
     if (retrievedBoards) {
@@ -222,14 +265,26 @@ export const useBoards: UseBoards = () => {
   }, [selectedConnectedBoard, setNeedsImageUpdate, needsImageUpdate]);
 
   const connectToBoard = useCallback(
-    async (board: Board, password?: string) => {
+    async (board: Board, password?: string): Promise<void> => {
+      dispatch({ type: 'START_BOARD_CONN' });
+
       try {
-        dispatch({ type: 'START_BOARD_CONN' });
-        await apiSelectBoard(board.id, password);
+        await withTimeout(
+          apiSelectBoard(board.id, password),
+          CONNECT_TIMEOUT_MS,
+        );
+
         dispatch({ type: 'COMPLETE_BOARD_CONN_AND_SELECTION' });
         setBoardIsReachable(true);
         setSelectedConnectedBoard(board);
       } catch (err) {
+        const msg = isAuthFailed(err)
+          ? 'Password is not correct. Please try again.'
+          : err instanceof Error && err.message === 'CONNECTION_TIMEOUT'
+          ? 'Connection timeout. Check network connection and try again.'
+          : 'An error occurred while connecting to the board.';
+        dispatch({ type: 'BOARD_CONN_ERROR', payload: msg });
+
         console.error('Failed to select board', err);
         sendAppLabNotification({
           message: formatMessage(messages.boardConnectionError, {
@@ -237,6 +292,7 @@ export const useBoards: UseBoards = () => {
           }),
           variant: 'error',
         });
+        throw err;
       }
     },
     [formatMessage, setBoardIsReachable, setSelectedConnectedBoard],
@@ -244,6 +300,8 @@ export const useBoards: UseBoards = () => {
 
   const handleSelectBoard = useCallback(
     async (board: Board) => {
+      await del(AUTO_SELECT_BOARD_ID);
+
       dispatch({
         type: 'START_BOARD_SELECTION',
         payload: { board },
@@ -252,8 +310,7 @@ export const useBoards: UseBoards = () => {
       if (board.connectionType !== 'Network') {
         try {
           await connectToBoard(board);
-        } catch (error) {
-          console.error('Error selecting board:', error);
+        } catch {
           dispatch({ type: 'UNSELECT_BOARD' });
         }
       }
@@ -294,8 +351,33 @@ export const useBoards: UseBoards = () => {
     dispatch({ type: 'SET_SELECTED_BOARD_CHECKING_STATUS' });
   }, []);
 
+  // save boardId on idb to auto-select it on app reload
+  const autoSelectBoard = useCallback(async (boardId: string) => {
+    await set(AUTO_SELECT_BOARD_ID, boardId);
+    reloadApp();
+  }, []);
+
+  // retrieve boardId from idb to auto-select board on app reload after it has been switched
+  useEffect(() => {
+    const autoSelectBoard = async (): Promise<void> => {
+      if (isBoard) return;
+
+      const boardId = await get<string>(AUTO_SELECT_BOARD_ID);
+      if (!boardId || !boards.length) return;
+
+      const board = boards.find((board) => board.id === boardId);
+      if (!board) return;
+
+      await handleSelectBoard(board);
+    };
+
+    autoSelectBoard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boards, isBoard]);
+
   return {
     boards,
+    selectedBoard: selectedConnectedBoard,
     selectBoard: handleSelectBoard,
     showBoardConnPswPrompt: selectedBoard?.connectionType === 'Network',
     onConnPswCancel,
@@ -304,5 +386,6 @@ export const useBoards: UseBoards = () => {
     connToBoardError: boardStatus === 'conn-error' ? boardError : undefined,
     connToBoardCompleted: boardStatus === 'conn-and-selection-done',
     setSelectedBoardCheckingStatus,
+    autoSelectBoard,
   };
 };

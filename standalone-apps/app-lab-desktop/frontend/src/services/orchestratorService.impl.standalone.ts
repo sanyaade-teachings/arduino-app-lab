@@ -1,5 +1,6 @@
 /* eslint-disable no-empty */
 import { assertNonNull, Config } from '@cloud-editor-mono/common';
+import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app-list/importAppDialog.type';
 import {
   applyBoardUpdateWailsFallback,
   checkBoardUpdateWailsFallback,
@@ -48,9 +49,13 @@ import {
 } from '@cloud-editor-mono/infrastructure';
 
 import {
+  ExportApp,
   GetFileContent,
   GetFileTree,
   GetOrchestratorURL,
+  ImportApp,
+  ImportAppFromPath,
+  SaveTempFile,
 } from '../../wailsjs/go/app/App';
 import { mapFSNode } from './orchestratorService.mapper';
 
@@ -377,3 +382,60 @@ export const deleteAppSketchLibrary: OrchestratorService['deleteAppSketchLibrary
     const origin = await getOrchestratorURL();
     return deleteAppSketchLibraryV1Request(appId, libRef, origin);
   };
+
+export const exportApp = async (
+  appId: string,
+  appName: string,
+  includeData: boolean,
+): Promise<boolean> => {
+  const result = await ExportApp(appId, appName, includeData);
+
+  return result !== '';
+};
+
+export const importApp = async (): Promise<ImportAppResult | null> => {
+  const response = await ImportApp();
+
+  if (!response) {
+    return null;
+  }
+
+  const parsed = JSON.parse(response);
+  const appId = parsed.id;
+
+  // Fetch app details to get the name
+  const appDetail = await getAppDetail(appId);
+
+  return {
+    id: appId,
+    name: appDetail.name,
+  };
+};
+
+export const importAppFromPath = async (
+  filePath: string,
+): Promise<ImportAppResult> => {
+  const response = await ImportAppFromPath(filePath);
+
+  const parsed = JSON.parse(response);
+  const appId = parsed.id;
+
+  // Fetch app details to get the name
+  const appDetail = await getAppDetail(appId);
+
+  return {
+    id: appId,
+    name: appDetail.name,
+  };
+};
+
+export const importAppFromFile = async (
+  file: File,
+): Promise<ImportAppResult> => {
+  const arrayBuffer = await file.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  const tempFilePath = await SaveTempFile(file.name, Array.from(uint8Array));
+
+  return importAppFromPath(tempFilePath);
+};

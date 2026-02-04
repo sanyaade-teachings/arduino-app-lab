@@ -5,6 +5,7 @@ import {
   addFavoriteLibraryRequest,
   ArduinoBuilderV2CompilationsResponse_BuilderApi,
   builderAliveRequest,
+  BuiltinExampleFile,
   CompilationStreamMessageType,
   CompileSketch_Response,
   Compute_Response,
@@ -18,23 +19,25 @@ import {
   getBoardsByVidPidRequest,
   getBoardsRequest,
   getBuilderCompilationOutputRequest,
-  getBuilderFileContentsRequest,
   getCompilationStreamRequest,
   getCreatedSketchCompilationRequest,
   GetExamples_Params,
   getExamplesRequest,
   GetFavoriteLibraries_Response,
   getFavoriteLibrariesRequest,
+  getFileContentsRequest,
   GetLibraries_Params,
   getLibrariesRequest,
   GetLibrary_Params,
   getLibraryRequest,
+  getReleaseLibraryFilesRequest,
   LibrariesItem_Response,
   postCancelSketchCompilationRequest,
   postCreateSketchCompilationRequest,
   removeFavoriteLibraryRequest,
 } from '@cloud-editor-mono/infrastructure';
 import { WebSerialPort } from '@cloud-editor-mono/web-board-communication';
+import { QueryClient } from '@tanstack/react-query';
 import { sortBy, uniqueId } from 'lodash';
 
 import { getAccessToken, noTokenReject } from '../arduino-auth';
@@ -434,23 +437,134 @@ export async function setFavoriteLibrary(
 
 export async function retrieveExampleFileContents(
   filePath: string,
-  // an example file href contains the endpoint, here we pass just the path to keep the infrastructure api method more transparent
   fullName: string,
+  queryClient: QueryClient,
   exampleInoPath?: string,
   scope?: FileLineScope,
 ): Promise<RetrieveExampleFileContentsResult> {
-  const { data, mimetype, href } = await getBuilderFileContentsRequest({
-    path: filePath,
-  });
-  if (typeof data === 'undefined')
+  const pathParts = filePath.split('/');
+  const fileName = pathParts[pathParts.length - 1];
+  const directory = pathParts.slice(0, -1).join('/');
+
+  let fileData: BuiltinExampleFile | undefined;
+
+  try {
+    const builtinCachedData = queryClient.getQueryData<
+      CompleteExample[] | { examples: CompleteExample[] }
+    >(['examples']);
+
+    if (builtinCachedData) {
+      const examples = Array.isArray(builtinCachedData)
+        ? builtinCachedData
+        : 'examples' in builtinCachedData
+        ? builtinCachedData.examples
+        : [];
+
+      const example = examples.find((ex) => ex.path === directory);
+
+      if (example?.files) {
+        fileData = example.files.find((f) => {
+          const fName = f.name || f.path?.split('/').pop();
+          return fName === fileName || f.path === filePath;
+        });
+      }
+
+      if (!fileData && example?.ino) {
+        const inoName = example.ino.name || example.ino.path?.split('/').pop();
+        if (inoName === fileName || example.ino.path === filePath) {
+          fileData = example.ino;
+        }
+      }
+    }
+
+    if (!fileData) {
+      const allQueries = queryClient.getQueryCache().getAll();
+
+      const libraryQueries = allQueries.filter(
+        (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey[0] === 'library' &&
+          q.state.data,
+      );
+
+      for (const query of libraryQueries) {
+        const libraryData = query.state.data as CompleteLibraryDetailsResult;
+
+        if (!Array.isArray(libraryData?.examples)) continue;
+
+        const example = libraryData.examples.find((ex) => {
+          if (ex.path === directory) return true;
+          return ex.path === directory.replace('/examples/', '/');
+        });
+
+        if (!example) continue;
+
+        if (example.files) {
+          fileData = example.files.find((f) => {
+            const fName = f.name || f.path?.split('/').pop();
+            return fName === fileName || f.path === filePath;
+          });
+        }
+
+        if (!fileData && example.ino) {
+          const inoName =
+            example.ino.name || example.ino.path?.split('/').pop();
+          if (inoName === fileName || example.ino.path === filePath) {
+            fileData = example.ino;
+          }
+        }
+
+        if (fileData) break;
+      }
+    }
+  } catch (error) {
+    console.warn('Error reading from cache:', error);
+  }
+
+  if (fileData) {
+    const { data, mimetype } = fileData;
+    if (typeof data === 'undefined') {
+      return Promise.reject(
+        new Error('No data to decode in retrieved example file'),
+      );
+    }
+
+    const extension = filePath.substring(filePath.lastIndexOf('.') + 1);
+    const content = transformDataToContentByMimeType(data, mimetype);
+    const scopedContent =
+      scope &&
+      content
+        .split('\n')
+        .slice(scope.start, scope.end + 1)
+        .join('\n');
+
+    return {
+      name: trimFileExtension(fullName),
+      fullName,
+      extension,
+      data,
+      content,
+      scopedContent,
+      mimetype,
+      path: filePath,
+      exampleInoPath,
+    };
+  }
+
+  /** fallback */
+  const token = await getAccessToken();
+  if (!token) return noTokenReject();
+
+  const { data, mimetype } = await getFileContentsRequest(filePath, token);
+
+  if (typeof data === 'undefined') {
     return Promise.reject(
       new Error('No data to decode in retrieved example file'),
     );
+  }
 
   const extension = filePath.substring(filePath.lastIndexOf('.') + 1);
-
   const content = transformDataToContentByMimeType(data, mimetype);
-
   const scopedContent =
     scope &&
     content
@@ -467,7 +581,6 @@ export async function retrieveExampleFileContents(
     scopedContent,
     mimetype,
     path: filePath,
-    href: href || '',
     exampleInoPath,
   };
 }
@@ -476,20 +589,60 @@ export async function retrieveLibraryFileContents(
   filePath: string,
   fullName: string,
 ): Promise<RetrieveExampleFileContentsResult> {
-  const { data, mimetype, href } = await getBuilderFileContentsRequest({
-    path: filePath,
-  });
-  if (typeof data === 'undefined')
+  const pathParts = filePath.split('/');
+  const fileName = pathParts[pathParts.length - 1];
+  const releaseId = pathParts[0];
+
+  try {
+    const { files } = await getReleaseLibraryFilesRequest({ id: releaseId });
+
+    const fileData = files?.find((f) => {
+      const fName = f.name || f.path?.split('/').pop();
+      return fName === fileName || f.path === filePath;
+    });
+
+    if (fileData) {
+      const { data, mimetype } = fileData;
+
+      if (typeof data === 'undefined') {
+        return Promise.reject(
+          new Error('No data to decode in retrieved library file'),
+        );
+      }
+
+      const extension = fullName.toLowerCase().includes('license')
+        ? 'txt'
+        : filePath.substring(filePath.lastIndexOf('.') + 1);
+
+      return {
+        name: trimFileExtension(fullName),
+        fullName,
+        extension,
+        data,
+        content: transformDataToContentByMimeType(data, mimetype),
+        mimetype,
+        path: filePath,
+      };
+    }
+  } catch (error) {
+    console.warn('Error reading library file from release API:', error);
+  }
+
+  //fallback
+  const token = await getAccessToken();
+  if (!token) return noTokenReject();
+
+  const { data, mimetype } = await getFileContentsRequest(filePath, token);
+
+  if (typeof data === 'undefined') {
     return Promise.reject(
       new Error('No data to decode in retrieved library file'),
     );
-
-  let extension;
-  if (fullName.toLocaleLowerCase().indexOf('license') !== -1) {
-    extension = 'txt';
-  } else {
-    extension = filePath.substring(filePath.lastIndexOf('.') + 1);
   }
+
+  const extension = fullName.toLowerCase().includes('license')
+    ? 'txt'
+    : filePath.substring(filePath.lastIndexOf('.') + 1);
 
   return {
     name: trimFileExtension(fullName),
@@ -498,7 +651,6 @@ export async function retrieveLibraryFileContents(
     data,
     content: transformDataToContentByMimeType(data, mimetype),
     mimetype,
-    href: href || '',
     path: filePath,
   };
 }

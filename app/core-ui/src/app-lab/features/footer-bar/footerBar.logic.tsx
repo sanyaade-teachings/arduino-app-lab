@@ -294,7 +294,8 @@ export const useFooterBarLogic: FooterBarLogic =
       );
     }, [boardIsReachable, formatMessage, selectedBoard]);
 
-    const { setSetupCompleted } = useContext(SetupContext);
+    const { setSetupCompleted, setNetworkStepSkipped } =
+      useContext(SetupContext);
     useEffect(() => {
       if (boardIsReachable) {
         setItems((prev) =>
@@ -307,6 +308,7 @@ export const useFooterBarLogic: FooterBarLogic =
                 onClick: !isConnected
                   ? (): void => {
                       setSetupCompleted(false);
+                      setNetworkStepSkipped(false);
                     }
                   : undefined,
               };
@@ -315,7 +317,13 @@ export const useFooterBarLogic: FooterBarLogic =
           }),
         );
       }
-    }, [boardIsReachable, isConnected, connectingName, setSetupCompleted]);
+    }, [
+      boardIsReachable,
+      isConnected,
+      connectingName,
+      setSetupCompleted,
+      setNetworkStepSkipped,
+    ]);
 
     const onOpenTerminal = async (): Promise<void> => {
       try {

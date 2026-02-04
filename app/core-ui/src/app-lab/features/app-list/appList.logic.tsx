@@ -1,22 +1,26 @@
-import {
-  createApp,
-  getApps,
-} from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
-import { CreateAppRequest } from '@cloud-editor-mono/infrastructure';
-import { CreateAppDialogLogic } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { getApps } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 
 import { AppsSection } from '../../routes/__root';
 import { useBoardLifecycleStore } from '../../store/boards/boards';
 import { UseAppListLogic } from './appList.type';
+import { ImportStatus } from './importAppDialog.type';
+import { useCreateAppDialogLogic } from './useCreateAppDialogLogic';
+import { useImportAppDialogLogic } from './useImportAppDialogLogic';
 
 export const useAppListLogic = function (
   section: AppsSection,
 ): UseAppListLogic {
   const [createAppDialogOpen, setCreateAppDialogOpen] = useState(false);
-  const navigate = useNavigate({ from: `/${section}` });
+  const [importAppDialogOpen, setImportAppDialogOpen] = useState(false);
+  const [importStatus, setImportStatus] = useState<ImportStatus>(
+    ImportStatus.Idle,
+  );
+  const [importErrorMessage, setImportErrorMessage] = useState<
+    string | undefined
+  >();
+  const [importedAppId, setImportedAppId] = useState<string | undefined>();
 
   const { boardIsReachable } = useBoardLifecycleStore();
   const { data: apps, isLoading: getAppsLoading } = useQuery(
@@ -36,35 +40,32 @@ export const useAppListLogic = function (
     setCreateAppDialogOpen(true);
   }, []);
 
-  const useCreateAppDialogLogic = (): ReturnType<CreateAppDialogLogic> => {
-    const { mutateAsync: handleCreateApp } = useMutation({
-      mutationFn: async (request: CreateAppRequest): Promise<boolean> => {
-        const result = await createApp(request);
-        if (result) {
-          navigate({
-            to: `/my-apps/${result}`,
-          });
-        }
-        return result !== undefined;
-      },
-    });
+  const handleOpenImportAppDialog = useCallback(() => {
+    setImportAppDialogOpen(true);
+  }, []);
 
-    return {
-      open: createAppDialogOpen,
-      confirmAction: handleCreateApp,
-      onOpenChange: setCreateAppDialogOpen,
-    };
-  };
-
-  const createAppDialogLogic = useCallback(useCreateAppDialogLogic, [
+  const createAppDialogLogic = useCreateAppDialogLogic(
     createAppDialogOpen,
-    navigate,
-  ]);
+    setCreateAppDialogOpen,
+  );
+
+  const importAppDialogLogic = useImportAppDialogLogic(
+    importAppDialogOpen,
+    setImportAppDialogOpen,
+    importStatus,
+    setImportStatus,
+    importErrorMessage,
+    setImportErrorMessage,
+    setImportedAppId,
+  );
 
   return {
     apps: apps || [],
     isLoading: getAppsLoading,
-    createAppDialogLogic,
     openCreateAppDialog: handleOpenCreateAppDialog,
+    openImportAppDialog: handleOpenImportAppDialog,
+    createAppDialogLogic,
+    importAppDialogLogic,
+    importedAppId,
   };
 };

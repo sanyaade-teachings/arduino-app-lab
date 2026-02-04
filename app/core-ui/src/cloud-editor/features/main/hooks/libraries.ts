@@ -273,13 +273,14 @@ export const useGetLibrariesQueries: UseGetLibrariesQueries = function (
         });
 
         const URL = `${
-          Config.ROUTING_BASE_URL ? `${Config.ROUTING_BASE_URL}` : ''
+          Config.ROUTING_BASE_URL ? `/${Config.ROUTING_BASE_URL}` : ''
         }${LIBRARIES_MATCH_PATH}`;
 
         const search = {
           [LIBRARY_ID_PARAM]: library.id,
           [NAV_PARAM]: SidenavItemId.Libraries,
         };
+
         if (!isIotComponent) {
           navigate({
             to: URL,

@@ -1,11 +1,10 @@
-import { ArduinoLogo, InfoIconI } from '@cloud-editor-mono/images/assets/icons';
+import { ArduinoLogo } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
 
 import BoardSection from '../app-lab-footer-bar/sub-components/board-section/BoardSection';
 import { useI18n } from '../i18n/useI18n';
-import { useTooltip } from '../tooltip';
 import { Large, XSmall } from '../typography';
-import { setupMessages, tooltipMessages, welcomeMessages } from './messages';
+import { setupMessages, welcomeMessages } from './messages';
 import SectionContainer from './sections/SectionContainer';
 import styles from './setup.module.scss';
 import {
@@ -40,14 +39,11 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
     boardItem,
     onOpenTerminal,
     terminalError,
+    onBackStep,
+    unlockAutoFlow,
   } = setupLogic();
 
   const { formatMessage } = useI18n();
-
-  const { props: tooltipProps, renderTooltip } = useTooltip({
-    content: formatMessage(tooltipMessages.tooltipContent),
-    title: formatMessage(tooltipMessages.tooltipTitle),
-  });
 
   return showBoardSelectionPage ? (
     <Welcome
@@ -81,14 +77,6 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
                   <XSmall bold={item.id === currentStep}>
                     {formatMessage(setupMessages[item.id])}
                   </XSmall>
-                  {item.id === AppLabSetupItemId.NetworkSetup ? (
-                    <div {...tooltipProps}>
-                      <div className={styles['info-icon']}>
-                        <InfoIconI />
-                      </div>
-                      {renderTooltip(styles['tooltip-content'])}
-                    </div>
-                  ) : null}
                 </li>
               ) : null,
             )}
@@ -109,6 +97,8 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
           currentStep={currentStep as AppLabSetupItemId}
           itemsLength={setupItems.length}
           skippable={stepIsSkippable}
+          onBack={onBackStep}
+          unlockAutoFlow={unlockAutoFlow}
           renderSection={sections[currentStep as AppLabSetupItemId]}
           sectionLogic={
             (contentLogicMap as SetupContentLogicMap)[

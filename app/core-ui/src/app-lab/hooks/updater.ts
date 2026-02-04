@@ -6,6 +6,7 @@ import {
   getBoardUpdateLogs,
   getMandatoryUpdatesList as getMandatoryUpdatesListApi,
   getVersion,
+  isFFEnabled,
   newVersion,
   reloadApp,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
@@ -53,8 +54,12 @@ export const useUpdater = (): UseUpdaterResult => {
 
   const boardUpdateDoneFired = useRef<boolean | null>(false);
 
+  const updateInDevMode = isFFEnabled('UPDATE_IN_DEV_MODE');
+
   const canStartUpdate =
-    !!isConnected && !!boardIsReachable && Config.MODE !== 'development';
+    !!isConnected &&
+    !!boardIsReachable &&
+    (Config.MODE !== 'development' || updateInDevMode);
 
   const skipUpdate = useCallback((): void => {
     setStatus(UpdaterStatus.Skipped);

@@ -11,6 +11,11 @@ export const appTitleMessages = defineMessages({
     defaultMessage: 'Duplicate',
     description: 'Duplicate the app',
   },
+  actionExport: {
+    id: 'appTitle.actionExport',
+    defaultMessage: 'Export App',
+    description: 'Export the app',
+  },
   actionDelete: {
     id: 'appTitle.actionDelete',
     defaultMessage: 'Delete',

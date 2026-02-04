@@ -6,6 +6,8 @@ import AddBrick from './add-brick.svg?react';
 import AddTab from './add-tab.svg?react';
 import Ai from './ai.svg?react';
 import AppExamples from './app-examples.svg?react';
+import AppLabBoardConnection from './app-lab-board-connection.svg?react';
+import AppLabBoardPreparation from './app-lab-board-preparation.svg?react';
 import AppLabBrickApi from './app-lab-brick-api.svg?react';
 import AppLabBrickAudio from './app-lab-brick-audio.svg?react';
 import AppLabBrickIot from './app-lab-brick-iot.svg?react';
@@ -16,6 +18,7 @@ import AppLabBrickUi from './app-lab-brick-ui.svg?react';
 import AppLabBrickVision from './app-lab-brick-vision.svg?react';
 import AppLabCloudIot from './app-lab-cloud-iot.svg?react';
 import AppLabFingerprint from './app-lab-fingerprint.svg?react';
+import AppLabInfo from './app-lab-info.svg?react';
 import AppLabStatistics from './app-lab-statistics.svg?react';
 import AppLabToggleOff from './app-lab-toggle-off.svg?react';
 import AppLabToggleOn from './app-lab-toggle-on.svg?react';
@@ -169,6 +172,7 @@ import ThreeDots from './three-dots.svg?react';
 import ToggleOff from './toggle-off.svg?react';
 import ToggleOn from './toggle-on.svg?react';
 import ToolbarCancelX from './toolbar-cancel-x.svg?react';
+import Tools from './tools.svg?react';
 import TravelCompassNormal from './travel-compass-normal.svg?react';
 import Triangle from './triangle.svg?react';
 import TriangleSharp from './triangle-sharp.svg?react';
@@ -195,6 +199,8 @@ const Icons = {
   Ai,
   Appearance,
   AppExamples,
+  AppLabBoardConnection,
+  AppLabBoardPreparation,
   AppLabBrickApi,
   AppLabBrickAudio,
   AppLabBrickIot,
@@ -205,6 +211,7 @@ const Icons = {
   AppLabBrickVision,
   AppLabCloudIot,
   AppLabFingerprint,
+  AppLabInfo,
   AppLabStatistics,
   AppLabToggleOff,
   AppLabToggleOn,
@@ -353,6 +360,7 @@ const Icons = {
   ToggleOff,
   ToggleOn,
   ToolbarCancelX,
+  Tools,
   TravelCompassNormal,
   Triangle,
   TriangleSharp,

@@ -1,13 +1,21 @@
+import { InfoIconOutline } from '@bcmi-labs/cloud-editor-images/assets/icons';
+import { BackArrow } from '@cloud-editor-mono/images/assets/icons';
 import { useRef } from 'react';
 
 import {
   Button,
   ButtonSize,
   ButtonType,
+  Small,
 } from '../../components-by-app/app-lab';
 import { useI18n } from '../../i18n/useI18n';
+import { useTooltip } from '../../tooltip';
 import { Large, XXSmall } from '../../typography';
-import { sectionActionMessages, sectionTitleMessages } from '../messages';
+import {
+  sectionActionMessages,
+  sectionTitleMessages,
+  tooltipMessages,
+} from '../messages';
 import {
   AppLabSetupItem,
   AppLabSetupItemId,
@@ -19,10 +27,11 @@ interface SectionContainerProps<T extends AppLabSetupItem> {
   currentStep: AppLabSetupItemId | null;
   itemsLength: number;
   skippable?: boolean;
+  onBack?: () => void;
   sectionLogic: SetupSection<T>['logic'];
   renderSection: SetupSection<T>['render'];
-  children?: React.ReactNode;
   showConfirmButton?: boolean;
+  unlockAutoFlow?: () => void;
 }
 
 export function SectionContainer<T extends AppLabSetupItem>(
@@ -34,7 +43,9 @@ export function SectionContainer<T extends AppLabSetupItem>(
     sectionLogic,
     renderSection,
     skippable,
+    onBack,
     showConfirmButton = true,
+    unlockAutoFlow,
   } = props;
 
   const stepRef = useRef<{
@@ -45,43 +56,100 @@ export function SectionContainer<T extends AppLabSetupItem>(
   const { formatMessage } = useI18n();
 
   const handleConfirm = (): void => {
-    if (!stepRef.current) return;
-    stepRef.current.confirm();
+    unlockAutoFlow?.();
+    stepRef.current?.confirm();
   };
 
   const handleSkip = (): void => {
-    if (!stepRef.current || !stepRef.current.skip) return;
-    stepRef.current.skip();
+    unlockAutoFlow?.();
+    stepRef.current?.skip?.();
   };
 
   const step = currentStep as T['id'];
   const [stepIsLoading, stepContent] = renderSection(sectionLogic, stepRef);
 
+  const showBack =
+    Boolean(onBack) && currentStep !== AppLabSetupItemId.BoardConfiguration;
+
+  const isNetworkSetup = currentStep === AppLabSetupItemId.NetworkSetup;
+
+  const { props: tooltipProps, renderTooltip } = useTooltip({
+    content: formatMessage(tooltipMessages.tooltipContent),
+  });
+
   return (
     <div className={styles['section-container']}>
       <div className={styles['content-container']}>
         <div className={styles['section-header']}>
-          {skippable && (
-            <Button
-              type={ButtonType.Tertiary}
-              size={ButtonSize.XSmall}
-              onClick={handleSkip}
-              disabled={stepIsLoading}
-            >
-              Skip
-            </Button>
-          )}
+          <div className={styles['section-header-left']}>
+            {showBack && (
+              <Button
+                type={ButtonType.Tertiary}
+                size={ButtonSize.XSmall}
+                onClick={onBack}
+                Icon={BackArrow}
+                iconPosition="left"
+                classes={{ button: styles['back-button'] }}
+                disabled={stepIsLoading}
+              >
+                Back
+              </Button>
+            )}
+          </div>
         </div>
+
         <div className={styles['section-content']}>
           <XXSmall>{`STEP ${step + 1}/${itemsLength}`}</XXSmall>
-          <div className={styles['title']}>
+
+          <div className={styles['title-row']}>
             <Large bold>{formatMessage(sectionTitleMessages[step])}</Large>
+
+            {isNetworkSetup ? (
+              <div className={styles['tooltip-trigger']} {...tooltipProps}>
+                <span className={styles['info-icon']} aria-hidden="true">
+                  <InfoIconOutline />
+                </span>
+
+                <Small>
+                  {
+                    formatMessage(
+                      tooltipMessages.tooltipTitle,
+                    ) /* "Why we ask for this" */
+                  }
+                </Small>
+              </div>
+            ) : null}
           </div>
+
+          {isNetworkSetup ? (
+            <div className={styles['sub-title']}>
+              <Small bold>{'Select a network to connect your board'}</Small>
+              {renderTooltip(styles['tooltip-content'])}
+            </div>
+          ) : null}
+
+          {currentStep === AppLabSetupItemId.LinuxCredentials ? (
+            <div className={styles['sub-title']}>
+              <Small bold>{'Please choose a password for your Board '}</Small>
+            </div>
+          ) : null}
+
           <div className={styles['content']}>{stepContent}</div>
         </div>
       </div>
-      {showConfirmButton ? (
-        <div className={styles['action-container']}>
+
+      <div className={styles['action-container']}>
+        {skippable && (
+          <Button
+            type={ButtonType.Secondary}
+            size={ButtonSize.Small}
+            onClick={handleSkip}
+            disabled={stepIsLoading}
+          >
+            Skip
+          </Button>
+        )}
+        {showConfirmButton && (
           <Button
             loading={stepIsLoading}
             size={ButtonSize.Small}
@@ -91,8 +159,8 @@ export function SectionContainer<T extends AppLabSetupItem>(
           >
             {formatMessage(sectionActionMessages[step])}
           </Button>
-        </div>
-      ) : null}
+        )}
+      </div>
     </div>
   );
 }

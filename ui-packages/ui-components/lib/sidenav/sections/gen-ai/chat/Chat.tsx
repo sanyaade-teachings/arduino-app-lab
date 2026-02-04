@@ -33,6 +33,7 @@ import { useMeasure } from 'react-use';
 import CodeBlock from '../../../../code-block/CodeBlock';
 import CodeDiffBlock from '../../../../code-diff-block/CodeDiffBlock';
 import CodeDiffSummary from '../../../../code-diff-block/CodeDiffSummary';
+import { codeBlockTags } from '../../../../code-mirror/extensions/language/codeBlockHighLightStyle';
 import { DetailsWrapper } from '../../../../details-wrapper';
 import { CopyToClipboard } from '../../../../essential/copy-to-clipboard';
 import { HintLabel } from '../../../../essential/hint-label';
@@ -198,6 +199,7 @@ export function Chat(): JSX.Element {
         <CodeBlock
           code={message.code}
           onCopyCode={onCopyCode}
+          customSyntaxHighlightingTags={codeBlockTags}
           classes={{ container: styles['code-block'] }}
         />
       </DetailsWrapper>
@@ -237,6 +239,7 @@ export function Chat(): JSX.Element {
         <CodeBlock
           code={code}
           onCopyCode={onCopyCode}
+          customSyntaxHighlightingTags={codeBlockTags}
           classes={{ container: styles['code-block'] }}
         />
       </DetailsWrapper>

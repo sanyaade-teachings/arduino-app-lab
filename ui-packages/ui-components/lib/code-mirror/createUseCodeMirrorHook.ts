@@ -1,3 +1,4 @@
+import { syntaxHighlighting } from '@codemirror/language';
 import {
   Annotation,
   EditorState,
@@ -22,6 +23,10 @@ import {
 import { createErrorHighlightStateField } from './extensions/error-highlight/errorHighlight';
 import { createSearchExt } from './extensions/find-and-replace/FindAndReplaceExt';
 import { getKeywordsPlugins } from './extensions/keywords/keywordsHighlight';
+import {
+  customTags,
+  highlightStyle,
+} from './extensions/language/highlightStyle';
 import {
   FileExt,
   fileExtCodeMirrorExtensionMap,
@@ -112,6 +117,9 @@ export function createUseCodeMirrorHook(
       const matchedExt = Object.values(FileExt).find((fe) => ext === fe);
       if (matchedExt) {
         extensions.push(fileExtCodeMirrorExtensionMap[matchedExt]);
+        extensions.push(
+          syntaxHighlighting(highlightStyle(customTags), { fallback: true }),
+        );
       } else {
         extensions.push(fileExtCodeMirrorExtensionMap[FileExt.Other]);
       }

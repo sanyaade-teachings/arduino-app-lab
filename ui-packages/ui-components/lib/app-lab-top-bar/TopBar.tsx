@@ -29,8 +29,8 @@ export const Back: React.FC<BackProps> = (props: BackProps) => {
         role="button"
         tabIndex={0}
       >
-        <ArrowDown className={styles['back-button']} />
-        <XSmall>{label}</XSmall>
+        <ArrowDown className={styles['back-button']} title="Back" />
+        <XSmall className={styles['item-label']}>{label}</XSmall>
       </div>
     </BreadcrumbItem>
   );
@@ -58,7 +58,11 @@ const TopBar: React.FC<TopBarProps> = (props: TopBarProps) => {
           const isCurrentItem = index === pathItems.length - 1;
           return (
             <Fragment key={index}>
-              <div className={clsx(styles['wrapper'])}>
+              <div
+                className={clsx(styles['wrapper'], {
+                  [styles['wrapper-active']]: isCurrentItem,
+                })}
+              >
                 {typeof item === 'string' ? (
                   <BreadcrumbItem
                     className={clsx(
@@ -81,12 +85,17 @@ const TopBar: React.FC<TopBarProps> = (props: TopBarProps) => {
                       disabled={isCurrentItem}
                     >
                       {index === 0 && pathItems.length > 1 && (
-                        <ArrowDown className={styles['back-button']} />
+                        <ArrowDown
+                          className={styles['back-button']}
+                          title="Back"
+                        />
                       )}
                       {index === 0 && currentItem ? (
-                        <XSmall>{formatMessage(currentItem.label)}</XSmall>
+                        <XSmall className={styles['item-label']}>
+                          {formatMessage(currentItem.label)}
+                        </XSmall>
                       ) : (
-                        <XSmall>{item}</XSmall>
+                        <XSmall className={styles['item-label']}>{item}</XSmall>
                       )}
                     </Link>
                   </BreadcrumbItem>
@@ -95,7 +104,7 @@ const TopBar: React.FC<TopBarProps> = (props: TopBarProps) => {
                 )}
               </div>
               {index !== pathItems.length - 1 && (
-                <BreadcrumbSeparator>
+                <BreadcrumbSeparator className={styles['breadcrumb-separator']}>
                   <XSmall>/</XSmall>
                 </BreadcrumbSeparator>
               )}

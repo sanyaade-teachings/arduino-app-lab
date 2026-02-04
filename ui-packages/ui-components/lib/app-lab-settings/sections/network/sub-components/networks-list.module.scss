@@ -25,6 +25,7 @@
       border: unset;
       border-radius: unset;
       border-bottom: 1px solid var(--border-default, #434f54);
+      background: transparent;
 
       &.is-selected {
         background: var(--component-bg-hover, rgba(37, 194, 199, 0.16));

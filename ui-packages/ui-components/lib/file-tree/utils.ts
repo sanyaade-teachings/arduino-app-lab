@@ -87,6 +87,7 @@ export function insertNewNode(
   tree: TreeNode[],
   path: string,
   type: TreeNode['type'],
+  nodeName: string,
 ): TreeNode[] {
   const parts = path ? path.split('/') : [];
   const clone = JSON.parse(JSON.stringify(tree)) as TreeNode[];
@@ -109,7 +110,7 @@ export function insertNewNode(
   }
 
   current.push({
-    path: `${path}/__CREATE__`,
+    path: `${path}/${nodeName}`,
     name: '',
     type,
     ...(type === 'file'

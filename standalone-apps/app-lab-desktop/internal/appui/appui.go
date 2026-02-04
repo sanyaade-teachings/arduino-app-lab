@@ -158,7 +158,8 @@ func openUIWhenReady(ctx context.Context, host string, port int, timeout time.Du
 }
 
 func OpenUIWhenReady(ctx context.Context, board *board.Board, targetBoardPort int) error {
-	host := "localhost"
+	// In some cases 127.0.0.1:port works, but localhost:port does not.
+	host := "127.0.0.1"
 	port := targetBoardPort
 
 	if board.Info.Address != "" {

@@ -259,7 +259,7 @@ type RetrieveExampleFileContentsResult = Omit<
   fullName: string;
   data: string;
   path: string;
-  href: string;
+  href?: string;
   content: string;
   extension: string;
   exampleInoPath?: string;

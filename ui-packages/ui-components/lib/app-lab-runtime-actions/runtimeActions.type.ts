@@ -15,6 +15,7 @@ export type RuntimeActionsLogic = () => {
   currentAction: AppLabAction | null;
   currentActionStatus: AppLabActionStatus;
   setAsDefaultApp?: (isSelected: boolean) => void;
+  openApp?: (app: AppDetailedInfo) => void;
   runApp: (appId: string) => void;
   stopApp: (appId: string, appStatus: AppStatus) => void;
   isBannerEnabled?: boolean;

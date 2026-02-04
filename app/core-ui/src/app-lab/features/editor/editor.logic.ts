@@ -311,7 +311,7 @@ export const useEditorLogic: UseEditorLogic = function (
         const brick = appBricks?.find((b) => b.id === brickId);
         return brick ? Promise.resolve(brick) : Promise.reject();
       },
-      [appBricks],
+      [],
     );
 
     return {

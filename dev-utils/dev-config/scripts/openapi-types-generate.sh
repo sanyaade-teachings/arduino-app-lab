@@ -2,7 +2,7 @@
 
 CONVERTER_URL=https://converter.swagger.io/api/convert
 # Required: uncomment the definition url you want to use, or add your own
-# DEFINITION_URL=<your_openapi_endpoint>
+# DEFINITION_URL=<YOUR_DEFINITION_URL>
 
 # Required: Add your desidered service name
 SERVICE_NAME=your-service-name # e.g. iot-api, users-api, etc.
