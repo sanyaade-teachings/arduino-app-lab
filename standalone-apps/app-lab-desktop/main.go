@@ -21,12 +21,15 @@ var (
 
 func main() {
 	learnSvc := learn.New()
+
 	app := app.New(version, learnSvc)
 
 	err := wails.Run(&options.App{
-		Title:  app.GetTitle(),
-		Width:  1024,
-		Height: 768,
+		Title:     app.GetTitle(),
+		Width:     1024,
+		Height:    768,
+		MinWidth:  800,
+		MinHeight: 600,
 		AssetServer: &assetserver.Options{
 			Assets:     assets,
 			Middleware: app.GetAssetMiddleware(),
@@ -49,6 +52,11 @@ func main() {
 				Message: app.GetAboutMessage(),
 			},
 			Appearance: mac.NSAppearanceNameDarkAqua,
+			OnUrlOpen:  app.OnUrlOpen,
+		},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId:               "56b1104f-fc4f-4f31-91c6-6447c01338a4",
+			OnSecondInstanceLaunch: app.HandleSecondInstanceLaunch,
 		},
 	})
 

@@ -228,9 +228,14 @@ RequestExecutionLevel "${REQUEST_EXECUTION_LEVEL}"
 !macro wails.associateCustomProtocols
     ; Create custom protocols associations
     
+      !insertmacro CUSTOM_PROTOCOL_ASSOCIATE "arduino-app-lab" "Arduino App Lab Protocol" "$INSTDIR\${PRODUCT_EXECUTABLE},0" "$INSTDIR\${PRODUCT_EXECUTABLE} $\"%1$\""
+
+    
 !macroend
 
 !macro wails.unassociateCustomProtocols
     ; Delete app custom protocol associations
+    
+      !insertmacro CUSTOM_PROTOCOL_UNASSOCIATE "arduino-app-lab"
     
 !macroend

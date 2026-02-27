@@ -1,11 +1,4 @@
 import { AppDetailedInfo, AppStatus } from '@cloud-editor-mono/infrastructure';
-import { Subject } from 'rxjs';
-
-import {
-  AddConsoleSource,
-  AppendDataToSource,
-  ConsoleSources,
-} from '../app-lab-multiple-console-panel';
 
 export type RuntimeActionsLogic = () => {
   appId: string;
@@ -22,11 +15,9 @@ export type RuntimeActionsLogic = () => {
   showStop?: boolean;
 };
 
-export interface RuntimeActionsProps<T extends string> {
+export interface RuntimeActionsProps {
   runtimeActionsLogic: RuntimeActionsLogic;
-  setTab?: React.Dispatch<React.SetStateAction<T>>;
   runtimeDisable?: boolean;
-  size?: 'small' | 'default';
 }
 
 export enum AppLabActionStatus {
@@ -41,30 +32,3 @@ export enum AppLabAction {
   Stop = 'stop',
   Logs = 'logs',
 }
-
-export type UseRuntimeLogic = () => {
-  defaultApp?: AppDetailedInfo;
-  runningApp?: AppDetailedInfo;
-  activeApp?: AppDetailedInfo;
-  failedApp?: AppDetailedInfo;
-  getAppStatusById: (appId: string) => AppStatus;
-  runAction: (
-    app: AppDetailedInfo,
-    displaySwapDialog?: (e: boolean) => void,
-  ) => void;
-  consoleSourcesResetSubject: Subject<void>;
-  consoleSources: ConsoleSources;
-  stopAction: (app: AppDetailedInfo) => void;
-  resetCurrentAction: () => void;
-  currentAction: AppLabAction | null;
-  currentActionStatus: AppLabActionStatus;
-  swapAction: (app: AppDetailedInfo) => void;
-  progress: number;
-  consoleTabs: string[];
-  activeConsoleTab?: string;
-  setActiveConsoleTab: React.Dispatch<React.SetStateAction<string | undefined>>;
-  appendData: AppendDataToSource;
-  addConsoleSource: AddConsoleSource;
-  resetConsoleSources: (keysToRetain: string[]) => void;
-  consoleSourcesOwner?: string;
-};

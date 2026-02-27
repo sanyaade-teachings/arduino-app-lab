@@ -41,14 +41,12 @@ export function httpUpload(
 ): ReturnType<typeof httpPostRaw> {
   const agentUrl = getAgentUrl();
 
-  return httpPostRaw(
-    agentUrl,
-    Config.AGENT_UPLOAD_ENDPOINT,
-    JSON.stringify(payload),
-    undefined,
-    undefined,
-    (error) => {
+  return httpPostRaw({
+    url: agentUrl,
+    endpoint: Config.AGENT_UPLOAD_ENDPOINT,
+    body: JSON.stringify(payload),
+    handleError: (error) => {
       throw error;
     },
-  );
+  });
 }

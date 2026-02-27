@@ -1,12 +1,11 @@
-import { Error, Success } from '@cloud-editor-mono/images/assets/icons';
-import clsx from 'clsx';
+import { Success } from '@cloud-editor-mono/images/assets/icons';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 
 import { UseLinuxCredentialsLogic } from '../../app-lab-settings';
 import { Input } from '../../essential/input';
-import { InputStyle } from '../../essential/input/input.type';
+import { InputStyle } from '../../essential/input';
 import { useI18n } from '../../i18n/useI18n';
-import { XSmall, XXSmall } from '../../typography';
+import { XXSmall } from '../../typography';
 import { linuxCredentialsMessages } from '../messages';
 import setupStyles from '../setup.module.scss';
 import styles from './linux-credentials.module.scss';
@@ -58,17 +57,14 @@ const LinuxCredentials = forwardRef((props: LinuxCredentialsProps, ref) => {
           onChange={setPassword}
           label={formatMessage(linuxCredentialsMessages.passwordLabel)}
           sensitive
+          error={
+            setUserPasswordIsError ? new Error(userPasswordErrorMsg) : undefined
+          }
+          classes={{
+            error: styles['input-error-state'],
+            inputError: styles['input-error'],
+          }}
         />
-        {setUserPasswordIsError && (
-          <XXSmall
-            bold
-            className={clsx(setupStyles['message'], setupStyles['error'])}
-          >
-            <Error />
-            {userPasswordErrorMsg ||
-              formatMessage(linuxCredentialsMessages.linuxCredentialsError)}
-          </XXSmall>
-        )}
       </div>
       <div className={setupStyles['input-container']}>
         <Input
@@ -81,17 +77,16 @@ const LinuxCredentials = forwardRef((props: LinuxCredentialsProps, ref) => {
             linuxCredentialsMessages.passwordConfirmationLabel,
           )}
           sensitive
+          error={
+            setUserPasswordConfirmationIsError
+              ? new Error(userPasswordConfirmationErrorMsg)
+              : undefined
+          }
+          classes={{
+            error: styles['input-error-state'],
+            inputError: styles['input-error'],
+          }}
         />
-        {setUserPasswordConfirmationIsError && (
-          <XXSmall
-            bold
-            className={clsx(setupStyles['message'], setupStyles['error'])}
-          >
-            <Error />
-            {userPasswordConfirmationErrorMsg ||
-              formatMessage(linuxCredentialsMessages.linuxCredentialsError)}
-          </XXSmall>
-        )}
         {setUserPasswordIsSuccess && (
           <XXSmall bold className={setupStyles['message']}>
             <Success />

@@ -1,4 +1,5 @@
 import { UploadStatus } from '@cloud-editor-mono/board-communication-tools';
+import { HttpPostRawOptions } from '@cloud-editor-mono/infrastructure';
 
 import { MOCK_AGENT_INFO, MOCK_AGENT_RESPONSE } from '../daemon/agent.test';
 import { setAgentDaemonState } from '../daemon/state';
@@ -8,12 +9,14 @@ import { mapAgentInfoResponse } from '../mapper';
 import { UploadToAgentPortPayload } from './upload.type';
 
 vi.mock('@cloud-editor-mono/infrastructure', () => ({
-  httpPostRaw: vi.fn().mockImplementation((_url: string, endpoint: string) => {
-    if (endpoint === '/upload') {
-      return Promise.resolve(null);
-    }
-    return Promise.resolve({});
-  }),
+  httpPostRaw: vi
+    .fn()
+    .mockImplementation(({ endpoint }: HttpPostRawOptions) => {
+      if (endpoint === '/upload') {
+        return Promise.resolve(null);
+      }
+      return Promise.resolve({});
+    }),
 }));
 
 vi.doUnmock('../utils');

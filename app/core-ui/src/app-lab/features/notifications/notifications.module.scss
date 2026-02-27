@@ -56,4 +56,11 @@ $text-warning: var(--global-snackbar-warning-text, #fff);
             background-color: $text-warning !important;
         }
     }
+
+    [class*="Snackbar-action"] {
+        font-family: var(--Family-Open-Sans, "Open Sans");
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.14px;
+    }
 }

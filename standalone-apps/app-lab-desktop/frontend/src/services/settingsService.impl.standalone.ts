@@ -1,13 +1,13 @@
 /* eslint-disable no-empty */
 import {
   EthernetConnectionStatus,
-  mockGetNetworkList,
   SettingsService,
   WiFiConnectionStatus,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 
 import {
   ConnectToWiFi,
+  DisconnectWiFi,
   GetConnectionName,
   GetEthStatus,
   GetInternetStatus,
@@ -21,7 +21,7 @@ export const getNetworkList: SettingsService['getNetworkList'] =
       const response = await ListSSIDs();
       return response;
     } catch {}
-    return mockGetNetworkList();
+    return [];
   };
 
 export const getWiFiStatus: SettingsService['getWiFiStatus'] =
@@ -71,6 +71,18 @@ export const connectToWiFi: SettingsService['connectToWiFi'] = async function (
     throw new Error(`Failed to connect to WiFi with SSID ${ssid}: ${e}`);
   }
 };
+
+export const disconnectWiFi: SettingsService['disconnectWiFi'] =
+  async function () {
+    try {
+      const timeoutPromise = new Promise<'timeout'>((_, r) => {
+        setTimeout(() => r('timeout'), 20000);
+      });
+      await Promise.race([DisconnectWiFi(), timeoutPromise]);
+    } catch (e) {
+      console.error(`Failed to disconnect from WiFi: ${e}`);
+    }
+  };
 
 export const getConnectionName: SettingsService['getConnectionName'] =
   async function () {

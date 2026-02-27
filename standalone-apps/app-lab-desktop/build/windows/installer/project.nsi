@@ -86,7 +86,7 @@ Function .onInstSuccess
     
     ; If silent, launch the app. 
     ; Using ExecShell "open" ensures it launches comfortably.
-    ExecShell "open" "$INSTDIR\${INFO_PROJECTNAME}.exe"
+    Exec '"$WINDIR\explorer.exe" "$INSTDIR\${PRODUCT_EXECUTABLE}"'
 FunctionEnd
 
 Section

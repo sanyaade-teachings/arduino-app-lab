@@ -10,13 +10,13 @@ $skeleton-opacity: 0.1 !default;
   align-self: stretch;
   border-radius: 16px;
   width: 100%;
-  background: var(--component-bg-below-1, #171E21);
-  border: 1px solid var(--border-inverted, #232B2E);
+  background: var(--component-bg-below-1, #171e21);
+  border: 1px solid var(--border-inverted, #232b2e);
   padding: 16px;
   cursor: pointer;
 
   &:hover {
-    background: #AEB8B826;
+    background: #aeb8b826;
   }
 
   &.disabled {
@@ -27,13 +27,17 @@ $skeleton-opacity: 0.1 !default;
   &.selected {
     border: 1px solid var(--border-accent, #25c2c7);
 
+    &:focus-visible {
+      outline: none;
+    }
+
     .brick-item-text .title {
       color: var(--text-accent, #25c2c7);
     }
   }
 
   .brick-item-icon {
-    background: #15ADDF33;
+    background: #15addf33;
     color: var(--text-default, #fff);
     display: flex;
     align-items: center;
@@ -64,7 +68,7 @@ $skeleton-opacity: 0.1 !default;
         display: flex;
         align-items: center;
         gap: 4px;
-        background-color: #AEB8B826;
+        background-color: #aeb8b826;
         border-radius: 4px;
         padding: 2px 6px;
 

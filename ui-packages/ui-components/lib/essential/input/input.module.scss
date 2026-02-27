@@ -95,6 +95,12 @@
         opacity: 0.5;
       }
     }
+
+    &:hover:not(:focus-within):not(.disabled) {
+      border: 1px solid #434f54;
+      background: #212a2e;
+      cursor: text;
+    }
   }
 
   .input-error {

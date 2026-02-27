@@ -35,8 +35,6 @@ export const useGenAiBanner = (): ReturnType<UseGenAiBanner> => {
       const data = await get(GEN_AI_BANNER_KEY);
       return data ?? null;
     },
-
-    { refetchOnWindowFocus: false },
   );
 
   return {

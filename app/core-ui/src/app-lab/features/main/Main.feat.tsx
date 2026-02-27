@@ -2,6 +2,7 @@ import {
   AppLabSidePanel,
   BoardUpdateDialog,
   FlashBoardDialog,
+  WhatsNewAdHoc,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { Themes } from '@cloud-editor-mono/ui-components/themes/theme.type';
 import { Outlet } from '@tanstack/react-router';
@@ -17,8 +18,12 @@ import { useMainLogic } from './main.logic';
 import styles from './main.module.scss';
 
 const AppLabMain: React.FC = () => {
-  const { sidePanelLogic, boardUpdateDialogLogic, flashBoardDialogLogic } =
-    useMainLogic();
+  const {
+    sidePanelLogic,
+    boardUpdateDialogLogic,
+    flashBoardDialogLogic,
+    whatsNewAdHocLogic,
+  } = useMainLogic();
   const boardsProps = useBoards();
 
   const { setupCompleted } = useContext(SetupContext);
@@ -35,6 +40,7 @@ const AppLabMain: React.FC = () => {
   ) : (
     <>
       <Setup boardsProps={boardsProps} />
+      <WhatsNewAdHoc logic={whatsNewAdHocLogic} />
       <BoardUpdateDialog logic={boardUpdateDialogLogic} />
       <FlashBoardDialog logic={flashBoardDialogLogic} />
       {setupCompleted && boardIsReachable ? (
@@ -46,7 +52,7 @@ const AppLabMain: React.FC = () => {
             </div>
           </div>
 
-          <FooterBar />
+          <FooterBar boardsProps={boardsProps} />
         </>
       ) : null}
     </>

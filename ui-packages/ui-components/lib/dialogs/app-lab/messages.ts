@@ -71,6 +71,11 @@ export const configureAppBrickDialogMessages = defineMessages({
     defaultMessage: 'Save',
     description: 'Text for confirm button in configure app brick dialog',
   },
+  trainNewModelButton: {
+    id: 'brickDetail.trainNewModelButton',
+    defaultMessage: 'Train new AI model',
+    description: 'Label for the button to train a new AI model',
+  },
 });
 
 export const configureAppBricksDialogMessages = defineMessages({
@@ -104,6 +109,11 @@ export const configureAppBricksDialogMessages = defineMessages({
     id: 'configureAppBricks.confirmButton',
     defaultMessage: 'Save and run',
     description: 'Text for confirm button in configure app bricks dialog',
+  },
+  trainNewModelButton: {
+    id: 'brickDetail.trainNewModelButton',
+    defaultMessage: 'Train new AI model',
+    description: 'Label for the button to train a new AI model',
   },
 });
 
@@ -327,6 +337,7 @@ export const exportAppDialogMessages = defineMessages({
     description: 'Label for error details',
   },
 });
+
 export const importAppDialogMessages = defineMessages({
   title: {
     id: 'app-lab.import-app-dialog.title',
@@ -398,5 +409,168 @@ export const importAppDialogMessages = defineMessages({
     id: 'app-lab.import-app-dialog.go-to-my-app',
     defaultMessage: 'Go back to Apps',
     description: 'Button text to close error dialog',
+  },
+});
+
+export const skipLoginDialogMessages = defineMessages({
+  dialogTitle: {
+    id: 'skipLoginDialog.title',
+    defaultMessage: 'Log In',
+    description: 'Title shown in the skip Arduino account dialog',
+  },
+  dialogBodyTitle: {
+    id: 'skipLoginDialog.bodyTitle',
+    defaultMessage: `Are you sure you want to skip this?`,
+    description: 'Message shown in the skip Arduino account dialog',
+  },
+  dialogBodyDescription: {
+    id: 'skipLoginDialog.bodyDescription',
+    defaultMessage: `Signing in with your Arduino account unlocks App Lab's full potential, giving you:`,
+    description: 'Message shown in the skip Arduino account dialog',
+  },
+  dialogBodyListItem1: {
+    id: 'skipLoginDialog.bodyListItem1',
+    defaultMessage: 'Advanced AI models with custom training capabilities',
+    description: 'Message to confirm the skip Arduino account dialog',
+  },
+  dialogBodyListItem2: {
+    id: 'skipLoginDialog.bodyListItem2',
+    defaultMessage: 'Additional Arduino courses and learning materials',
+    description: 'Message to confirm the skip Arduino account dialog',
+  },
+  dialogBodyListItem3: {
+    id: 'skipLoginDialog.bodyListItem3',
+    defaultMessage: 'Seamless integration with Arduino Cloud',
+    description: 'Message to confirm the skip Arduino account dialog',
+  },
+  dialogBodyListItem4: {
+    id: 'skipLoginDialog.bodyListItem4',
+    defaultMessage: 'A growing library of additional apps',
+    description: 'Message to confirm the skip Arduino account dialog',
+  },
+  dialogBodyFooter: {
+    id: 'skipLoginDialog.bodyFooter',
+    defaultMessage: `And as always, it's all completely free!`,
+    description: 'Message shown in the skip Arduino account dialog',
+  },
+  skipButton: {
+    id: 'skipLoginDialog.skipButton',
+    defaultMessage: 'Skip Log In',
+    description: 'Label for the skip button',
+  },
+  confirmButton: {
+    id: 'skipLoginDialog.confirmButton',
+    defaultMessage: 'Log In with Arduino',
+    description: 'Label for the confirm button',
+  },
+});
+
+export const trainNewModelDialogMessages = defineMessages({
+  trainModelWelcomeTitle: {
+    id: 'appLabBrickDetail.trainNewModel.welcomeTitle',
+    defaultMessage: 'Train your own custom AI models',
+    description: 'Welcome title for the train new model section',
+  },
+  trainModelWelcomeDescriptionOne: {
+    id: 'appLabBrickDetail.trainNewModel.welcomeDescriptionOne',
+    defaultMessage: ` You’ll be redirected to the {bold} platform in your browser.`,
+    description: 'Welcome description for the train new model section',
+  },
+  edgeImpulseStudio: {
+    id: 'appLabBrickDetail.trainNewModel.edgeImpulseStudio',
+    defaultMessage: 'Edge Impulse Studio',
+    description: 'Name of the platform used to train new models',
+  },
+  trainModelWelcomeDescriptionTwo: {
+    id: 'appLabBrickDetail.trainNewModel.welcomeDescriptionTwo',
+    defaultMessage: ' Train and finalise your model there.',
+    description: 'Welcome description for the train new model section',
+  },
+  trainModelWelcomeDescriptionThree: {
+    id: 'appLabBrickDetail.trainNewModel.welcomeDescriptionThree',
+    defaultMessage: ` Back in App Lab, you’ll find your new model inside the suitable {bold} — ready to install and use.`,
+    description: 'Welcome description for the train new model section',
+  },
+  arduinoAiBrick: {
+    id: 'appLabBrickDetail.trainNewModel.arduinoAiBrick',
+    defaultMessage: 'Arduino AI Brick',
+    description: 'Name of the section where the new model will be available',
+  },
+  dontShowAgain: {
+    id: 'appLabBrickDetail.trainNewModel.dontShowAgain',
+    defaultMessage: 'Don’t show it anymore',
+    description: 'Checkbox label to not show the welcome message again',
+  },
+  trainModelTitle: {
+    id: 'appLabBrickDetail.trainNewModel.title',
+    defaultMessage: 'Train your AI Model with Edge Impulse Studio',
+    description: 'Title for the train new model section',
+  },
+  trainModelDescription: {
+    id: 'appLabBrickDetail.trainNewModel.description',
+    defaultMessage: 'Follow these steps to get started:',
+    description: 'Description for the train new model section',
+  },
+  stepOne: {
+    id: 'appLabBrickDetail.trainNewModel.stepOne',
+    defaultMessage: 'Sign in or create your Arduino account',
+    description: 'Step one instruction for training new model',
+  },
+  stepTwo: {
+    id: 'appLabBrickDetail.trainNewModel.stepTwo',
+    defaultMessage: 'Continue in Edge Impulse using your Arduino Account',
+    description: 'Step two instruction for training new model',
+  },
+  arduinoSignIn: {
+    id: 'appLabBrickDetail.trainNewModel.arduinoSignIn',
+    defaultMessage: 'Arduino Sign in',
+    description: 'Button text to sign in with Arduino account',
+  },
+  connectToEdgeImpulse: {
+    id: 'appLabBrickDetail.trainNewModel.connectToEdgeImpulse',
+    defaultMessage: 'Connect to Edge Impulse Studio',
+    description: 'Button text to connect to Edge Impulse',
+  },
+  accountConnectedTitle: {
+    id: 'appLabBrickDetail.trainNewModel.accountConnectedTitle',
+    defaultMessage: 'Your Arduino Account is now connected to Edge Impulse 🎉',
+    description: 'Title shown when the account is successfully connected',
+  },
+  redirectToEdgeImpulse: {
+    id: 'appLabBrickDetail.trainNewModel.redirectToEdgeImpulse',
+    defaultMessage: 'You will be redirected to Edge Impulse Studio',
+    description: 'Instruction shown when the account is successfully connected',
+  },
+  chooseModelType: {
+    id: 'appLabBrickDetail.trainNewModel.chooseModelType',
+    defaultMessage:
+      'Choose to train a model using a tutorial or start from scratch',
+    description: 'Instruction shown when the account is successfully connected',
+  },
+  modelInAppLab: {
+    id: 'appLabBrickDetail.trainNewModel.modelInAppLab',
+    defaultMessage:
+      'The new AI model will automatically appear in App Lab, ready to install from its corresponding bricks.',
+    description: 'Instruction shown when the account is successfully connected',
+  },
+  startToTrainButton: {
+    id: 'appLabBrickDetail.trainNewModel.startToTrainButton',
+    defaultMessage: 'Start to Train your AI model',
+    description: 'Button text to start training the new model',
+  },
+  exitDialog: {
+    id: 'appLabBrickDetail.trainNewModel.exitDialog',
+    defaultMessage: 'Exit',
+    description: 'Button text to exit the train new model dialog',
+  },
+  letsStart: {
+    id: 'appLabBrickDetail.trainNewModel.letsStart',
+    defaultMessage: `Ok, let's start`,
+    description: 'Button to start train new model',
+  },
+  learnMore: {
+    id: 'appLabBrickDetail.trainNewModel.learnMore',
+    defaultMessage: 'Learn More',
+    description: 'Button to learn more',
   },
 });

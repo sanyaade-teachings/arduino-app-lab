@@ -139,7 +139,6 @@ export const useGetBoardByFqbn: UseGetBoardByFqbn = function (
         ? getBoardByFqbn({ fqbn })
         : Promise.reject('FQBN is not defined'),
     {
-      refetchOnWindowFocus: false,
       enabled,
     },
   );
@@ -865,7 +864,7 @@ export const useGetBoardsList: UseGetBoardsList = function (
   const { data, isLoading } = useQuery(
     ['boards'],
     () => getAllSupportedBoards(),
-    { enabled, refetchOnWindowFocus: false },
+    { enabled },
   );
 
   return {
@@ -1172,7 +1171,6 @@ export const useGetExamples: UseGetExamples = function (
     BUILTIN_EXAMPLES_QUERY_KEY,
     () => getExamples({}),
     {
-      refetchOnWindowFocus: false,
       enabled: enableGetExamples,
       refetchOnMount: false,
       keepPreviousData: true,
@@ -1211,7 +1209,6 @@ export const useRetrieveExampleInoContents: UseRetrieveExampleInoContents =
         onSuccess: (data: RetrieveExampleFileContentsResult) => {
           setCodeSubjects(data);
         },
-        refetchOnWindowFocus: false,
         enabled,
       },
     );
@@ -1275,7 +1272,6 @@ export const useRetrieveExampleFileContents: UseRetrieveExampleFileContents =
             });
             onSuccess && onSuccess(data);
           },
-          refetchOnWindowFocus: false,
           enabled,
         })),
     });
@@ -1318,7 +1314,6 @@ export const useRetrieveLibraryFilesContents: UseRetrieveLibraryFileContents =
         setLibraryFilesContents(data);
         onAllSuccess && onAllSuccess(data);
       },
-      refetchOnWindowFocus: false,
       enabled,
     });
 
@@ -1463,7 +1458,6 @@ export const useCachedSketchCompilation: UseGetCreatedSketchCompilation =
           cachedDataIsComplete &&
           fqbn === selectedFqbn &&
           !bypass,
-        refetchOnWindowFocus: false,
         onSuccess(
           data:
             | ArduinoBuilderV2CompilationsResponse_BuilderApi

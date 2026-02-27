@@ -10,6 +10,7 @@ import (
 
 	"app-lab-desktop/internal/appui"
 	"app-lab-desktop/internal/arduinoapps"
+	"app-lab-desktop/internal/auth"
 	"app-lab-desktop/internal/board"
 	"app-lab-desktop/internal/featureflags"
 	"app-lab-desktop/internal/flasher"
@@ -40,6 +41,10 @@ func (a *App) GetOrchestratorURL() (string, error) {
 // WiFi management
 func (a *App) ConnectToWiFi(ssid, password string) error {
 	return wifi.Connect(a.ctx(), a.selectedBoard.Conn, ssid, password)
+}
+
+func (a *App) DisconnectWiFi() error {
+	return wifi.Disconnect(a.ctx(), a.selectedBoard.Conn)
 }
 
 func (a *App) ListSSIDs() ([]string, error) {
@@ -167,8 +172,12 @@ func (a *App) CreateFolder(path string) error {
 }
 
 // Apps UI management
-func (a *App) OpenUIWhenReady(port int) error {
-	return appui.OpenUIWhenReady(a.ctx(), a.selectedBoard, port)
+func (a *App) OpenUIWhenReady(port int, timeout int) error {
+	return appui.OpenUIWhenReady(a.ctx(), a.selectedBoard, port, timeout)
+}
+
+func (a *App) ForwardNonUIPort(port int) error {
+	return appui.ForwardNonUIPort(a.ctx(), a.selectedBoard, port)
 }
 
 // Learn
@@ -256,4 +265,16 @@ func (a *App) ImportAppFromPath(filePath string) (string, error) {
 
 func (a *App) SaveTempFile(fileName string, data []byte) (string, error) {
 	return arduinoapps.SaveTempFile(fileName, data)
+}
+
+func (a *App) GetRefreshToken(user string) (string, error) {
+	return auth.GetRefreshToken(user)
+}
+
+func (a *App) SetRefreshToken(user string, token string) error {
+	return auth.SetRefreshToken(user, token)
+}
+
+func (a *App) DeleteRefreshToken(user string) error {
+	return auth.DeleteRefreshToken(user)
 }

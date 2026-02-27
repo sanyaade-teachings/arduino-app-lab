@@ -15,6 +15,7 @@ import styles from './checkbox.module.scss';
 type CheckboxProps = AriaCheckboxProps & {
   classes?: {
     input?: string;
+    inputChecked?: string;
     label?: string;
   };
 };
@@ -39,6 +40,11 @@ const Checkbox: React.FC<CheckboxProps> = (props: CheckboxProps) => {
       <div
         className={clsx(styles.input, classes?.input, {
           [styles['focus-visible']]: isFocusVisible,
+          ...(classes?.inputChecked
+            ? {
+                [classes.inputChecked]: isSelected,
+              }
+            : {}),
         })}
       >
         <NotificationSuccessCheck className={styles.icon} aria-hidden="true" />

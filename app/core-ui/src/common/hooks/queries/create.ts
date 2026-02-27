@@ -142,7 +142,6 @@ export const useRetrieveSketch: UseRetrieveSketch = function (
             'Tried to obtain a sketch by ID without providing a specific sketch ID',
           ),
     {
-      refetchOnWindowFocus: false,
       enabled,
     },
   );
@@ -334,7 +333,6 @@ export const useCreateDefaultSketch: UseCreateDefaultSketch = function (
 
         errorCount.current = errorCount.current + 1;
       },
-      refetchOnWindowFocus: false,
       enabled,
     },
   );
@@ -403,7 +401,6 @@ export const useRetrieveFileContents: UseRetrieveFileContents = function (
           isUnauthorizedEventsNext(true);
         }
       },
-      refetchOnWindowFocus: false,
       enabled,
     },
   );
@@ -612,7 +609,6 @@ export const useRetrieveBatchFileContents: UseRetrieveBatchFileContents =
           });
         },
         onError,
-        refetchOnWindowFocus: false,
         enabled,
       })),
     });
@@ -781,7 +777,6 @@ export const useRetrieveFilesList: UseRetrieveFilesList = function (
           ),
     {
       onError,
-      refetchOnWindowFocus: false,
       enabled,
     },
   );
@@ -1071,7 +1066,6 @@ export const useGetCustomLibraries: UseGetCustomLibraries = function (
     ['get-custom-libraries'],
     retrieveCustomLibraries,
     {
-      refetchOnWindowFocus: false,
       enabled,
       staleTime: Infinity,
       onSuccess(data) {
@@ -1095,7 +1089,6 @@ export const useGetCustomLibraries: UseGetCustomLibraries = function (
           prev?.map((l) => (l.id === customLibrary.id ? { ...l, code } : l)),
         );
       },
-      refetchOnWindowFocus: false,
     })),
   });
 
@@ -1295,7 +1288,6 @@ export const useGetFileHash: UseGetFileHash = function (
         ? retrieveFilesList(sketchPath, false)
         : Promise.reject('No sketch path while polling the file hash.'),
     {
-      refetchOnWindowFocus: false,
       enabled,
       refetchInterval: 3000,
       refetchIntervalInBackground: true,

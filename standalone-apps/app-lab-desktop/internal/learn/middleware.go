@@ -3,11 +3,14 @@ package learn
 import (
 	"app-lab-desktop/internal/context"
 	"io"
+	"io/fs"
 	"net/http"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type learnAssetMiddleware struct {
@@ -46,15 +49,25 @@ func (m *learnAssetMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	path := path.Join(resourceDir, assetPath)
 	f, err := learnFS.Open(path)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		http.Error(w, "Cannot open learn asset", http.StatusInternalServerError)
 		return
 	}
 	defer f.Close()
 
+	if rs, ok := f.(io.ReadSeeker); ok {
+		var mod time.Time
+		if fi, err := fs.Stat(learnFS, path); err == nil {
+			mod = fi.ModTime()
+		}
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		http.ServeContent(w, r, path, mod, rs)
+		return
+	}
+
+	// Fallback
 	_, err = io.Copy(w, f)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		runtime.LogErrorf(ctx, "Error serving learn asset %s for resource %s: %v", path, resourceId, err)
 	}
 }
 

@@ -16,6 +16,7 @@ import {
   sectionTitleMessages,
   tooltipMessages,
 } from '../messages';
+import setupStyles from '../setup.module.scss';
 import {
   AppLabSetupItem,
   AppLabSetupItemId,
@@ -74,8 +75,13 @@ export function SectionContainer<T extends AppLabSetupItem>(
   const isNetworkSetup = currentStep === AppLabSetupItemId.NetworkSetup;
 
   const { props: tooltipProps, renderTooltip } = useTooltip({
-    content: formatMessage(tooltipMessages.tooltipContent),
+    content: formatMessage(tooltipMessages.wifiTooltipContent),
   });
+
+  const { props: accountTooltipProps, renderTooltip: renderAccountTooltip } =
+    useTooltip({
+      content: formatMessage(tooltipMessages.accountTooltipContent),
+    });
 
   return (
     <div className={styles['section-container']}>
@@ -113,10 +119,24 @@ export function SectionContainer<T extends AppLabSetupItem>(
                 <Small>
                   {
                     formatMessage(
-                      tooltipMessages.tooltipTitle,
+                      tooltipMessages.wifiTooltipTitle,
                     ) /* "Why we ask for this" */
                   }
                 </Small>
+              </div>
+            ) : null}
+            {currentStep === AppLabSetupItemId.ArduinoAccount ? (
+              <div {...accountTooltipProps}>
+                <div className={styles['title-tooltip']}>
+                  <div className={styles['info-icon']}>
+                    <InfoIconOutline />
+                  </div>
+                  <XXSmall>
+                    {formatMessage(tooltipMessages.accountTooltipTitle)}
+                  </XXSmall>
+                </div>
+
+                {renderAccountTooltip(setupStyles['tooltip-content'])}
               </div>
             ) : null}
           </div>

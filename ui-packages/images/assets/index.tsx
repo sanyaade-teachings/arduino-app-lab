@@ -1,3 +1,6 @@
+import AccountArduinoCloud from './account-arduino-cloud.svg?react';
+import AccountConnectedBoards from './account-connected-boards.svg?react';
+import AccountCustomAiModels from './account-custom-ai-models.svg?react';
 import AccountStarEmpty from './account-star-empty.svg?react';
 import AccountStarFilled from './account-star-filled.svg?react';
 import AccountViewFilled from './account-view-filled.svg?react';
@@ -6,8 +9,6 @@ import AddBrick from './add-brick.svg?react';
 import AddTab from './add-tab.svg?react';
 import Ai from './ai.svg?react';
 import AppExamples from './app-examples.svg?react';
-import AppLabBoardConnection from './app-lab-board-connection.svg?react';
-import AppLabBoardPreparation from './app-lab-board-preparation.svg?react';
 import AppLabBrickApi from './app-lab-brick-api.svg?react';
 import AppLabBrickAudio from './app-lab-brick-audio.svg?react';
 import AppLabBrickIot from './app-lab-brick-iot.svg?react';
@@ -67,6 +68,7 @@ import CloudPortOff from './cloud-port-off.svg?react';
 import CodeIcon from './code-icon.svg?react';
 import ConnectionLostIcon from './connection-lost-icon.svg?react';
 import Copy from './copy.svg?react';
+import CreateNewModel from './create-new-model.svg?react';
 import DarkTheme from './dark-theme.svg?react';
 import Decrement from './decrement.svg?react';
 import Device from './device.svg?react';
@@ -77,6 +79,9 @@ import Duplicate from './duplicate.svg?react';
 import EducationIcon from './education-icon.svg?react';
 import Eraser from './eraser.svg?react';
 import EraserIcon from './eraser-icon.svg?react';
+import Exchange from './exchange.svg?react';
+import Exit from './exit.svg?react';
+import ExitButton from './exit-button.svg?react';
 import ExplainError from './explain-error.svg?react';
 import FeedbackThumbsDown from './feedback-thumbs-down.svg?react';
 import FeedbackThumbsUp from './feedback-thumbs-up.svg?react';
@@ -110,6 +115,7 @@ import Increment from './increment.svg?react';
 import IndentCode from './indent-code.svg?react';
 import InfoIconI from './info-icon-i.svg?react';
 import InfoIconOutline from './info-icon-outline.svg?react';
+import InfoSetup from './info-setup.svg?react';
 import Learn from './learn.svg?react';
 import LibraryIcon from './library-icon.svg?react';
 import LightIcon from './light-icon.svg?react';
@@ -118,6 +124,9 @@ import LinkIcon from './link.svg?react';
 import LinkIconDiagonal from './link-icon-diagonal.svg?react';
 import Loader from './loader.svg?react';
 import Login from './login.svg?react';
+import LoginIllustration from './login-illustration.svg?react';
+import LoginIllustrationArduinoConnected from './login-illustration-arduino-connected.svg?react';
+import LoginIllustrationEIConnected from './login-illustration-ei-connected.svg?react';
 import ManualSelectBoard from './manual-select-board-icon.svg?react';
 import MediaLibraryBooksNormal from './media-library_books-normal.svg?react';
 import Models from './models.svg?react';
@@ -161,6 +170,7 @@ import Sources from './sources.svg?react';
 import Sparkle from './sparkle.svg?react';
 import Speaker from './speaker.svg?react';
 import Spinner from './spinner.svg?react';
+import Stats from './stats.svg?react';
 import StatusError from './status-error.svg?react';
 import StopWatch from './stopwatch.svg?react';
 import StopWatchDisable from './stopwatch-disable.svg?react';
@@ -173,6 +183,7 @@ import ToggleOff from './toggle-off.svg?react';
 import ToggleOn from './toggle-on.svg?react';
 import ToolbarCancelX from './toolbar-cancel-x.svg?react';
 import Tools from './tools.svg?react';
+import TrainModel from './train-model.svg?react';
 import TravelCompassNormal from './travel-compass-normal.svg?react';
 import Triangle from './triangle.svg?react';
 import TriangleSharp from './triangle-sharp.svg?react';
@@ -190,6 +201,9 @@ import VerifyAndUpload from './verify-and-upload.svg?react';
 import WholeWords from './whole-words.svg?react';
 
 const Icons = {
+  AccountArduinoCloud,
+  AccountConnectedBoards,
+  AccountCustomAiModels,
   AccountStarEmpty,
   AccountStarFilled,
   AccountViewFilled,
@@ -199,8 +213,6 @@ const Icons = {
   Ai,
   Appearance,
   AppExamples,
-  AppLabBoardConnection,
-  AppLabBoardPreparation,
   AppLabBrickApi,
   AppLabBrickAudio,
   AppLabBrickIot,
@@ -260,6 +272,7 @@ const Icons = {
   CodeIcon,
   ConnectionLostIcon,
   Copy,
+  CreateNewModel,
   DarkTheme,
   Decrement,
   Device,
@@ -270,6 +283,9 @@ const Icons = {
   EducationIcon,
   Eraser,
   EraserIcon,
+  Exchange,
+  Exit,
+  ExitButton,
   ExplainError,
   FeedbackThumbsDown,
   FeedbackThumbsUp,
@@ -299,6 +315,7 @@ const Icons = {
   Increment,
   IndentCode,
   InfoIconI,
+  InfoSetup,
   InfoIconOutline,
   Learn,
   LibraryIcon,
@@ -307,6 +324,10 @@ const Icons = {
   LinkIcon,
   LinkIconDiagonal,
   Loader,
+  Login,
+  LoginIllustration,
+  LoginIllustrationArduinoConnected,
+  LoginIllustrationEIConnected,
   ManualSelectBoard,
   MediaLibraryBooksNormal,
   Models,
@@ -349,6 +370,7 @@ const Icons = {
   Sparkle,
   Speaker,
   Spinner,
+  Stats,
   StatusError,
   StopWatch,
   StopWatchDisable,
@@ -361,6 +383,7 @@ const Icons = {
   ToggleOn,
   ToolbarCancelX,
   Tools,
+  TrainModel,
   TravelCompassNormal,
   Triangle,
   TriangleSharp,
@@ -376,7 +399,6 @@ const Icons = {
   Verify,
   VerifyAndUpload,
   WholeWords,
-  Login,
 };
 
 const Images = {

@@ -3,13 +3,20 @@ import {
   Success,
   TriangleSharpOutline,
 } from '@cloud-editor-mono/images/assets/icons';
-import { useMemo } from 'react';
+import clsx from 'clsx';
+import { useEffect, useRef, useState } from 'react';
 
+import MarkdownReader from '../../../app-lab-markdown-reader/MarkdownReader';
 import {
   Button,
   ButtonSize,
   ButtonType,
+  ButtonVariant,
+  Medium,
   useI18n,
+  XSmall,
+  XXSmall,
+  XXXSmall,
 } from '../../../components-by-app/app-lab';
 import { AppLabDialog } from '../app-lab-dialog/AppLabDialog';
 import styles from './board-update-dialog.module.scss';
@@ -17,218 +24,353 @@ import {
   BoardUpdateDialogProps,
   UpdaterStatus,
 } from './BoardUpdateDialog.type';
-import { LogsPanel } from './LogsPanel';
 import { messages } from './messages';
 
 export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
   logic,
 }: BoardUpdateDialogProps) => {
   const { formatMessage } = useI18n();
+  const [showDetails, setShowDetails] = useState(true);
+
+  const logsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
 
   const {
     open,
-    isBoard,
     status,
     newAppVersion,
+    releaseNotes,
     boardUpdates,
     boardUpdateSucceeded,
     appUpdateSucceeded,
     boardLogs,
-    boardLogErrors,
-    logStatus,
     startUpdate,
     reloadApp,
     skipUpdate,
+    changeNetwork,
     openFlasherTool,
     openArduinoSupport,
     bypassSkipUpdate,
   } = logic();
 
-  const title = useMemo(() => {
-    switch (status) {
-      case UpdaterStatus.Checking:
-      case UpdaterStatus.CheckingFailed:
-        return formatMessage(messages.titleCheckingForUpdates);
-      case UpdaterStatus.UpdateAvailable:
-        return formatMessage(messages.titleUpdatesAvailable);
-      case UpdaterStatus.UpdatingBoard:
-      case UpdaterStatus.UpdatingApp:
-        return formatMessage(messages.titleInstallingUpdates);
-      default:
-        return formatMessage(messages.titleUpdates);
-    }
-  }, [formatMessage, status]);
+  useEffect(() => {
+    setShowDetails(releaseNotes === undefined);
+  }, [releaseNotes]);
 
-  const footer = useMemo(() => {
-    switch (status) {
-      case UpdaterStatus.UpdateAvailable:
-        return (
-          <div className={styles['footer-buttons']}>
-            {bypassSkipUpdate ? null : (
+  useEffect(() => {
+    if (autoScroll && logsContainerRef.current) {
+      const el = logsContainerRef.current;
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [boardLogs, autoScroll]);
+
+  const handleLogsScroll = (): void => {
+    if (!logsContainerRef.current) return;
+
+    const el = logsContainerRef.current;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 5;
+
+    setAutoScroll(isAtBottom);
+  };
+
+  return (
+    <AppLabDialog
+      open={open}
+      closeable={false}
+      classes={{
+        body: clsx(styles['dialog-body'], {
+          [styles['checking']]: status === UpdaterStatus.Checking,
+        }),
+      }}
+    >
+      {status === UpdaterStatus.Checking ? (
+        <div className={styles['checking-updates']}>
+          <div className={styles['spinner']} />
+          <Medium>{formatMessage(messages.checkingForUpdates)}</Medium>
+          <XSmall>
+            {formatMessage(messages.checkingForUpdatesDescription)}
+          </XSmall>
+        </div>
+      ) : (
+        <>
+          <div className={styles['update-dialog-header']}>
+            <XXSmall className={styles['title']}>
+              {formatMessage(messages.title)}
+            </XXSmall>
+            {!bypassSkipUpdate && status === UpdaterStatus.UpdateAvailable && (
               <Button
-                type={ButtonType.Secondary}
-                size={ButtonSize.Small}
+                type={ButtonType.Tertiary}
+                size={ButtonSize.XSmall}
                 onClick={skipUpdate}
               >
                 {formatMessage(messages.skipUpdate)}
               </Button>
             )}
-            <Button
-              type={ButtonType.Primary}
-              size={ButtonSize.Small}
-              onClick={startUpdate}
-            >
-              {formatMessage(messages.installUpdate)}
-            </Button>
           </div>
-        );
-
-      case UpdaterStatus.UpdateComplete:
-      case UpdaterStatus.Restarting:
-        // Hide reload button for SBC as it needs a full app restart
-        return !isBoard ? (
-          <Button
-            classes={{ button: styles['reload-button'] }}
-            type={ButtonType.Primary}
-            size={ButtonSize.Small}
-            loading={status === UpdaterStatus.Restarting}
-            onClick={reloadApp}
-          >
-            {formatMessage(messages.restart)}
-          </Button>
-        ) : null;
-
-      default:
-        return null;
-    }
-  }, [formatMessage, isBoard, reloadApp, skipUpdate, startUpdate, status]);
-
-  return (
-    <AppLabDialog
-      open={open}
-      title={title}
-      closeable={false}
-      footer={footer}
-      classes={{ body: styles['dialog-body'] }}
-    >
-      <div className={styles['update-dialog']}>
-        {status === UpdaterStatus.Checking && (
-          <>
-            <div className={styles['spinner']} />
-            <h3>{formatMessage(messages.checkingForUpdates)}</h3>
-            <p>{formatMessage(messages.onlyMoment)}</p>
-          </>
-        )}
-
-        {[UpdaterStatus.CheckingFailed, UpdaterStatus.UpdateFailed].includes(
-          status,
-        ) && (
-          <div className={styles['update-failed']}>
-            <div className={styles['update-failed--icon']}>
-              <TriangleSharpOutline />
-            </div>
-            <h3>{formatMessage(messages.updateFailed)}</h3>
-            <span className={styles['update-failed--description']}>
-              {formatMessage(messages.updateFailedDescription)}{' '}
-              <button onClick={openFlasherTool} className={styles['link']}>
-                {formatMessage(messages.arduinoFlasherTool)}
-              </button>{' '}
-              {formatMessage(messages.orContact)}{' '}
-              <button className={styles['link']} onClick={openArduinoSupport}>
-                {formatMessage(messages.arduinoSupport)}
-              </button>
-            </span>
-          </div>
-        )}
-
-        {[
-          UpdaterStatus.UpdateAvailable,
-          UpdaterStatus.UpdateComplete,
-          UpdaterStatus.UpdatingBoard,
-          UpdaterStatus.UpdatingApp,
-          UpdaterStatus.Restarting,
-        ].includes(status) && (
-          <div className={styles['update-available']}>
-            {boardUpdates && boardUpdates.length > 0 && (
-              <div>
-                <div className={styles['update-available-header']}>
-                  <Rhomboid />
-                  <span className={styles['update-available-header--title']}>
-                    {formatMessage(messages.unoQSoftwareUpdate)}
-                  </span>
-                  {status === UpdaterStatus.UpdatingBoard && (
-                    <div className={styles['update-available-header--status']}>
-                      <div className={styles['spinner-small']} />
-                      {formatMessage(messages.installing)}
-                    </div>
-                  )}
-                  {boardUpdateSucceeded && (
-                    <div className={styles['update-available-header--status']}>
-                      <Success />
-                      {formatMessage(messages.installed)}
-                    </div>
-                  )}
+          <div className={styles['update-dialog-body']}>
+            {status === UpdaterStatus.CheckingFailed ? (
+              <div className={styles['checking-failed']}>
+                <div className={styles['checking-failed--icon']}>
+                  <TriangleSharpOutline />
                 </div>
-                <ul className={styles['update-available--list']}>
-                  {boardUpdates.map((update) => (
-                    <li key={update.name}>
-                      <b>{update.name}</b>{' '}
-                      <span className={styles['update-available-version']}>
-                        {formatMessage(messages.version)} {update.toVersion}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                <h3>{formatMessage(messages.checkingFailed)}</h3>
+                <span className={styles['checking-failed--description']}>
+                  {formatMessage(messages.checkingFailedDescription)}{' '}
+                  <button onClick={openFlasherTool} className={styles['link']}>
+                    {formatMessage(messages.arduinoFlasherTool)}
+                  </button>{' '}
+                  {formatMessage(messages.orContact)}{' '}
+                  <button
+                    className={styles['link']}
+                    onClick={openArduinoSupport}
+                  >
+                    {formatMessage(messages.arduinoSupport)}
+                  </button>
+                </span>
+              </div>
+            ) : (
+              <>
+                {!showDetails && releaseNotes && (
+                  <div className={styles['release-notes']}>
+                    <img src={releaseNotes.image} alt="Release notes" />
+                    <div className={styles['notes']}>
+                      <MarkdownReader content={releaseNotes.content} />
+                    </div>
+                  </div>
+                )}
+
+                {releaseNotes && (
+                  <div
+                    className={clsx(styles['update-details'], {
+                      [styles['visible']]: showDetails,
+                    })}
+                  >
+                    <Button
+                      type={ButtonType.Tertiary}
+                      size={ButtonSize.XSmall}
+                      variant={ButtonVariant.LowContrast}
+                      onClick={(): void => setShowDetails((prev) => !prev)}
+                    >
+                      {formatMessage(
+                        showDetails
+                          ? messages.hideDetails
+                          : messages.showDetails,
+                      )}
+                    </Button>
+                  </div>
+                )}
+
+                {showDetails && (
+                  <div className={styles['update-available']}>
+                    {boardUpdates && boardUpdates.length > 0 && (
+                      <div>
+                        <div className={styles['update-available-header']}>
+                          <Rhomboid />
+                          <span
+                            className={styles['update-available-header--title']}
+                          >
+                            {formatMessage(messages.unoQSoftwareUpdate)}
+                          </span>
+                          {status === UpdaterStatus.UpdatingBoard && (
+                            <div
+                              className={
+                                styles['update-available-header--status']
+                              }
+                            >
+                              <div className={styles['spinner-small']} />
+                              {formatMessage(messages.installing)}
+                            </div>
+                          )}
+                          {boardUpdateSucceeded && (
+                            <div
+                              className={
+                                styles['update-available-header--status']
+                              }
+                            >
+                              <Success />
+                              {formatMessage(messages.installed)}
+                            </div>
+                          )}
+                        </div>
+                        <ul className={styles['update-available--list']}>
+                          {boardUpdates.map((update) => (
+                            <li key={update.name}>
+                              <b>{update.name}</b>{' '}
+                              <span
+                                className={styles['update-available-version']}
+                              >
+                                {formatMessage(messages.version)}{' '}
+                                {update.toVersion}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {newAppVersion && (
+                      <div className={styles['update-available-header']}>
+                        <Rhomboid />
+                        <span
+                          className={styles['update-available-header--title']}
+                        >
+                          {formatMessage(messages.arduinoAppLab)}
+                        </span>
+                        <span className={styles['update-available-version']}>
+                          {formatMessage(messages.version)} {newAppVersion}
+                        </span>
+                        {status === UpdaterStatus.UpdatingApp && (
+                          <div
+                            className={
+                              styles['update-available-header--status']
+                            }
+                          >
+                            <div className={styles['spinner-small']} />
+                            {formatMessage(messages.installing)}
+                          </div>
+                        )}
+                        {appUpdateSucceeded && (
+                          <div
+                            className={
+                              styles['update-available-header--status']
+                            }
+                          >
+                            <Success />
+                            {formatMessage(messages.installed)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            {(showDetails || status === UpdaterStatus.CheckingFailed) && (
+              <div
+                ref={logsContainerRef}
+                className={clsx(styles['update-logs'], {
+                  [styles['success']]: status === UpdaterStatus.UpdateComplete,
+                  [styles['error']]: [
+                    UpdaterStatus.CheckingFailed,
+                    UpdaterStatus.UpdateFailed,
+                  ].includes(status),
+                })}
+                onScroll={handleLogsScroll}
+              >
+                {boardLogs?.map((log, index) => (
+                  <XXSmall key={index} className={styles['log-entry']}>
+                    {log}
+                  </XXSmall>
+                ))}
               </div>
             )}
 
-            {newAppVersion && (
-              <div className={styles['update-available-header']}>
-                <Rhomboid />
-                <span className={styles['update-available-header--title']}>
-                  {formatMessage(messages.arduinoAppLab)}
-                </span>
-                <span className={styles['update-available-version']}>
-                  {formatMessage(messages.version)} {newAppVersion}
-                </span>
-                {status === UpdaterStatus.UpdatingApp && (
-                  <div className={styles['update-available-header--status']}>
+            <div
+              className={clsx(styles['update-footer'], {
+                [styles['expanded']]:
+                  showDetails || status === UpdaterStatus.CheckingFailed,
+                [styles['available']]: status === UpdaterStatus.UpdateAvailable,
+                [styles['installing']]: [
+                  UpdaterStatus.UpdatingApp,
+                  UpdaterStatus.UpdatingBoard,
+                ].includes(status),
+                [styles['completed']]: status === UpdaterStatus.UpdateComplete,
+                [styles['failed']]: [
+                  UpdaterStatus.UpdateFailed,
+                  UpdaterStatus.CheckingFailed,
+                ].includes(status),
+              })}
+            >
+              {status === UpdaterStatus.CheckingFailed && (
+                <>
+                  <div className={styles['error']}>
+                    <TriangleSharpOutline />
+                    <XXXSmall>{formatMessage(messages.updateFailed)}</XXXSmall>
+                  </div>
+                  <div className={styles['checking-failed-actions']}>
+                    <Button
+                      type={ButtonType.Secondary}
+                      size={ButtonSize.XSmall}
+                      onClick={changeNetwork}
+                    >
+                      {formatMessage(messages.changeNetwork)}
+                    </Button>
+                    <Button
+                      type={ButtonType.Primary}
+                      size={ButtonSize.XSmall}
+                      onClick={skipUpdate}
+                    >
+                      {formatMessage(messages.skipUpdate)}
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {status === UpdaterStatus.UpdateAvailable && (
+                <Button
+                  type={ButtonType.Primary}
+                  size={ButtonSize.XSmall}
+                  onClick={startUpdate}
+                >
+                  {formatMessage(messages.installUpdate)}
+                </Button>
+              )}
+
+              {[
+                UpdaterStatus.UpdatingApp,
+                UpdaterStatus.UpdatingBoard,
+              ].includes(status) && (
+                <>
+                  <div className={styles['infinite-indicator']}>
+                    <div className={styles['indicator']} />
+                  </div>
+                  <div className={styles['progress']}>
                     <div className={styles['spinner-small']} />
-                    {formatMessage(messages.installing)}
+                    <XXXSmall>
+                      {formatMessage(messages.updateInstalling)}
+                    </XXXSmall>
                   </div>
-                )}
-                {appUpdateSucceeded && (
-                  <div className={styles['update-available-header--status']}>
+                </>
+              )}
+
+              {status === UpdaterStatus.UpdateComplete && (
+                <>
+                  <div className={styles['success']}>
                     <Success />
-                    {formatMessage(messages.installed)}
+                    <XXXSmall>
+                      {formatMessage(messages.updateCompleted)}
+                    </XXXSmall>
                   </div>
-                )}
-              </div>
-            )}
+                  <Button
+                    type={ButtonType.Primary}
+                    size={ButtonSize.XSmall}
+                    onClick={reloadApp}
+                  >
+                    {formatMessage(messages.restart)}
+                  </Button>
+                </>
+              )}
+
+              {status === UpdaterStatus.UpdateFailed && (
+                <>
+                  <div className={styles['error']}>
+                    <TriangleSharpOutline />
+                    <XXXSmall>{formatMessage(messages.updateFailed)}</XXXSmall>
+                  </div>
+                  <Button
+                    type={ButtonType.Primary}
+                    size={ButtonSize.XSmall}
+                    onClick={startUpdate}
+                  >
+                    {formatMessage(messages.retry)}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
-        )}
-
-        {boardLogs && boardLogs.length > 0 && (
-          <LogsPanel status={logStatus} logs={boardLogs} />
-        )}
-
-        {boardLogErrors && boardLogErrors.length > 0 && (
-          <div className={styles['error-logs']}>
-            <p>{formatMessage(messages.errorEncountered)}:</p>
-            <ul>
-              {boardLogErrors.map((e, i) => (
-                <li key={i}>{e.message}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {isBoard && status === UpdaterStatus.UpdateComplete && (
-          <p className={styles['sbc-restart-note']}>
-            {formatMessage(messages.sbcRestartNote)}
-          </p>
-        )}
-      </div>
+        </>
+      )}
     </AppLabDialog>
   );
 };

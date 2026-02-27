@@ -1,6 +1,6 @@
 import { createFileRoute, useParams } from '@tanstack/react-router';
 
-import LearnDetail from '../../features/learn-detail/LearnDetail.feat';
+import LearnDetail from '../../features/learn/learn-detail/LearnDetail.feat';
 import { DETAIL_PATH_BY_SECTION } from '../../routes/__root';
 
 const LearnResourceDetail: React.FC = () => {

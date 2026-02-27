@@ -1,4 +1,7 @@
-import { httpPostRaw } from '@cloud-editor-mono/infrastructure';
+import {
+  httpPostRaw,
+  HttpPostRawOptions,
+} from '@cloud-editor-mono/infrastructure';
 import { Subject } from 'rxjs';
 import { beforeEach } from 'vitest';
 
@@ -48,12 +51,14 @@ function buildWretchObj(
 }
 
 vi.mock('@cloud-editor-mono/infrastructure', () => ({
-  httpPostRaw: vi.fn().mockImplementation((_url: string, endpoint: string) => {
-    if (endpoint === '/update') {
-      return buildWretchObj(async () => ({ error: null }));
-    }
-    return Promise.resolve({});
-  }),
+  httpPostRaw: vi
+    .fn()
+    .mockImplementation(({ endpoint }: HttpPostRawOptions) => {
+      if (endpoint === '/update') {
+        return buildWretchObj(async () => ({ error: null }));
+      }
+      return Promise.resolve({});
+    }),
 }));
 
 vi.mock('../utils', () => ({
@@ -123,7 +128,10 @@ describe('connectToAgent', () => {
 
     expect(connected).toBe(true);
     expect(getInvokedFetchAttempts).toHaveBeenCalled();
-    expect(httpPostRaw).toBeCalledWith('http://127.0.0.1:8991', '/update');
+    expect(httpPostRaw).toBeCalledWith({
+      url: 'http://127.0.0.1:8991',
+      endpoint: '/update',
+    });
   });
 
   it('should not try to update the agent if the version given is a more recent one but is ventura', async () => {
@@ -146,7 +154,10 @@ describe('connectToAgent', () => {
 
     expect(connected).toBe(true);
     expect(getInvokedFetchAttempts).toHaveBeenCalled();
-    expect(httpPostRaw).not.toBeCalledWith('http://127.0.0.1:8991', '/update');
+    expect(httpPostRaw).not.toBeCalledWith({
+      url: 'http://127.0.0.1:8991',
+      endpoint: '/update',
+    });
   });
 
   it('should not try to update the agent if the version given is a more recent one but is dev', async () => {
@@ -169,7 +180,10 @@ describe('connectToAgent', () => {
 
     expect(connected).toBe(true);
     expect(getInvokedFetchAttempts).toHaveBeenCalled();
-    expect(httpPostRaw).not.toBeCalledWith('http://127.0.0.1:8991', '/update');
+    expect(httpPostRaw).not.toBeCalledWith({
+      url: 'http://127.0.0.1:8991',
+      endpoint: '/update',
+    });
   });
 
   it('should not try to update the agent if the version given is a more recent one but is release candidate', async () => {
@@ -192,7 +206,10 @@ describe('connectToAgent', () => {
 
     expect(connected).toBe(true);
     expect(getInvokedFetchAttempts).toHaveBeenCalled();
-    expect(httpPostRaw).not.toBeCalledWith('http://127.0.0.1:8991', '/update');
+    expect(httpPostRaw).not.toBeCalledWith({
+      url: 'http://127.0.0.1:8991',
+      endpoint: '/update',
+    });
   });
 
   it('should set the protocol to be used based on the information returned by the agent', async () => {

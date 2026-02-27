@@ -1,3 +1,4 @@
+export * from '../../arduino-auth';
 export {
   type CompileErrors,
   type ParsedError,

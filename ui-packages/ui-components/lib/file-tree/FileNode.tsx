@@ -1,6 +1,6 @@
 import { CaretDown as CaretDownIcon } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { NodeRendererProps } from 'react-arborist';
 
 import { XXSmall } from '../typography';
@@ -67,7 +67,9 @@ const FileNode: React.FC<FileNodeProps> = ({
     >
       {node.isInternal && (
         <CaretDownIcon
-          className={node.isClosed ? styles['tree-node-closed'] : ''}
+          className={clsx(styles['tree-node-caret'], {
+            [styles['tree-node-caret--closed']]: node.isClosed,
+          })}
         />
       )}
 
@@ -107,4 +109,4 @@ const FileNode: React.FC<FileNodeProps> = ({
   );
 };
 
-export default FileNode;
+export default memo(FileNode);

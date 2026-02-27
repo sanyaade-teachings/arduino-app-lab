@@ -64,6 +64,11 @@ export function getOS(): string | undefined {
   return parser.getOS().name;
 }
 
+export const isLinux = (): boolean =>
+  !!getOS()?.toLowerCase().includes('linux');
+
+export const isMacOS = (): boolean => getOS() === 'Mac OS';
+
 export const isChromeOs =
   getOS() === 'Chromium OS' ||
   (Config.MODE !== 'production' &&

@@ -17,8 +17,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const uiOpeningTimeout = 300 * time.Second
-
 func waitTCPPort(host string, port int, timeout, interval, perTry time.Duration) error {
 	addr := net.JoinHostPort(host, fmt.Sprintf("%d", port))
 	deadline := time.Now().Add(timeout)
@@ -157,7 +155,7 @@ func openUIWhenReady(ctx context.Context, host string, port int, timeout time.Du
 	return nil
 }
 
-func OpenUIWhenReady(ctx context.Context, board *board.Board, targetBoardPort int) error {
+func OpenUIWhenReady(ctx context.Context, board *board.Board, targetBoardPort int, timeout int) error {
 	// In some cases 127.0.0.1:port works, but localhost:port does not.
 	host := "127.0.0.1"
 	port := targetBoardPort
@@ -178,5 +176,14 @@ func OpenUIWhenReady(ctx context.Context, board *board.Board, targetBoardPort in
 		port = p
 	}
 
-	return openUIWhenReady(ctx, host, port, uiOpeningTimeout)
+	return openUIWhenReady(ctx, host, port, time.Duration(timeout)*time.Second)
+}
+
+func ForwardNonUIPort(ctx context.Context, board *board.Board, targetBoardPort int) error {
+	_, err := board.StartTunnel(ctx, board.Conn, strconv.Itoa(targetBoardPort), targetBoardPort)
+	if err != nil {
+		return fmt.Errorf("failed to forward port %d: %w", targetBoardPort, err)
+	}
+
+	return nil
 }

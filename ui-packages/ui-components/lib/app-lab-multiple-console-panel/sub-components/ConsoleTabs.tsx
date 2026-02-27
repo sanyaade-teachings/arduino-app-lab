@@ -6,50 +6,56 @@ import {
 } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
 
+import {
+  CONSOLE_SOURCE_KEYS,
+  ConsoleSourceKey,
+} from '../multipleConsolePanel.type';
 import styles from './console-tabs.module.scss';
 
 interface ConsoleTabProps {
-  consoleTabs: string[];
-  activeTab: string | undefined;
-  setActiveTab: React.Dispatch<React.SetStateAction<string | undefined>>;
+  consoleTabs: ConsoleSourceKey[];
+  activeTab: ConsoleSourceKey | undefined;
+  setActiveTab: React.Dispatch<
+    React.SetStateAction<ConsoleSourceKey | undefined>
+  >;
 }
 
 const ConsoleTabs: React.FC<ConsoleTabProps> = (props: ConsoleTabProps) => {
   const { consoleTabs, activeTab, setActiveTab } = props;
 
-  const renderTabIcon = (tab: string): JSX.Element => {
+  const renderTabIcon = (tab: ConsoleSourceKey): JSX.Element => {
     switch (tab) {
-      case 'startup':
+      case CONSOLE_SOURCE_KEYS.STARTUP:
         return <Rocket />;
-      case 'main':
+      case CONSOLE_SOURCE_KEYS.PYTHON:
         return <Python />;
-      case 'serial-monitor':
+      case CONSOLE_SOURCE_KEYS.SERIAL_MONITOR:
         return <SketchParentheses />;
       default:
         return <Bricks />;
     }
   };
 
-  const tabDictionary = (tab: string): string => {
+  const tabDictionary = (tab: ConsoleSourceKey): string => {
     switch (tab) {
-      case 'startup':
+      case CONSOLE_SOURCE_KEYS.STARTUP:
         return 'App launch';
-      case 'main':
+      case CONSOLE_SOURCE_KEYS.PYTHON:
         return 'Python';
-      case 'serial-monitor':
+      case CONSOLE_SOURCE_KEYS.SERIAL_MONITOR:
         return 'Serial Monitor';
       default:
         return tab;
     }
   };
 
-  const bgColor = (tab: string): string => {
+  const bgColor = (tab: ConsoleSourceKey): string => {
     switch (tab) {
-      case 'startup':
+      case CONSOLE_SOURCE_KEYS.STARTUP:
         return 'rgba(193, 171, 21, 0.20)';
-      case 'main':
+      case CONSOLE_SOURCE_KEYS.PYTHON:
         return 'rgba(21, 173, 223, 0.20)';
-      case 'serial-monitor':
+      case CONSOLE_SOURCE_KEYS.SERIAL_MONITOR:
         return 'rgba(37, 194, 199, 0.20)';
       default:
         return 'rgba(196, 196, 196, 0.20)';

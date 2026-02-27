@@ -19,9 +19,15 @@ export function ConnectToWiFi(arg1:string,arg2:string):Promise<void>;
 
 export function CreateFolder(arg1:string):Promise<void>;
 
+export function DeleteRefreshToken(arg1:string):Promise<void>;
+
+export function DisconnectWiFi():Promise<void>;
+
 export function ExportApp(arg1:string,arg2:string,arg3:boolean):Promise<string>;
 
 export function Flash(arg1:flasher.OSImageRelease,arg2:boolean):Promise<void>;
+
+export function ForwardNonUIPort(arg1:number):Promise<void>;
 
 export function GetAboutMessage():Promise<string>;
 
@@ -61,11 +67,15 @@ export function GetOSImageVersion():Promise<string>;
 
 export function GetOrchestratorURL():Promise<string>;
 
+export function GetRefreshToken(arg1:string):Promise<string>;
+
 export function GetTags():Promise<Array<learn.Tag>>;
 
 export function GetTitle():Promise<string>;
 
 export function GetWiFiStatus():Promise<wifi.WifiStatus>;
+
+export function HandleSecondInstanceLaunch(arg1:options.SecondInstanceData):Promise<void>;
 
 export function ImportApp():Promise<string>;
 
@@ -89,11 +99,13 @@ export function NeedsImageUpdate():Promise<boolean>;
 
 export function NewVersion():Promise<string>;
 
+export function OnUrlOpen(arg1:string):Promise<void>;
+
 export function OpenBoardTerminal():Promise<void>;
 
 export function OpenFile(arg1:string):Promise<void>;
 
-export function OpenUIWhenReady(arg1:number):Promise<void>;
+export function OpenUIWhenReady(arg1:number,arg2:number):Promise<void>;
 
 export function RemoveFile(arg1:string):Promise<void>;
 
@@ -106,6 +118,8 @@ export function SelectBoard(arg1:string,arg2:string):Promise<void>;
 export function SetBoardName(arg1:string):Promise<void>;
 
 export function SetKeyboardLayout(arg1:string):Promise<void>;
+
+export function SetRefreshToken(arg1:string,arg2:string):Promise<void>;
 
 export function SetUserPassword(arg1:string):Promise<void>;
 

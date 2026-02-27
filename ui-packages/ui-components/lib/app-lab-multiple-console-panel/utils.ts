@@ -1,20 +1,23 @@
 import {
-  AL_PYTHON_KEY,
-  AL_SERIAL_MONITOR_KEY,
-  AL_STARTUP_KEY,
+  CONSOLE_SOURCE_KEYS,
+  ConsoleSourceKey,
 } from './multipleConsolePanel.type';
 
-export const getOrderedConsoleTabs = (tabs: string[]): string[] => {
-  const preferredOrder = [AL_STARTUP_KEY, AL_SERIAL_MONITOR_KEY, AL_PYTHON_KEY];
+const PRIORITY: Record<ConsoleSourceKey, number> = {
+  [CONSOLE_SOURCE_KEYS.STARTUP]: 0,
+  [CONSOLE_SOURCE_KEYS.SERIAL_MONITOR]: 1,
+  [CONSOLE_SOURCE_KEYS.PYTHON]: 2,
+};
 
-  return tabs.sort((a, b) => {
-    const indexA = preferredOrder.indexOf(a);
-    const indexB = preferredOrder.indexOf(b);
-    if (indexA !== -1 && indexB !== -1) {
-      return indexA - indexB;
-    }
-    if (indexA !== -1) return -1;
-    if (indexB !== -1) return 1;
-    return 0;
+const NO_PRIORITY = Number.MAX_SAFE_INTEGER;
+
+export const getOrderedConsoleTabs = (
+  tabs: ConsoleSourceKey[],
+): ConsoleSourceKey[] => {
+  return [...tabs].sort((a, b) => {
+    const priorityA = PRIORITY[a] ?? NO_PRIORITY;
+    const priorityB = PRIORITY[b] ?? NO_PRIORITY;
+
+    return priorityA - priorityB;
   });
 };

@@ -10,11 +10,18 @@ const externalDependencies = pkg.peerDependencies
   : [];
 
 export default defineConfig(
-  libConfig('domain', externalDependencies, undefined, {
-    css: {
-      modules: {
-        hashPrefix: pkg.name,
+  libConfig(
+    'domain',
+    externalDependencies,
+    undefined,
+    {
+      css: {
+        modules: {
+          hashPrefix: pkg.name,
+        },
       },
     },
-  }),
+    false,
+    ['./tests-setup.ts'],
+  ),
 );

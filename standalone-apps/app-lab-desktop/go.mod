@@ -12,15 +12,18 @@ require (
 	github.com/arduino/go-windows-runas v1.0.3-0.20260119165320-5690d2bdfe05
 	github.com/codeclysm/extract/v4 v4.0.0
 	github.com/goforj/godump v1.5.0
+	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.11.1
 	github.com/wailsapp/wails/v2 v2.11.0
+	github.com/zalando/go-keyring v0.2.6
 	go.bug.st/f v0.4.0
 	go.bug.st/relaxed-semver v0.15.0
 	google.golang.org/grpc v1.77.0
 )
 
 require (
+	al.essio.dev/pkg/shellescape v1.5.1 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	fortio.org/safecast v1.2.0 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
@@ -31,11 +34,13 @@ require (
 	github.com/arduino/go-timeutils v0.0.0-20171220113728-d1dd9e313b1b // indirect
 	github.com/arduino/go-win32-utils v1.0.0 // indirect
 	github.com/arduino/pluggable-discovery-protocol-handler/v2 v2.2.1 // indirect
+	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cmaglie/pb v1.0.27 // indirect
 	github.com/creack/goselect v0.1.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
+	github.com/danieljoos/wincred v1.2.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/djherbis/buffer v1.2.0 // indirect
 	github.com/djherbis/nio/v3 v3.0.1 // indirect
@@ -50,6 +55,7 @@ require (
 	github.com/gofrs/uuid/v5 v5.4.0 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect

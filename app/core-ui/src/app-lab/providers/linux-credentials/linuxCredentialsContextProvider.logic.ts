@@ -71,7 +71,6 @@ export function useLinuxCredentials(): LinuxCredentialsContextValue {
     ['get-user-password-set'],
     isUserPasswordSet,
     {
-      refetchOnWindowFocus: false,
       enabled: boardIsReachable,
     },
   );

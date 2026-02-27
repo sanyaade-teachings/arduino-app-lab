@@ -1,25 +1,29 @@
 /* eslint-disable no-empty */
 import { assertNonNull, Config } from '@cloud-editor-mono/common';
-import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app-list/importAppDialog.type';
+import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app/app-list/importAppDialog.type';
 import {
   applyBoardUpdateWailsFallback,
   checkBoardUpdateWailsFallback,
   getBoardUpdateLogsWailsFallback,
+  getEIProjectAPIKey,
   OrchestratorService,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   addAppBrickV1Request,
   addAppSketchLibraryV1Request,
+  AIModelItem,
   applyBoardUpdateV1Request,
   BrickCreateUpdateRequest,
   checkBoardUpdateV1Request,
   cloneAppV1Request,
   createAppV1Request,
+  deleteAIModelV1Request,
   deleteAppBrickV1Request,
   deleteAppSketchLibraryV1Request,
   deleteAppV1Request,
   deleteSystemPropertyV1Request,
   EventSourceHandlers,
+  getAIModelsV1Request,
   getAppBrickInstanceV1Request,
   getAppBricksV1Request,
   getAppDetailV1Request,
@@ -38,6 +42,7 @@ import {
   getSystemPropertyV1Request,
   getSystemResourcesStreamV1Request,
   getVersionV1Request,
+  installEIModelV1Request,
   ListAppParams,
   ListLibrariesParams,
   postAppStartStreamV1Request,
@@ -135,7 +140,7 @@ export const getConfig: OrchestratorService['getConfig'] = async function () {
   return getConfigV1Request(origin);
 };
 
-export const getAppsStatus: OrchestratorService['getAppsStatus'] =
+export const getAppStatus: OrchestratorService['getAppStatus'] =
   async function (
     handlers: EventSourceHandlers,
     abortController?: AbortController,
@@ -438,4 +443,31 @@ export const importAppFromFile = async (
   const tempFilePath = await SaveTempFile(file.name, Array.from(uint8Array));
 
   return importAppFromPath(tempFilePath);
+};
+
+export const getAIModels: OrchestratorService['getAIModels'] =
+  async (): Promise<AIModelItem[]> => {
+    const origin = await getOrchestratorURL();
+
+    const resp = await getAIModelsV1Request(undefined, origin);
+    return resp.models || [];
+  };
+
+export const installEIModel: OrchestratorService['installEIModel'] = async (
+  projectId: string,
+  impulseId: string,
+): Promise<AIModelItem> => {
+  const [origin, apiKey] = await Promise.all([
+    getOrchestratorURL(),
+    getEIProjectAPIKey(projectId),
+  ]);
+  return installEIModelV1Request(apiKey, projectId, impulseId, origin);
+};
+
+export const deleteAIModel: OrchestratorService['deleteAIModel'] = async (
+  id: string,
+): Promise<void> => {
+  const origin = await getOrchestratorURL();
+
+  await deleteAIModelV1Request(id, origin);
 };

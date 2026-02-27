@@ -4,7 +4,6 @@ import {
   Download,
   Duplicate,
   Pencil,
-  Spinner,
 } from '@cloud-editor-mono/images/assets/icons';
 import { canRenameApp } from '@cloud-editor-mono/infrastructure';
 import clsx from 'clsx';
@@ -23,22 +22,11 @@ import { appTitleMessages } from './messages';
 
 interface AppTitleProps {
   appTitleLogic: AppTitleLogic;
-  showBadge?: boolean;
-  useStaticPosition?: boolean;
-  loader?: boolean;
-  type?: 'default' | 'footer';
-  disabled?: boolean;
 }
 
 const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
-  const {
-    appTitleLogic,
-    showBadge = true,
-    useStaticPosition,
-    loader,
-    type,
-    disabled,
-  } = props;
+  const { appTitleLogic } = props;
+
   const inputRef = useRef<HTMLDivElement>(null);
   const [inputWidth, setInputWidth] = useState(0);
   const nameRef = useRef<HTMLDivElement>(null);
@@ -98,9 +86,6 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
       className={clsx(styles['app-title'], {
         [styles['active']]: editing || open,
         [styles['example']]: app?.example,
-        [styles['default']]: type === 'default',
-        [styles['footer']]: type === 'footer',
-        [styles['disabled']]: !!disabled,
       })}
     >
       <DeleteAppDialog logic={deleteAppDialogLogic} />
@@ -108,7 +93,7 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
       <CreateAppDialog logic={createAppDialogLogic} />
       <div className={styles['app-icon']}>
         {app?.example ? (
-          app.icon
+          app?.icon
         ) : (
           <AppLabEmojiPicker
             value={app?.icon}
@@ -122,10 +107,12 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
           className={clsx(styles['app-name-text-container'], {
             [styles['hidden']]: editing,
           })}
-          {...(canRename && {
-            onClick: (): void => onAppAction(AppAction.Rename),
-            onKeyUp: (): void => onAppAction(AppAction.Rename),
-          })}
+          {...(canRename &&
+            !app?.example &&
+            appStatus === 'stopped' && {
+              onClick: (): void => onAppAction(AppAction.Rename),
+              onKeyUp: (): void => onAppAction(AppAction.Rename),
+            })}
         >
           <XSmall
             ref={nameRef}
@@ -173,9 +160,8 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
           />
         )}
       </div>
-      {(!app?.example || type === 'footer') && (
+      {!app?.example && (
         <DropdownMenuButton
-          disabled={disabled}
           sections={[
             {
               name: 'Actions',
@@ -214,24 +200,17 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
           ]}
           classes={{
             dropdownMenu: styles['dropdown-menu'],
-            dropdownMenuButton: clsx(styles['dropdown-menu-button'], {
-              [styles['loading']]: loader,
-            }),
+            dropdownMenuButton: styles['dropdown-menu-button'],
             dropdownMenuButtonOpen: styles['dropdown-menu-button-open'],
-            dropdownMenuButtonWrapper: clsx(styles['app-actions'], {
-              //TODO: Remove this once the dropdown menu is set in the footer
-              [styles['dropdown-menu-button-footer']]:
-                type === 'footer' && !loader,
-            }),
+            dropdownMenuButtonWrapper: clsx(styles['app-actions']),
             dropdownMenuItem: styles['dropdown-menu-item'],
           }}
           onAction={(key): void => onAppAction(key as AppAction)}
           onOpen={setOpen}
-          buttonChildren={loader ? <Spinner /> : <CaretDown />}
-          useStaticPosition={useStaticPosition}
+          buttonChildren={<CaretDown />}
         />
       )}
-      {app?.default && showBadge && (
+      {app?.default && (
         <div className={styles['default-badge']}>
           <XXSmall>{formatMessage(appTitleMessages.appDefault)}</XXSmall>
         </div>

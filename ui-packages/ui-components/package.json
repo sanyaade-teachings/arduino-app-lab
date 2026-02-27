@@ -33,7 +33,6 @@
     "@lezer/highlight": ">= 1.2.1",
     "@tanstack/react-location": ">= 3.7.4",
     "clsx": ">= 1.2.1",
-    "dompurify": ">= 3.2.5",
     "emoji-picker-react": ">= 4.14.1",
     "html-react-parser": ">=4.2.2",
     "react": ">= 18.2.0",
@@ -47,6 +46,7 @@
     "react-use": ">= 17.4.0",
     "react-virtualized": ">= 9.22.5",
     "rehype-raw": ">= 7.0.0",
+    "remark-gfm": ">= 3.0.1",
     "remark-remove-comments": ">= 1.1.1"
   },
   "files": [

@@ -6,11 +6,11 @@ import clsx from 'clsx';
 
 import { IconButton } from '../../../essential/icon-button';
 import { useTooltip } from '../../../tooltip';
-import { FooterItem } from '../../AppLabFooterBar.type';
+import { SystemResource } from '../../AppLabFooterBar.type';
 import styles from './network-icon.module.scss';
 
 interface NetworkIconProps {
-  networkItem: FooterItem | undefined;
+  networkItem: SystemResource | undefined;
 }
 
 export const NetworkIcon: React.FC<NetworkIconProps> = ({

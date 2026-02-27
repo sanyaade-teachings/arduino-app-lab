@@ -31,9 +31,9 @@ export const messages = defineMessages({
     defaultMessage: 'Settings',
     description: 'Label for the settings side panel item',
   },
-  loginLabel: {
-    id: 'sidePanel.login',
-    defaultMessage: 'Login',
-    description: 'Label for the login side panel item',
+  accountLabel: {
+    id: 'sidePanel.account',
+    defaultMessage: 'Account',
+    description: 'Label for the account side panel item',
   },
 });

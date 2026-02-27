@@ -15,8 +15,6 @@ export type AuthContextValue = {
   isAuthInjected: boolean;
   aiUserPlan?: AiUserPlan;
   genAiInteractions?: AiMessageInteractions;
-  login?: () => Promise<void>;
-  logout?: () => Promise<void>;
 };
 
 const authContextValue: AuthContextValue = {

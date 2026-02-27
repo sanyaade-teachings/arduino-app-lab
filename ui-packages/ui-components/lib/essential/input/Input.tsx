@@ -38,6 +38,7 @@ export type InputProps = BasicInputProps & {
   disabled?: boolean;
   sensitive?: boolean;
   multiline?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onFocus?: (
     e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -82,6 +83,7 @@ export const Input = forwardRef(
       onChange = EmptyFn,
       onBlur = EmptyFn,
       onFocus = EmptyFn,
+      onClick: handleClick = EmptyFn,
       value,
       sensitive: _sensitive,
       style,
@@ -132,6 +134,7 @@ export const Input = forwardRef(
       e.stopPropagation();
       inputRef.current?.focus();
       inputStyle !== InputStyle.AppLab && inputRef.current?.select();
+      handleClick(e);
     };
 
     const onInputBlur = useCallback(

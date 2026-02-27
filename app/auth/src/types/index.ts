@@ -1,4 +1,11 @@
-import type { User } from '@auth0/auth0-spa-js';
+import type {
+  Auth0ClientOptions,
+  AuthorizationParams,
+  GetTokenSilentlyOptions,
+  LogoutOptions,
+  RedirectLoginOptions,
+  User,
+} from '@auth0/auth0-spa-js';
 
 // Re-export types from auth0-spa-js
 export type { GenericError } from '@auth0/auth0-spa-js';
@@ -56,15 +63,8 @@ export type ArduinoUserEnrichedData = Partial<{
 /* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type AuthClientOptions = {
-  config: any;
+  config: Auth0ClientOptions;
 };
-
-type Auth0ClientOptions = any;
-type AuthorizationParams = any;
-
-type GetTokenSilentlyOptions = any;
-type LogoutOptions = any;
-type RedirectLoginOptions<T extends any> = T;
 
 export type {
   Auth0ClientOptions,

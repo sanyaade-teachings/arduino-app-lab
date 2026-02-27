@@ -1,8 +1,7 @@
 import { Config } from '@cloud-editor-mono/common';
 import { WretchError } from 'wretch/resolver';
 
-import { httpGet, httpPost, httpPut } from '../fetch/fetch';
-import { FetchError } from '../fetch/fetch.type';
+import { FetchError, httpGet, httpPost, httpPut } from '../fetch';
 import {
   mapCreateOtaV1Response,
   mapListOtaV1Response,
@@ -26,14 +25,13 @@ export async function listOtaV1Request(
 ): Promise<ListOtaV1_Response> {
   const endpoint = '/v1/ota';
 
-  const response = await httpGet<ListOtaV1_OtaApi>(
-    Config.OTA_API_URL,
-    undefined,
+  const response = await httpGet<ListOtaV1_OtaApi>({
+    url: Config.OTA_API_URL,
     endpoint,
     token,
-    query,
+    params: query,
     headers,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -53,14 +51,13 @@ export async function showOtaV1Request(
 ): Promise<ShowOtaV1_Response> {
   const endpoint = `/v1/ota/${otaId}`;
 
-  const response = await httpGet<ShowOtaV1_Response>(
-    Config.OTA_API_URL,
-    undefined,
+  const response = await httpGet<ShowOtaV1_Response>({
+    url: Config.OTA_API_URL,
     endpoint,
     token,
     params,
     headers,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -79,18 +76,15 @@ export async function abortPendingOtaV1Request(
   const endpoint = `/v1/ota/${otaId}/cancel`;
 
   let error: WretchError | undefined = undefined;
-  const response = await httpPut<CreateOtaV1_Response>(
-    Config.OTA_API_URL,
-    undefined,
+  const response = await httpPut<CreateOtaV1_Response>({
+    url: Config.OTA_API_URL,
     endpoint,
-    undefined,
     token,
     headers,
-    undefined,
-    (err) => {
+    handleError: (err: WretchError) => {
       error = err;
     },
-  );
+  });
 
   if (!response || error) {
     throw new Error(
@@ -118,16 +112,14 @@ export async function createOtaV1Request(
     err = { errStatus: error.status };
   };
 
-  const response = await httpPost<CreateOtaV1_Response>(
-    Config.OTA_API_URL,
-    undefined,
+  const response = await httpPost<CreateOtaV1_Response>({
+    url: Config.OTA_API_URL,
     endpoint,
     body,
     token,
-    undefined,
     headers,
     handleError,
-  );
+  });
 
   if (err) {
     return err;

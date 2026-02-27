@@ -1,12 +1,6 @@
 import { Config } from '@cloud-editor-mono/common';
 
-import {
-  httpDelete,
-  httpGet,
-  httpGetRaw,
-  httpPost,
-  httpPut,
-} from '../fetch/fetch';
+import { httpDelete, httpGet, httpGetRaw, httpPost, httpPut } from '../fetch';
 import { EventSourceHandlers, getEventSource } from '../fetch-event-source';
 import {
   ArduinoBuilderBoard_BuilderApi,
@@ -62,15 +56,14 @@ import {
 
 export function builderAliveRequest(token: string): Promise<Response | void> {
   const endpoint = '/alive';
-  return httpGetRaw(Config.BUILDER_API_V2_URL, endpoint, token);
+  return httpGetRaw({ url: Config.BUILDER_API_V2_URL, endpoint, token });
 }
 
 export async function getBoardsRequest(): Promise<GetBoards_Response> {
-  const response = await httpGet<ArduinoBuilderBoardsv3_BuilderApi>(
-    Config.BOARDS_API_URL,
-    undefined,
-    '',
-  );
+  const response = await httpGet<ArduinoBuilderBoardsv3_BuilderApi>({
+    url: Config.BOARDS_API_URL,
+    endpoint: '',
+  });
 
   if (!response) {
     throw new Error(
@@ -87,13 +80,11 @@ export async function getBoardsByVidPidRequest(
   const endpoint = '';
   const vidPid = `${params.vid}-${params.pid}`;
   const requestParams = { 'vid-pid': vidPid };
-  const response = await httpGet<ArduinoBuilderBoard_BuilderApi>(
-    Config.BOARDS_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoBuilderBoard_BuilderApi>({
+    url: Config.BOARDS_API_URL,
     endpoint,
-    undefined,
-    requestParams,
-  );
+    params: requestParams,
+  });
 
   if (!response) {
     throw new Error(
@@ -108,11 +99,10 @@ export async function getBoardByFqbnRequest(
   params: GetBoardByFqbn_Params,
 ): Promise<GetBoardByFqbn_Response> {
   const endpoint = `/${params.fqbn}`;
-  const response = await httpGet<ArduinoBuilderBoardv3Full_BuilderApi>(
-    Config.BOARDS_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoBuilderBoardv3Full_BuilderApi>({
+    url: Config.BOARDS_API_URL,
     endpoint,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -128,13 +118,11 @@ export async function computeActionByFqbnRequest(
   payload: BoardsCompute_Body,
 ): Promise<Compute_Response> {
   const endpoint = `/${params.fqbn}/upload-command`;
-  const response = await httpGet<ArduinoBuilderBoardscomputev3_BuilderApi>(
-    Config.BOARDS_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoBuilderBoardscomputev3_BuilderApi>({
+    url: Config.BOARDS_API_URL,
     endpoint,
-    undefined,
-    payload,
-  );
+    params: payload,
+  });
 
   if (!response) {
     throw new Error(
@@ -154,13 +142,11 @@ export async function getLibrariesRequest(
     const qp: GetLibraries_Params & { per_page?: number } = { ...params };
     if (qp.limit && !qp.per_page) qp.per_page = qp.limit;
 
-    const newRes = await httpGet<unknown>(
-      newBase,
-      undefined,
-      newEndpoint,
-      undefined,
-      qp,
-    );
+    const newRes = await httpGet<unknown>({
+      url: newBase,
+      endpoint: newEndpoint,
+      params: qp,
+    });
 
     if (newRes && typeof newRes === 'object' && 'pagination' in newRes) {
       return mapGetLibrariesNewToLegacy(newRes as GetLibraries_Response_New);
@@ -182,7 +168,7 @@ export async function getLibraryRequest(
 
   // Specific version: /v1/releases/{name@x.y.z}
   const endpoint = `/v1/releases/${params.id}`;
-  const res = await httpGet<Library>(newBase, undefined, endpoint, undefined);
+  const res = await httpGet<Library>({ url: newBase, endpoint });
   if (!res) {
     throw new Error('Failed to fetch library details');
   }
@@ -195,12 +181,10 @@ export async function getReleaseLibraryFilesRequest(params: {
 }): Promise<ReleaseFilesResponse> {
   const base = Config.LIBRARIES_API_URL_NEW;
   const endpoint = `/v1/releases/${params.id}/files`;
-  const response = await httpGet<ReleaseFilesResponse>(
-    base,
-    undefined,
+  const response = await httpGet<ReleaseFilesResponse>({
+    url: base,
     endpoint,
-    undefined,
-  );
+  });
 
   if (!response) {
     throw new Error('Failed to fetch release library files');
@@ -217,12 +201,10 @@ export async function getReleaseExampleFilesRequest(params: {
   const endpoint = `/v1/releases/${params.id}/examples/${encodeURIComponent(
     params.path,
   )}`;
-  const response = await httpGet<ReleaseFilesResponse>(
-    base,
-    undefined,
+  const response = await httpGet<ReleaseFilesResponse>({
+    url: base,
     endpoint,
-    undefined,
-  );
+  });
   if (!response) {
     throw new Error(
       `Failed to fetch release example files for ${params.id}/${params.path}`,
@@ -235,13 +217,11 @@ export async function getExamplesRequest(
 ): Promise<GetExamples_Response> {
   const endpoint = '/v1/builtin/examples';
 
-  const response = await httpGet<GetExamples_Response>(
-    Config.LIBRARIES_API_URL_NEW,
-    undefined,
+  const response = await httpGet<GetExamples_Response>({
+    url: Config.LIBRARIES_API_URL_NEW,
     endpoint,
-    undefined,
     params,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -255,12 +235,10 @@ export async function getBuiltinExampleDetailRequest(
   path: string,
 ): Promise<BuiltinExampleFile[]> {
   const endpoint = `/v1/builtin/examples/${encodeURIComponent(path)}`;
-  const res = await httpGet<BuiltinExampleDetailResponse>(
-    Config.LIBRARIES_API_URL_NEW,
-    undefined,
+  const res = await httpGet<BuiltinExampleDetailResponse>({
+    url: Config.LIBRARIES_API_URL_NEW,
     endpoint,
-    undefined,
-  );
+  });
   if (!res) throw new Error(`Failed to fetch example details for ${path}`);
   return res.files ?? [];
 }
@@ -271,7 +249,11 @@ export async function getFavoriteLibrariesRequest(
   const newBase = Config.CREATE_FAVORITE_NEW;
   const newEndpoint = '/v1/favorites';
 
-  const res = await httpGet<unknown>(newBase, undefined, newEndpoint, token);
+  const res = await httpGet<unknown>({
+    url: newBase,
+    endpoint: newEndpoint,
+    token,
+  });
 
   // Type guard to check if an item has an 'id' property
   const hasId = (item: unknown): item is { id: unknown } => {
@@ -326,13 +308,11 @@ export function addFavoriteLibraryRequest(
   token: string,
 ): Promise<void> {
   const endpoint = `/v1/favorites/${params.id}`;
-  return httpPut(
-    Config.CREATE_FAVORITE_NEW,
-    undefined,
+  return httpPut({
+    url: Config.CREATE_FAVORITE_NEW,
     endpoint,
-    undefined,
     token,
-  );
+  });
 }
 
 export function removeFavoriteLibraryRequest(
@@ -340,16 +320,14 @@ export function removeFavoriteLibraryRequest(
   token: string,
 ): Promise<void> {
   const endpoint = `/v1/favorites/${params.id}`;
-  return httpDelete(Config.CREATE_FAVORITE_NEW, undefined, endpoint, token);
+  return httpDelete({
+    url: Config.CREATE_FAVORITE_NEW,
+    endpoint,
+    token,
+  });
 }
 
-const builderV2CFHeaders =
-  Config.MODE === 'development'
-    ? {
-        'CF-Access-Client-Id': Config.BUILDER_API_V2_CF_CLIENT_ID,
-        'CF-Access-Client-Secret': Config.BUILDER_V2_CF_SECRET,
-      }
-    : undefined;
+const builderV2CFHeaders = undefined;
 
 const BASE_COMPILATION_URL = '/v1/compilations';
 export async function postCreateSketchCompilationRequest(
@@ -358,15 +336,14 @@ export async function postCreateSketchCompilationRequest(
   abortController?: AbortController,
 ): Promise<ArduinoBuilderV2CompilationsResponse_BuilderApi> {
   const response =
-    await httpPost<ArduinoBuilderV2CompilationsResponse_BuilderApi>(
-      Config.BUILDER_API_V2_URL,
-      undefined,
-      BASE_COMPILATION_URL,
+    await httpPost<ArduinoBuilderV2CompilationsResponse_BuilderApi>({
+      url: Config.BUILDER_API_V2_URL,
+      endpoint: BASE_COMPILATION_URL,
       body,
       token,
       abortController,
-      builderV2CFHeaders,
-    );
+      headers: builderV2CFHeaders,
+    });
 
   if (response) {
     return mapSketchCompilationResponse(response);
@@ -384,14 +361,12 @@ export async function getCreatedSketchCompilationRequest(
 ): Promise<ArduinoBuilderV2CompilationsResponse_BuilderApi> {
   const endpoint = `${BASE_COMPILATION_URL}/${params.id}`;
   const response =
-    await httpGet<ArduinoBuilderV2CompilationsResponse_BuilderApi>(
-      Config.BUILDER_API_V2_URL,
-      undefined,
+    await httpGet<ArduinoBuilderV2CompilationsResponse_BuilderApi>({
+      url: Config.BUILDER_API_V2_URL,
       endpoint,
       token,
-      undefined,
-      builderV2CFHeaders,
-    );
+      headers: builderV2CFHeaders,
+    });
 
   if (response) {
     return mapSketchCompilationResponse(response);
@@ -406,15 +381,12 @@ export async function postCancelSketchCompilationRequest(
 ): Promise<ArduinoBuilderV2CompilationsResponse_BuilderApi> {
   const endpoint = `${BASE_COMPILATION_URL}/${params.id}/cancel`;
   const response =
-    await httpPost<ArduinoBuilderV2CompilationsResponse_BuilderApi>(
-      Config.BUILDER_API_V2_URL,
-      undefined,
+    await httpPost<ArduinoBuilderV2CompilationsResponse_BuilderApi>({
+      url: Config.BUILDER_API_V2_URL,
       endpoint,
-      undefined,
       token,
-      undefined,
-      builderV2CFHeaders,
-    );
+      headers: builderV2CFHeaders,
+    });
 
   if (response && response.status === 'cancelled') {
     return mapSketchCompilationResponse(response);
@@ -429,18 +401,13 @@ export async function getBuilderCompilationOutputRequest(
 ): Promise<CompileSketch_Response & { name: string }> {
   const endpoint = `${BASE_COMPILATION_URL}/${params.id}/artifacts`;
   const response =
-    await httpGet<ArduinoBuilderV2CompilationOutputResponse_BuilderApi>(
-      Config.BUILDER_API_V2_URL,
-      undefined,
+    await httpGet<ArduinoBuilderV2CompilationOutputResponse_BuilderApi>({
+      url: Config.BUILDER_API_V2_URL,
       endpoint,
       token,
-      params.type
-        ? {
-            type: params.type,
-          }
-        : undefined,
-      builderV2CFHeaders,
-    );
+      params: params.type ? { type: params.type } : undefined,
+      headers: builderV2CFHeaders,
+    });
 
   if (response) {
     return mapBuilderCompilationOutputNormalizeV2toV1Response(response);

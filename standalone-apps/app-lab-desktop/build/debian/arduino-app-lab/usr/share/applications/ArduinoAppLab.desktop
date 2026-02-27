@@ -6,4 +6,5 @@ Comment=Program your Arduino® UNO Q board with Python and C++
 Exec=$BINARY_PATH
 Icon=arduino-app-lab
 Terminal=false
+MimeType=x-scheme-handler/arduino-app-lab;
 Categories=Development;Utility;

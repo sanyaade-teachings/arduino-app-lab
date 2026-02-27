@@ -5,6 +5,8 @@ export let Config = {
   APP_VERSION: import.meta.env.VITE_APP_VERSION,
   // App urls
   APP_ORIGIN: import.meta.env.VITE_APP_ORIGIN,
+  APP_ORIGIN_WINDOWS: import.meta.env.VITE_APP_ORIGIN_WINDOWS,
+  APP_ORIGIN_MAC: import.meta.env.VITE_APP_ORIGIN_MAC,
   ROUTING_BASE_URL: import.meta.env.VITE_ROUTING_BASE_URL,
   NEW_WINDOW_ORIGIN: import.meta.env.VITE_NEW_WINDOW_ORIGIN,
   // For development - origin of the expected monitor opener
@@ -17,6 +19,15 @@ export let Config = {
   AUTH_SCOPE: import.meta.env.VITE_AUTH_SCOPE,
   AUTH_AUDIENCE: import.meta.env.VITE_AUTH_AUDIENCE,
   REDIRECT_URI: import.meta.env.VITE_REDIRECT_URI,
+  // EI Auth options vars
+  EI_CLIENT_ID: import.meta.env.VITE_EI_CLIENT_ID,
+  EI_STUDIO_HOST: import.meta.env.VITE_EI_STUDIO_HOST,
+  EI_AUTHORIZE_ENDPOINT: import.meta.env.VITE_EI_AUTHORIZE_ENDPOINT,
+  EI_TOKEN_ENDPOINT: import.meta.env.VITE_EI_TOKEN_ENDPOINT,
+  EI_USER_ENDPOINT: import.meta.env.VITE_EI_USER_ENDPOINT,
+  EI_REDIRECT_URI: import.meta.env.VITE_EI_REDIRECT_URI,
+  EI_SCOPE: import.meta.env.VITE_EI_SCOPE,
+  EI_DEFAULT_IDPS: import.meta.env.VITE_EI_DEFAULT_IDPS,
   // Arduino Cloud vars
   CLOUD_HOME_URL: import.meta.env.VITE_CLOUD_HOME_URL,
   LOGOUT_URI: import.meta.env.VITE_LOGOUT_URI,

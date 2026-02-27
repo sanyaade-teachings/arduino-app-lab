@@ -1,11 +1,8 @@
-import { ArduinoUser } from '@bcmi-labs/art-auth';
+import { UseArduinoAccountLogic } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { createContext } from 'react';
 
-export type AuthContextValue = {
-  user?: ArduinoUser | null;
-  isAuthInjected: boolean;
-};
+export type AuthContextValue = ReturnType<UseArduinoAccountLogic>;
 
-export const AuthContext = createContext<AuthContextValue>({
-  isAuthInjected: false,
-});
+const AuthContextValue: AuthContextValue = {} as AuthContextValue;
+
+export const AuthContext = createContext<AuthContextValue>(AuthContextValue);

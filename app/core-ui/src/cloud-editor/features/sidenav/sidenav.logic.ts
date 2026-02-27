@@ -128,7 +128,6 @@ export const useSidenavWidth: UseSidenavSize =
         const data = await get(SIDENAV_SIZE_KEY);
         return data ?? null;
       },
-      { refetchOnWindowFocus: false },
     );
 
     return {
@@ -529,15 +528,10 @@ export const createUseSidenavLogic = function (
     const {
       data: sketchExplorerHasBeenOpened,
       isLoading: sketchExplorerHasBeenOpenedIsLoading,
-    } = useQuery(
-      [SKETCH_EXPLORER_OPEN_KEY],
-      async () => {
-        const data = await get(SKETCH_EXPLORER_OPEN_KEY);
-        return data ?? null;
-      },
-
-      { refetchOnWindowFocus: false },
-    );
+    } = useQuery([SKETCH_EXPLORER_OPEN_KEY], async () => {
+      const data = await get(SKETCH_EXPLORER_OPEN_KEY);
+      return data ?? null;
+    });
 
     // Set the active item only if it is a valid sidenav item. If not, set the active item to undefined
     let activeItemId: SidenavItemId | undefined = Object.keys(SidenavItemId)

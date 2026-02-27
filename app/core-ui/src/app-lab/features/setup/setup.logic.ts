@@ -7,16 +7,18 @@ import {
   UseNetworkLogic,
   UseSetupLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 
-import { useIsBoard } from '../../hooks/board';
+import { useBoardItem } from '../../hooks/useBoardItem';
+import { useIsBoard } from '../../hooks/useIsBoard';
+import { useTerminal } from '../../hooks/useTerminal';
 import { BoardConfigurationContext } from '../../providers/board-configuration/boardConfigurationContext';
 import { LinuxCredentialsContext } from '../../providers/linux-credentials/linuxCredentialsContext';
 import { NetworkContext } from '../../providers/network/networkContext';
 import { SetupContext } from '../../providers/setup/setupContext';
 import { UseBoards } from '../../store/boards/boards';
 import { SystemPropKey, useSystemProps } from '../../store/systemProps';
-import { useFooterBarLogic } from '../footer-bar/footerBar.logic';
+import { createUseArduinoAccountLogic } from '../account/account.logic';
 
 const SETUP_STEPS_ORDER: AppLabSetupItemId[] = [
   AppLabSetupItemId.BoardConfiguration,
@@ -64,7 +66,7 @@ const useConnectionLost: UseConnectionLost = function (
   ]);
 };
 
-type SetupSteps =
+export type SetupSteps =
   | 'waiting-selection'
   | 'checking-status'
   | AppLabSetupItemId
@@ -74,22 +76,28 @@ export const createUseSetupLogic = function (
   boardsProps: ReturnType<UseBoards>,
 ): UseSetupLogic {
   return function useSetupLogic(): ReturnType<UseSetupLogic> {
-    const [currentStep, setCurrentStep] =
-      useState<SetupSteps>('waiting-selection');
-    const [networkCredentialsDraft, setNetworkCredentialsDraft] =
-      useState<NetworkCredentials>();
-    const [autoFlowLocked, setAutoFlowLocked] = useState(false);
+    const {
+      networkStepSkipped,
+      setNetworkStepSkipped,
+      currentStep,
+      setCurrentStep,
+      networkCredentialsDraft,
+      setNetworkCredentialsDraft,
+      autoFlowLocked,
+      setAutoFlowLocked,
+    } = useContext(SetupContext);
 
     const unlockAutoFlow = useCallback(() => {
       setAutoFlowLocked(false);
-    }, []);
-    const { networkStepSkipped, setNetworkStepSkipped } =
-      useContext(SetupContext);
+    }, [setAutoFlowLocked]);
 
     const { data: isBoard } = useIsBoard();
     const {
       boards,
+      selectedBoard,
       selectBoard,
+      autoSelectBoard,
+      isAutoSelectingBoard,
       showBoardConnPswPrompt,
       onConnPswCancel,
       onConnPswSubmit,
@@ -107,13 +115,12 @@ export const createUseSetupLogic = function (
       upsertPropsLoading,
     } = useSystemProps();
 
-    const { items, onOpenTerminal, terminalError } = useFooterBarLogic();
-    const boardItem = items.find((item) => item.id === 'board');
+    const { onOpenTerminal, terminalError } = useTerminal();
+    const { boardItem } = useBoardItem();
 
     const {
       setBoardNameIsSuccess,
       setKeyboardLayoutIsSuccess,
-      setBoardConfigurationIsSuccess,
       hasBoardConfigurationError,
     } = useContext(BoardConfigurationContext);
 
@@ -125,14 +132,24 @@ export const createUseSetupLogic = function (
       manualNetworkSetup,
     } = useContext(NetworkContext);
 
+    // If network comes online "outside" setup, consider network setup step "un-skipped"
+    useEffect(() => {
+      if (networkConnected) {
+        setNetworkStepSkipped(false);
+      }
+    }, [networkConnected, setNetworkStepSkipped]);
+
     const { setUserPasswordIsSuccess } = useContext(LinuxCredentialsContext);
 
     useEffect(() => {
       if (connToBoardCompleted) {
-        setSelectedBoardCheckingStatus();
-        setCurrentStep('checking-status');
+        setCurrentStep((prev) => {
+          if (prev === 'done') return prev;
+          setSelectedBoardCheckingStatus();
+          return 'checking-status';
+        });
       }
-    }, [setSelectedBoardCheckingStatus, connToBoardCompleted]);
+    }, [setSelectedBoardCheckingStatus, connToBoardCompleted, setCurrentStep]);
 
     const setupChecksDone = networkStatusChecked && !getPropsLoading;
     const setupPropsAreComplete = Boolean(
@@ -172,7 +189,6 @@ export const createUseSetupLogic = function (
       }
     }, [
       networkConnectRequestIsSuccess,
-      setBoardConfigurationIsSuccess,
       setBoardNameIsSuccess,
       setKeyboardLayoutIsSuccess,
       setUserPasswordIsSuccess,
@@ -203,7 +219,13 @@ export const createUseSetupLogic = function (
       }
 
       setCurrentStep(prev);
-    }, [currentStep, networkStepSkipped, setNetworkStepSkipped]);
+    }, [
+      currentStep,
+      networkStepSkipped,
+      setAutoFlowLocked,
+      setCurrentStep,
+      setNetworkStepSkipped,
+    ]);
 
     const createUseNetworkLogicWithSkip = function (): UseNetworkLogic {
       return function useNetworkLogic(): ReturnType<UseNetworkLogic> {
@@ -271,18 +293,15 @@ export const createUseSetupLogic = function (
             !systemProps[SystemPropKey.SetupKeyboard]):
           stepTransition(AppLabSetupItemId.BoardConfiguration);
           break;
-
         case !setupCompleted &&
           !networkStepSkipped &&
           networkStatusChecked &&
           !networkConnected:
           stepTransition(AppLabSetupItemId.NetworkSetup);
           break;
-
         case systemProps && !systemProps[SystemPropKey.SetupCredentials]:
           stepTransition(AppLabSetupItemId.LinuxCredentials);
           break;
-
         case setupPropsAreComplete:
           setSetupCompleted(true);
           stepTransition('done');
@@ -303,12 +322,14 @@ export const createUseSetupLogic = function (
       setupPropsAreComplete,
       setupCompleted,
       systemProps,
+      setCurrentStep,
     ]);
 
     const showConfirmButton =
-      currentStep !== AppLabSetupItemId.NetworkSetup ||
-      manualNetworkSetup ||
-      !!(currentStep === AppLabSetupItemId.NetworkSetup && selectedNetwork);
+      currentStep !== AppLabSetupItemId.ArduinoAccount &&
+      (currentStep !== AppLabSetupItemId.NetworkSetup ||
+        manualNetworkSetup ||
+        !!(currentStep === AppLabSetupItemId.NetworkSetup && selectedNetwork));
 
     const showBoardSelectionPage =
       isBoard !== true &&
@@ -328,17 +349,28 @@ export const createUseSetupLogic = function (
     const stepIsSkippable =
       (currentStep === AppLabSetupItemId.BoardConfiguration &&
         hasBoardConfigurationError) ||
-      currentStep === AppLabSetupItemId.NetworkSetup;
+      currentStep === AppLabSetupItemId.NetworkSetup ||
+      currentStep === AppLabSetupItemId.ArduinoAccount;
+
+    const showLoader =
+      isAutoSelectingBoard &&
+      showBoardSelectionPage &&
+      !showBoardConnPswPrompt &&
+      !connToBoardError;
 
     return {
       isBoard,
       boards,
+      selectedBoard,
       selectBoard,
+      autoSelectBoard,
+      isAutoSelectingBoard,
       showBoardConnPswPrompt,
       onConnPswCancel,
       onConnPswSubmit,
       isBoardConnectingOrChecking,
       connToBoardError,
+      showLoader,
       showBoardSelectionPage,
       showPostSelectionSetup,
       ...(showPostSelectionSetup && {
@@ -351,6 +383,7 @@ export const createUseSetupLogic = function (
           [AppLabSetupItemId.NetworkSetup]: createUseNetworkLogicWithSkip(),
           [AppLabSetupItemId.LinuxCredentials]:
             createUseLinuxCredentialsLogic(),
+          [AppLabSetupItemId.ArduinoAccount]: createUseArduinoAccountLogic(),
         },
       }),
       showConfirmButton,

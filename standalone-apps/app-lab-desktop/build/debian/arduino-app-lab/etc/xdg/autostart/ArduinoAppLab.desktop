@@ -8,5 +8,6 @@ OnlyShowIn=XFCE;
 RunHook=0
 StartupNotify=false
 Terminal=false
+MimeType=x-scheme-handler/arduino-app-lab;
 Hidden=false
-
+Categories=Development;Utility;

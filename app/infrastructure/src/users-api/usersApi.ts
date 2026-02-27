@@ -1,6 +1,6 @@
 import { Config } from '@cloud-editor-mono/common';
 
-import { httpGetRaw, httpJsonDelete, httpPostRaw } from '../fetch/fetch';
+import { httpGetRaw, httpJsonDelete, httpPostRaw } from '../fetch';
 import { mapShowUserSettingsResponse } from './mapper';
 import {
   CreateSettingsBody_UsersApi,
@@ -13,7 +13,11 @@ export async function showUserSettingsRequest(
 ): Promise<GetSettings_Response> {
   const endpoint = '/v1/users/settings';
 
-  const response = await httpGetRaw(Config.USERS_API_URL, endpoint, token);
+  const response = await httpGetRaw({
+    url: Config.USERS_API_URL,
+    endpoint,
+    token,
+  });
 
   if (!response || response.status !== 200) {
     return mapShowUserSettingsResponse({
@@ -39,15 +43,14 @@ export async function updateUserSettingsRequest(
   }
 
   if (body.optin === false) {
-    const deleteResponse = await httpJsonDelete(
-      Config.USERS_API_URL,
-      undefined,
+    const deleteResponse = await httpJsonDelete({
+      url: Config.USERS_API_URL,
       endpoint,
-      {
+      body: {
         key: 'cloudeditor_optin',
       },
       token,
-    );
+    });
 
     if (!deleteResponse) {
       throw new Error(
@@ -58,15 +61,15 @@ export async function updateUserSettingsRequest(
     return true; // ** deletion is enough to throw a 404 on next check which === opted out
   }
 
-  const postResponse = await httpPostRaw(
-    Config.USERS_API_URL,
+  const postResponse = await httpPostRaw({
+    url: Config.USERS_API_URL,
     endpoint,
-    {
+    body: {
       key: 'cloudeditor_optin',
       value: body.optin,
     },
     token,
-  );
+  });
 
   if (
     !postResponse ||

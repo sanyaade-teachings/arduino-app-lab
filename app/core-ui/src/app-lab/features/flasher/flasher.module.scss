@@ -1,32 +1,55 @@
-.dialog {
-  max-height: 640px;
-
-  .dialog-header {
-    border-bottom: 1px solid #434f54;
-  }
-
-  .dialog-body {
-    padding: 24px 40px !important;
-    border-top: none;
-    overflow-y: auto;
-  }
+.main {
+  background: var(--surface-bg-below-2, #090f11);
+  height: 100%;
+  width: 100%;
+  color: var(--text-default, #ffffff);
 }
 
-.intro-container {
+.header {
+  height: 60px;
+  border-bottom: 1px solid var(--border-default, #434f54);
+  box-sizing: border-box;
+  padding: 16px 16px 8px;
+}
+
+.body {
+  height: calc(100% - 104px);
   display: flex;
-  flex-direction: column;
-  gap: 16px;
   align-items: center;
+  justify-content: center;
+}
 
-  .intro-description {
-    text-align: center;
+.footer {
+  height: 44px;
+  border-top: 1px solid #232B2E;
+  box-sizing: border-box;
+}
+
+.stepper {
+  height: 100%;
+  max-height: 640px;
+  max-width: 640px;
+  width: 100%;
+  margin: auto;
+  background: var(--surface-bg-below-1, #171e21);
+  border-radius: 8px;
+}
+
+.stepper-header {
+  border-bottom: 1px solid #434f54;
+  padding: 16px;
+  &-title {
+    font-weight: 700 !important;
   }
 }
 
-.stepper-container {
+.stepper-body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: 24px 40px;
+  height: calc(100% - 108px);
+  overflow-y: auto;
 
   .step-item {
     display: flex;
@@ -77,14 +100,14 @@
       gap: 12px;
 
       .step-item-border {
-        width: 2px;
-        align-self: stretch;
-        min-height: 18px;
+        height: 100%;
         margin-left: 11px;
-        margin-right: 11px;
-
-        &.visible {
-          background-color: var(--border-default, #434f54);}
+        padding-right: 11px;
+        border-left: 2px solid transparent;
+        &--visible {
+          min-height: 18px;
+          border-left-color: var(--border-default, #434f54);
+        }
       }
 
       .step-container {
@@ -94,6 +117,7 @@
         gap: 20px;
 
         .step-card {
+          background: var(--surface-bg-baseline, #232b2e);
           display: flex;
           flex-direction: column;
           gap: 16px;

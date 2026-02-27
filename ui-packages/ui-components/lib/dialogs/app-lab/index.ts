@@ -1,6 +1,7 @@
 export * from './add-app-brick-dialog/AddAppBrickDialog';
 export * from './add-sketch-library-dialog/AddSketchLibraryDialog';
 export * from './app-lab-dialog/AppLabDialog';
+export * from './app-lab-whats-new-ad-hoc';
 export * from './board-update-dialog';
 export * from './configure-app-brick-dialog/ConfigureAppBrickDialog';
 export * from './configure-app-bricks-dialog/ConfigureAppBricksDialog';
@@ -10,5 +11,7 @@ export * from './delete-app-dialog/DeleteAppDialog';
 export * from './export-app-dialog/ExportAppDialog';
 export * from './flash-board-dialog/FlashBoardDialog';
 export * from './import-app-dialog/importAppDialog';
+export * from './skip-login-dialog/SkipLoginDialog';
 export * from './swap-running-app-dialog/SwapRunningAppDialog';
 export * from './swap-running-app-dialog/swapRunningAppDialog.type';
+export * from './train-new-model-dialog/TrainNewModelDialog';

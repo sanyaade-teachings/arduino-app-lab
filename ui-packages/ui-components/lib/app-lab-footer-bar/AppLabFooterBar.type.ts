@@ -1,13 +1,45 @@
-import { UseCreateAppTitleLogic } from '../app-lab-app-title';
-import { UseRuntimeLogic } from '../app-lab-runtime-actions';
+import { AppDetailedInfo } from '@cloud-editor-mono/infrastructure';
 
-export interface FooterItem {
-  id: string;
+import { BoardItem } from '../app-lab-board-section';
+import { AppLabAction, AppLabActionStatus } from '../app-lab-runtime-actions';
+import { Board } from '../app-lab-setup';
+
+type SystemResourcesId = 'root' | 'user' | 'ram' | 'cpu' | 'network';
+
+export interface SystemResource {
   label?: string;
   icon?: React.ReactNode;
   state?: 'default' | 'inactive' | 'warning';
   onClick?: () => void;
 }
+
+export type SystemResources = Record<SystemResourcesId, SystemResource>;
+
+export type BoardResources = {
+  cpuPercentage?: number;
+  ram?: {
+    used: number;
+    total: number;
+  };
+  homeDisk?: {
+    used: number;
+    total: number;
+  };
+  rootDisk?: {
+    used: number;
+    total: number;
+  };
+};
+
+export type BoardResourcesValue = {
+  resources: BoardResources | undefined;
+  ramUsedGB: string;
+  ramTotalGB: string;
+  homeDiskUsedGB: string;
+  homeDiskTotalGB: string;
+  rootDiskUsedGB: string;
+  rootDiskTotalGB: string;
+};
 
 export interface Notification {
   label: string;
@@ -21,14 +53,27 @@ export interface AppLabFooterBarProps {
 }
 
 export type FooterBarLogic = () => {
-  runtimeContext: ReturnType<UseRuntimeLogic>;
+  runtimeContext: {
+    appsStatus: {
+      runningApp?: AppDetailedInfo;
+    };
+    runtimeActions: {
+      currentAction: AppLabAction | null;
+      currentActionStatus: AppLabActionStatus;
+      stopAction: (app: AppDetailedInfo) => void;
+    };
+  };
   notifications: Notification[];
   currentVersion: string;
   newNotifications: number;
   resetNewNotifications: () => void;
-  items: FooterItem[];
-  useCreateAppTitleLogic: UseCreateAppTitleLogic;
-  onOpenTerminal?: () => Promise<void>;
+  onOpenTerminal: () => Promise<void>;
   terminalError: string | null;
+  systemResources: SystemResources;
+  boardItem?: BoardItem;
+  boardIP?: string;
   isBoard: boolean;
+  boards: Board[];
+  selectedBoard: Board | undefined;
+  autoSelectBoard: (boardId: string) => void;
 };

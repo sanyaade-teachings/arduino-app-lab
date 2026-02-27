@@ -1,60 +1,65 @@
 import { isFFEnabled } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
+import { Spinner, Stats } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { AppLabAppTitle } from '../app-lab-app-title';
-import { AppLabActionStatus, RuntimeActions } from '../app-lab-runtime-actions';
-import type { AppLabFooterBarProps, FooterItem } from './AppLabFooterBar.type';
+import { BoardSection } from '../app-lab-board-section';
+import { AppLabAction, AppLabActionStatus } from '../app-lab-runtime-actions';
+import {
+  Button,
+  ButtonSize,
+  ButtonType,
+  ButtonVariant,
+  XSmall,
+} from '../components-by-app/app-lab';
+import { useI18n } from '../i18n/useI18n';
+import { AppLabFooterBarProps } from './AppLabFooterBar.type';
 import styles from './footer-bar.module.scss';
+import { messages } from './messages';
 import BellIcon from './sub-components/bell-icon/BellIcon';
-import BoardSection from './sub-components/board-section/BoardSection';
 import { NetworkIcon } from './sub-components/network-icon/NetworkIcon';
 import NotificationPanel from './sub-components/notification-panel/NotificationPanel';
 
 const AppLabFooterBar: React.FC<AppLabFooterBarProps> = (
   props: AppLabFooterBarProps,
 ) => {
+  const { formatMessage } = useI18n();
   const { footerBarLogic } = props;
   const {
-    items,
+    systemResources,
+    boardItem,
+    boardIP,
     newNotifications = 0,
     resetNewNotifications,
     runtimeContext,
     currentVersion,
-    useCreateAppTitleLogic,
     notifications,
     onOpenTerminal,
     terminalError,
     isBoard,
+    boards,
+    selectedBoard,
+    autoSelectBoard,
   } = footerBarLogic();
 
   const showVersion = isFFEnabled('SHOW_VERSION_IN_FOOTER');
 
   const {
-    defaultApp,
-    runningApp,
-    activeApp,
-    currentAction,
-    currentActionStatus,
-    runAction,
-    stopAction,
+    appsStatus: { runningApp },
+    runtimeActions: { currentAction, currentActionStatus, stopAction },
   } = runtimeContext;
 
-  const footerApp = runningApp || activeApp || defaultApp;
-
-  const runApp = useCallback((): void => {
-    if (!footerApp) return;
-    runAction(footerApp);
-  }, [footerApp, runAction]);
-
   const stopApp = useCallback((): void => {
-    if (!footerApp) return;
-    stopAction(footerApp);
-  }, [footerApp, stopAction]);
+    if (!runningApp) return;
+    stopAction(runningApp);
+  }, [runningApp, stopAction]);
 
   const [isMenuVisible, setMenuVisible] = useState(false);
+  const [isSystemStatsVisible, setSystemStatsVisible] = useState(false);
+
   // Create a ref to attach to the menu container
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLDivElement>(null);
 
   // This effect handles clicks outside of the menu
   useEffect(() => {
@@ -62,7 +67,12 @@ const AppLabFooterBar: React.FC<AppLabFooterBarProps> = (
     if (!isMenuVisible) return;
     function handleClickOutside(event: MouseEvent): void {
       // If the click is outside the menuRef, close the menu
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      if (
+        menuRef.current &&
+        menuTriggerRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        !menuTriggerRef.current.contains(event.target as Node)
+      ) {
         setMenuVisible(false);
       }
     }
@@ -75,142 +85,219 @@ const AppLabFooterBar: React.FC<AppLabFooterBarProps> = (
     };
   }, [isMenuVisible]); // Re-run effect only if isMenuVisible changes
 
-  function clickHandler(): void {
+  function clickHandlerNotifications(): void {
     setMenuVisible(!isMenuVisible);
     resetNewNotifications();
   }
 
-  const appTitleLogic = useCreateAppTitleLogic(footerApp);
-
-  const runtimeActionsLogic = useCallback(
-    () => ({
-      appId: footerApp?.id || '',
-      appName: footerApp?.name || '',
-      appStatus: footerApp?.status || 'stopped',
-      currentAction,
-      currentActionStatus,
-      runApp,
-      stopApp,
-      isBannerEnabled: false,
-      showStop: true,
-    }),
-    [currentAction, currentActionStatus, footerApp, runApp, stopApp],
-  );
-
-  const getItemById = (id: string): FooterItem | undefined => {
-    return items.find((item) => item.id === id);
+  const clickHandlerSystemStats = (): void => {
+    setSystemStatsVisible((prev) => !prev);
   };
 
-  const boardItem = getItemById('board');
-  const userItem = getItemById('user');
-  const rootItem = getItemById('root');
-  const ramItem = getItemById('ram');
-  const cpuItem = getItemById('cpu');
-  const networkItem = getItemById('network');
-  const ipItem = getItemById('ip');
+  const stopDisabled =
+    currentActionStatus === AppLabActionStatus.Pending &&
+    currentAction === AppLabAction.Stop;
 
   return (
     <footer className={styles['footer-bar']}>
       <div className={styles['footer-content']}>
-        {/* Board section */}
-        {boardItem && (
-          <div className={styles['left-buttons-container']}>
+        {/* Left section */}
+        <div className={styles['footer-section--left']}>
+          {/* Board section */}
+          {boardItem ? (
             <BoardSection
               boardItem={boardItem}
               isBoard={isBoard}
+              boards={boards}
+              selectedBoard={selectedBoard}
+              autoSelectBoard={autoSelectBoard}
               onOpenTerminal={onOpenTerminal}
               terminalError={terminalError}
             />
-          </div>
-        )}
-        {/* Ip section */}
-        {ipItem?.label && (
-          <div className={clsx(styles['xl'], styles['footer-badge'])}>
-            {ipItem?.label}
-          </div>
-        )}
+          ) : null}
 
-        {/* System section */}
-        <div className={clsx(styles['system-info'], styles['footer-badge'])}>
-          {(rootItem?.label || userItem?.label) && (
-            <div className={styles['lg']}>
-              <span>STORAGE: </span>
-              <span className={clsx(styles[rootItem?.state || 'default'])}>
-                {rootItem?.label}
+          {/* Ip section */}
+          {boardIP ? (
+            <div className={clsx(styles['lg'], styles['footer-badge'])}>
+              {boardIP}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Center resources section */}
+        <div
+          className={clsx(
+            styles['footer-section--center'],
+            styles['footer-badge'],
+            styles['xl'],
+          )}
+        >
+          {systemResources.root?.label || systemResources.user?.label ? (
+            <div>
+              <span>{formatMessage(messages.storage)}</span>
+              <span
+                className={clsx(
+                  styles[systemResources.root?.state || 'default'],
+                )}
+              >
+                {systemResources.root?.label}
               </span>
               <span> - </span>
-              <span className={clsx(styles[userItem?.state || 'default'])}>
-                {userItem?.label}
+              <span
+                className={clsx(
+                  styles[systemResources.user?.state || 'default'],
+                )}
+              >
+                {systemResources.user?.label}
               </span>
             </div>
-          )}
-          {ramItem && (
+          ) : null}
+
+          {systemResources.ram ? (
             <span
-              className={clsx(
-                styles[ramItem?.state || 'default'],
-                styles['md'],
-              )}
+              className={clsx(styles[systemResources.ram?.state || 'default'])}
             >
-              {ramItem?.label}
+              {systemResources.ram?.label}
             </span>
-          )}
-          {cpuItem && (
+          ) : null}
+
+          {systemResources.cpu ? (
             <span
-              className={clsx(
-                styles[cpuItem?.state || 'default'],
-                styles['md'],
-              )}
+              className={clsx(styles[systemResources.cpu?.state || 'default'])}
             >
-              {cpuItem?.label}
+              {systemResources.cpu?.label}
             </span>
-          )}
+          ) : null}
+        </div>
+
+        {/*Center - System Stats Section */}
+        <div className={styles['system-stats-container']}>
+          <Button
+            variant={ButtonVariant.LowContrast}
+            type={ButtonType.Tertiary}
+            onClick={clickHandlerSystemStats}
+            size={ButtonSize.XSmall}
+            Icon={Stats}
+            title={formatMessage(messages.systemStats)}
+          >
+            {formatMessage(messages.systemStats)}
+          </Button>
+
+          {isSystemStatsVisible ? (
+            <div className={styles['system-stats-overlay']}>
+              <div className={styles['system-stats-overlay--header']}>
+                <Stats /> {formatMessage(messages.systemInfo)}
+              </div>
+              <div
+                className={clsx(
+                  styles['system-stats-overlay--content'],
+                  styles['footer-badge'],
+                )}
+              >
+                {boardIP ? (
+                  <div className={clsx(styles['ip'])}>{boardIP}</div>
+                ) : null}
+
+                {systemResources.root?.label ? (
+                  <div>
+                    <span>{formatMessage(messages.storage)}</span>
+                    <span
+                      className={clsx(
+                        styles[systemResources.root?.state || 'default'],
+                      )}
+                    >
+                      {systemResources.root?.label}
+                    </span>
+                  </div>
+                ) : null}
+
+                {systemResources.user?.label ? (
+                  <span
+                    className={clsx(
+                      styles[systemResources.user?.state || 'default'],
+                    )}
+                  >
+                    {systemResources.user?.label}
+                  </span>
+                ) : null}
+
+                {systemResources.ram ? (
+                  <span
+                    className={clsx(
+                      styles[systemResources.ram?.state || 'default'],
+                    )}
+                  >
+                    {systemResources.ram?.label}
+                  </span>
+                ) : null}
+
+                {systemResources.cpu ? (
+                  <span
+                    className={clsx(
+                      styles[systemResources.cpu?.state || 'default'],
+                    )}
+                  >
+                    {systemResources.cpu?.label}
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Right section */}
         <div className={styles['footer-section--right']}>
-          {footerApp && (
+          {runningApp ? (
             <div className={styles['footer-section']}>
-              <AppLabAppTitle
-                key="app-title"
-                appTitleLogic={appTitleLogic}
-                showBadge={false}
-                useStaticPosition={false}
-                loader={currentActionStatus === AppLabActionStatus.Pending}
-                //disabled={currentActionStatus === ActionStatus.Pending}
-                //TODO: Enable the dynamic disable when the dropdown menu is correct
-                disabled={true}
-                type={'footer'}
-              />
-              <RuntimeActions
-                runtimeActionsLogic={runtimeActionsLogic}
-                size={'small'}
-              />
+              <div className={styles['app-name-container']}>
+                <span>{runningApp.icon}</span>
+                <XSmall className={styles['app-name']}>
+                  {runningApp.name}
+                </XSmall>
+              </div>
+              {currentActionStatus === AppLabActionStatus.Pending && (
+                <div className={styles['app-name-loader']}>
+                  <Spinner />
+                </div>
+              )}
+              <Button
+                onClick={stopApp}
+                type={ButtonType.Secondary}
+                size={ButtonSize.XSmall}
+                variant={ButtonVariant.Destructive}
+                disabled={stopDisabled}
+              >
+                Stop
+              </Button>
             </div>
-          )}
-          {showVersion && (
+          ) : null}
+
+          {showVersion ? (
             <div className={clsx(styles['footer-section'], styles['version'])}>
-              v. {currentVersion}
+              {formatMessage(messages.version, {
+                version: currentVersion,
+              })}
             </div>
-          )}
+          ) : null}
+
           <div
+            ref={menuTriggerRef}
             role="button"
             tabIndex={0}
             className={styles['notifications-container']}
-            onClick={clickHandler}
-            onKeyUp={clickHandler}
+            onClick={clickHandlerNotifications}
+            onKeyUp={clickHandlerNotifications}
           >
             <BellIcon
               active={isMenuVisible}
               newNotifications={newNotifications}
             />
             {isMenuVisible && (
-              <NotificationPanel
-                items={notifications || []}
-                onClose={clickHandler}
-              />
+              <NotificationPanel ref={menuRef} items={notifications || []} />
             )}
           </div>
-          <NetworkIcon networkItem={networkItem} />
+
+          <NetworkIcon networkItem={systemResources.network} />
         </div>
       </div>
     </footer>

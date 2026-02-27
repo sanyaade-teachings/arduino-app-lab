@@ -2,6 +2,7 @@ import { Config } from '@cloud-editor-mono/common';
 import { WretchError } from 'wretch/resolver';
 
 import {
+  FetchError,
   httpDelete,
   httpFormDataPost,
   httpGet,
@@ -9,8 +10,7 @@ import {
   httpPost,
   httpPostRaw,
   httpPut,
-} from '../fetch/fetch';
-import { FetchError } from '../fetch/fetch.type';
+} from '../fetch';
 import { ORGANIZATION_HEADER } from '../utils';
 import {
   ArduinoCreateSketchesV2_CreateApi,
@@ -62,7 +62,7 @@ export async function createAliveRequest(
 ): Promise<Response | void> {
   const endpoint = '/alive';
 
-  return httpGetRaw(Config.CREATE_API_URL, endpoint, token);
+  return httpGetRaw({ url: Config.CREATE_API_URL, endpoint, token });
 }
 
 export async function getFileHash(
@@ -72,18 +72,16 @@ export async function getFileHash(
 ): Promise<GetFileHash_Response | void> {
   const endpoint = `/v2/files/f/revision/${params.path}`;
 
-  const response = await httpGet<GetFileHash_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<GetFileHash_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-  );
+  });
 
   if (response) {
     return mapGetCurrentSketchEditorsResponse(response);
@@ -97,18 +95,17 @@ export async function putSketchRequest(
 ): Promise<CreateSketch_Response> {
   const endpoint = '/v2/sketches';
 
-  const response = await httpPut<ArduinoCreateSketchV2_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpPut<ArduinoCreateSketchV2_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     body,
     token,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -126,19 +123,17 @@ export async function postSketchRequest(
   space?: string,
 ): Promise<CreateSketch_Response> {
   const endpoint = `/v2/sketches/${params.id}`;
-  const response = await httpPost<ArduinoCreateSketchV2_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpPost<ArduinoCreateSketchV2_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
-    payload,
+    body: payload,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -155,18 +150,16 @@ export async function getSketchRequest(
   space?: string,
 ): Promise<GetSketch_Response | undefined> {
   const endpoint = `/v2/sketches/byID/${params.id}`;
-  const response = await httpGet<ArduinoCreateSketchV2_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoCreateSketchV2_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-  );
+  });
 
   if (response) {
     return mapGetSketchResponse(response);
@@ -179,17 +172,16 @@ export async function deleteSketchRequest(
   space?: string,
 ): Promise<void> {
   const endpoint = `/v2/sketches/byID/${params.id}`;
-  await httpDelete<void>(
-    Config.CREATE_API_URL,
-    undefined,
+  await httpDelete<void>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-  );
+  });
 }
 
 export async function getSketchesRequest(
@@ -201,18 +193,16 @@ export async function getSketchesRequest(
   endpoint = params.name_like
     ? `${endpoint}&name_like=${params.name_like}`
     : endpoint;
-  const response = await httpGet<ArduinoCreateSketchesV2_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoCreateSketchesV2_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -231,21 +221,19 @@ export async function getFileContentsRequest(
   const endpoint = `/v2/files/f/${path}`;
 
   let error: WretchError | undefined = undefined;
-  const response = await httpGet<FileContentV2_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<FileContentV2_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-    (err) => {
+    handleError: (err) => {
       error = err;
     },
-  );
+  });
 
   if (!response || error) {
     throw new Error(
@@ -269,21 +257,19 @@ export async function getFilesListRequest(
   const endpoint = `/v2/files/d/${path}`;
 
   let error: WretchError | undefined = undefined;
-  const response = await httpGet<FileV2List_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<FileV2List_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-    (err) => {
+    handleError: (err) => {
       error = err;
     },
-  );
+  });
 
   if (!response || error) {
     throw new Error(
@@ -312,20 +298,18 @@ export async function postSketchFileRequest(
     err = { errStatus: error.status };
   };
 
-  const response = await httpPost<FileContentV2Write_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpPost<FileContentV2Write_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     body,
     token,
-    undefined,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
     handleError,
-  );
+  });
 
   if (err) return err;
 
@@ -344,20 +328,20 @@ export async function moveSketchRequest(
   space?: string,
 ): ReturnType<typeof httpPostRaw> {
   const endpoint = `/v3/files/mv`;
-  const response = await httpPostRaw(
-    Config.CREATE_API_URL,
+  const response = await httpPostRaw({
+    url: Config.CREATE_API_URL,
     endpoint,
     body,
     token,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-    (err) => {
+    handleError: (err: WretchError) => {
       throw err;
     },
-  );
+  });
 
   return response;
 }
@@ -371,21 +355,19 @@ export async function deleteSketchFileRequest(
   const endpoint = `/v2/files/f/${path}`;
 
   let error: WretchError | undefined = undefined;
-  const response = await httpDelete<FileV2Delete_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpDelete<FileV2Delete_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    space
+    headers: space
       ? {
           [ORGANIZATION_HEADER]: space,
         }
       : undefined,
-    undefined,
-    (err) => {
+    handleError: (err: WretchError) => {
       error = err;
     },
-  );
+  });
 
   if (!response || error) {
     throw new Error(
@@ -407,19 +389,17 @@ export async function getCustomLibraries(
   const endpoint = `/v2/libraries`;
 
   let error;
-  const response = await httpGet<Libs_CreateApi>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<Libs_CreateApi>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-    {
+    params: {
       user_id: 'me',
     },
-    undefined,
-    (err) => {
+    handleError: (err) => {
       error = err;
     },
-  );
+  });
 
   if (!response || error) {
     throw new Error(
@@ -441,12 +421,11 @@ export async function getCustomLibraryCode(
 ): Promise<GetLibraryCode_Response> {
   const endpoint = `/v2/libraries/${params.id}/code`;
 
-  const response = await httpGet<GetLibraryCode_Response>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<GetLibraryCode_Response>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -473,17 +452,16 @@ export async function saveLibraryRequest(
     }
   };
 
-  const response = await httpFormDataPost<GetLibrary_Response>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpFormDataPost<GetLibrary_Response>({
+    url: Config.CREATE_API_URL,
     endpoint,
-    {
+    body: {
       archive: body,
       user_id: 'me',
     },
     token,
     handleError,
-  );
+  });
 
   if (errorText) {
     return {
@@ -503,12 +481,11 @@ export async function deleteLibraryRequest(
   token: string,
 ): Promise<void> {
   const endpoint = `/v2/libraries/${id}`;
-  const response = await httpDelete<void>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpDelete<void>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-  );
+  });
 
   return response;
 }
@@ -518,12 +495,11 @@ export async function getUserRequest(
   token: string,
 ): Promise<CreateUser_Response> {
   const endpoint = `/v1/users/${id}`;
-  const response = await httpGet<CreateUser_Response>(
-    Config.CREATE_API_URL,
-    undefined,
+  const response = await httpGet<CreateUser_Response>({
+    url: Config.CREATE_API_URL,
     endpoint,
     token,
-  );
+  });
 
   if (!response) {
     throw new Error(

@@ -9,21 +9,29 @@ function uriWithKey(uri: string): string {
   return uri;
 }
 
-const { APP_URL, CLOUD_HOME_URL } = Config;
+const generateAuthUris = (): { redirect_uri: string; logout_uri: string } => {
+  const { APP_URL, CLOUD_HOME_URL } = Config;
 
-const redirect_uri = `${APP_URL}/redirect`;
-const logout_uri = `${CLOUD_HOME_URL}/sketches`;
+  return {
+    redirect_uri: uriWithKey(`${APP_URL}/redirect`),
+    logout_uri: uriWithKey(`${CLOUD_HOME_URL}/sketches`),
+  };
+};
 
-export const defaultAuth0Options: Auth0ClientOptions & {
+const { redirect_uri, logout_uri } = generateAuthUris();
+
+export type DefaultAuthOptions = Auth0ClientOptions & {
   authorizationParams: AuthorizationParams & {
     state: string;
   };
-} = {
+};
+
+export const defaultAuth0Options: DefaultAuthOptions = {
   domain: Config.AUTH_URL,
   clientId: Config.AUTH_ID,
   authorizationParams: {
-    redirect_uri: uriWithKey(redirect_uri),
-    logout_uri: uriWithKey(logout_uri),
+    redirect_uri,
+    logout_uri,
     audience: Config.AUTH_AUDIENCE,
     scope: Config.AUTH_SCOPE,
     state: generateDefaultStateOption(),
@@ -50,5 +58,8 @@ export const AUTH_COOKIE_SUBSTRING = `; auth0.${defaultAuth0Options.authorizatio
 export const EXPIRED_COOKIE = `auth0.${defaultAuth0Options.authorizationParams.client_id}.is.authenticated=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
 
 export const AUTH_REDIRECT_TO_STORAGE_KEY = 'authRedirectTo';
+export const AUTH_ACTION_ATTEMPTED = 'auth-action-attempted';
 
 export const NO_AUTH_TOKEN_PLACEHOLDER = 'token-placeholder';
+
+export const AUTH_KEYRING_USER = 'auth_refresh_token';

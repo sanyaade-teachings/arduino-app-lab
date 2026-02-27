@@ -54,13 +54,14 @@
         top: unset;
         right: unset;
       }
+
       .tooltip-trigger {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         cursor: pointer;
         white-space: nowrap;
-        color: #25C2C7;
+        color: #25c2c7;
       }
 
       .info-icon {
@@ -70,10 +71,27 @@
 
         svg {
           path {
-            fill: #25C2C7;
+            fill: #25c2c7;
           }
           width: 14px;
           height: 14px;
+        }
+      }
+
+      .title-tooltip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #25c2c7;
+
+        .info-icon {
+          display: flex;
+
+          svg {
+            path {
+              fill: #25c2c7;
+            }
+          }
         }
       }
 
@@ -102,20 +120,20 @@
   }
 
   .back-button {
-    color: #ffffff ;
+    color: #ffffff;
 
     svg {
-      color: #ffffff ;
-      fill: #ffffff ;
+      color: #ffffff;
+      fill: #ffffff;
     }
 
     path {
-      fill: #ffffff ;
-      stroke: #ffffff ;
+      fill: #ffffff;
+      stroke: #ffffff;
     }
 
     span {
-      color: #ffffff ;
+      color: #ffffff;
       margin-left: 6px;
     }
 

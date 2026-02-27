@@ -1,14 +1,7 @@
-import { Config } from '@cloud-editor-mono/common';
-import { Login } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
 
-import { useI18n } from '../i18n/useI18n';
-import { XXXSmall } from '../typography';
-import { messages } from './messages';
 import styles from './side-panel.module.scss';
-import { SidePanelItemId, SidePanelLogic } from './sidePanel.type';
-import itemStyles from './sub-components/side-panel-item.module.scss';
-import SidePanelItem from './sub-components/SidePanelItem';
+import { SidePanelLogic } from './sidePanel.type';
 import SidePanelSection from './sub-components/SidePanelSection';
 
 interface SidePanelProps {
@@ -19,12 +12,7 @@ interface SidePanelProps {
 const SidePanel: React.FC<SidePanelProps> = (props: SidePanelProps) => {
   const { sidePanelLogic, classes } = props;
 
-  const { sidePanelItemsBySection, activeItem, user, visible, login } =
-    sidePanelLogic();
-
-  const { formatMessage } = useI18n();
-
-  const isLoginEnabled = false;
+  const { sidePanelItemsBySection, visible } = sidePanelLogic();
 
   return visible ? (
     <div className={clsx(styles['side-panel'], classes)}>
@@ -53,26 +41,6 @@ const SidePanel: React.FC<SidePanelProps> = (props: SidePanelProps) => {
                 section: styles['section'],
               }}
             />
-            {isLoginEnabled ? (
-              <SidePanelItem
-                id={SidePanelItemId.Login}
-                label={
-                  user ? { defaultMessage: user.name } : messages.loginLabel
-                }
-                Icon={user ? user.picture : undefined}
-                isActive={activeItem === SidePanelItemId.Login}
-                externalLink={user ? Config.ID_URL : undefined}
-              >
-                {!user ? (
-                  <button onClick={login} className={itemStyles['button']}>
-                    <div className={itemStyles['icon']}>
-                      <Login />
-                    </div>
-                    <XXXSmall>{formatMessage(messages.loginLabel)}</XXXSmall>
-                  </button>
-                ) : null}
-              </SidePanelItem>
-            ) : null}
           </div>
         </ul>
       </nav>

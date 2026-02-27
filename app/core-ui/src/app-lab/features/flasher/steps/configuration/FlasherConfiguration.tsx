@@ -21,7 +21,7 @@ import {
   XXXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import clsx from 'clsx';
-import { Key, useEffect, useState } from 'react';
+import { Key, useEffect, useRef, useState } from 'react';
 
 import styles from '../../flasher.module.scss';
 import { messages } from '../../messages';
@@ -47,12 +47,14 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
   onConfirm,
 }: FlasherConfigurationProps) => {
   const { formatMessage } = useI18n();
+  const [open, setOpen] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [imageVersions, setImageVersions] = useState<OSImageRelease[]>([]);
   const [imageVersion, setImageVersion] = useState<OSImageRelease>();
   const [preserve, setPreserve] = useState(true);
   const [preserveSupported, setPreserveSupported] = useState(true);
   const [hasEnoughSpace, setHasEnoughSpace] = useState(true);
+  const inputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadResources = async (): Promise<void> => {
@@ -94,6 +96,23 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
     checkPreserveSupported();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageVersion]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(event: MouseEvent): void {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [open]);
 
   const { props: tooltipProps, renderTooltip } = useTooltip({
     content: formatMessage(messages.configurationStepPreserveDataTooltip, {
@@ -155,9 +174,15 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
           <>
             <div className={stepStyles['image-version-container']}>
               <div
+                ref={inputRef}
+                role="button"
+                tabIndex={0}
                 className={clsx(stepStyles['image-version'], {
                   [stepStyles['disabled']]: disabled,
+                  [stepStyles['open']]: open,
                 })}
+                onClick={(): void => setOpen((prev) => !prev)}
+                onKeyUp={(): void => setOpen((prev) => !prev)}
               >
                 <Input
                   inputStyle={InputStyle.AppLab}
@@ -173,6 +198,7 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
                         ].join('')
                       : ''
                   }
+                  onClick={(): void => setOpen((prev) => !prev)}
                   onChange={(key: Key): void =>
                     setImageVersion(imageVersions.find((v) => v.id === key))
                   }
@@ -186,6 +212,7 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
                 />
                 {!disabled && (
                   <DropdownMenuButton
+                    isOpen={open}
                     sections={[
                       {
                         name: 'Image Versions',
@@ -200,11 +227,21 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
                     ]}
                     classes={{
                       dropdownMenu: stepStyles['dropdown-menu'],
+                      dropdownMenuButton: stepStyles['dropdown-menu-button'],
+                      dropdownMenuButtonWrapper:
+                        stepStyles['dropdown-menu-button-wrapper'],
                     }}
                     onAction={(key: Key): void =>
                       setImageVersion(imageVersions.find((v) => v.id === key))
                     }
-                    buttonChildren={<CaretDown />}
+                    buttonChildren={
+                      <CaretDown
+                        className={clsx(stepStyles['dropdown-menu-icon'], {
+                          [stepStyles['dropdown-menu-icon--open']]: open,
+                        })}
+                        onClick={(): void => setOpen((prev) => !prev)}
+                      />
+                    }
                   />
                 )}
               </div>
@@ -230,6 +267,10 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
                   <Checkbox
                     isSelected={preserve}
                     onChange={(value): void => setPreserve(value)}
+                    classes={{
+                      input: stepStyles['preserve-data-input'],
+                      inputChecked: stepStyles['preserve-data-input--checked'],
+                    }}
                   >
                     {formatMessage(messages.configurationStepPreserveDataLabel)}
                   </Checkbox>
@@ -257,7 +298,7 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
           </>
         ) : (
           <div className={stepStyles['flash-event-container']}>
-            <XXXSmall className={stepStyles['flash-event-title']}>
+            <XXSmall className={stepStyles['flash-event-title']}>
               {[
                 formatMessage(messages.configurationStepImageVersionLabel),
                 imageVersion?.version_label,
@@ -265,7 +306,7 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
               ]
                 .filter((it) => !!it)
                 .join(' ')}
-            </XXXSmall>
+            </XXSmall>
             <XXXSmall className={stepStyles['flash-event-subtitle']}>
               {flashEvent.step === 'downloading'
                 ? formatMessage(messages.flashingStepDownloadingLabel, {

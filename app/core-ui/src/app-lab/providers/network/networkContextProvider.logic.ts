@@ -1,5 +1,6 @@
 import {
   connectToWiFi,
+  disconnectWiFi,
   getEthernetStatus,
   getInternetStatus,
   getNetworkList,
@@ -10,19 +11,23 @@ import {
   NetworkItem,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
 import { useBoardLifecycleStore } from '../../store/boards/boards';
+import { SetupContext } from '../setup/setupContext';
 import { NetworkContextValue } from './networkContext';
 
 export function useNetwork(): NetworkContextValue {
   const queryClient = useQueryClient();
+
   const {
     mutate: connectToWifiNetwork,
     isLoading: connectRequestIsLoading,
     isSuccess: connectRequestIsSuccess,
     isError: connectRequestIsError,
+    reset: resetConnectRequest,
   } = useMutation({
+    mutationKey: ['connect-to-wifi-network'],
     mutationFn: async ({ name, password }: NetworkCredentials) => {
       await connectToWiFi(name, password);
     },
@@ -45,14 +50,37 @@ export function useNetwork(): NetworkContextValue {
   const { boardIsReachable } = useBoardLifecycleStore();
 
   const {
+    mutateAsync: disconnectFromNetwork,
+    isLoading: disconnectRequestIsLoading,
+  } = useMutation({
+    mutationFn: async () => {
+      return disconnectWiFi();
+    },
+    onMutate: () => {
+      resetConnectRequest();
+      queryClient.setQueryData(['wifi-status'], 'disconnected');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['wifi-status'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['internet-status'],
+      });
+    },
+  });
+
+  const {
     data: wiFiStatus,
     isLoading: isWiFiStatusLoading,
     isSuccess: wiFiStatusChecked,
   } = useQuery(['wifi-status'], async () => getWiFiStatus(), {
-    refetchOnWindowFocus: false,
     retry: 3,
     refetchInterval: 3000,
-    enabled: boardIsReachable && !connectRequestIsLoading,
+    enabled:
+      boardIsReachable &&
+      !connectRequestIsLoading &&
+      !disconnectRequestIsLoading,
   });
 
   const {
@@ -60,10 +88,12 @@ export function useNetwork(): NetworkContextValue {
     isLoading: isEthernetStatusLoading,
     isSuccess: ethernetStatusChecked,
   } = useQuery(['ethernet-status'], async () => getEthernetStatus(), {
-    refetchOnWindowFocus: false,
     retry: 3,
     refetchInterval: 3000,
-    enabled: boardIsReachable && !connectRequestIsLoading,
+    enabled:
+      boardIsReachable &&
+      !connectRequestIsLoading &&
+      !disconnectRequestIsLoading,
   });
 
   const networkDeviceConnected =
@@ -74,25 +104,27 @@ export function useNetwork(): NetworkContextValue {
     isLoading: isInternetStatusLoading,
     isSuccess: internetStatusChecked,
   } = useQuery(['internet-status'], async () => getInternetStatus(), {
-    refetchOnWindowFocus: false,
     retry: 3,
     refetchInterval: 3000,
     enabled: networkDeviceConnected,
   });
 
   const [scanCount, setScanCount] = useState(0);
+  const { networkStepSkipped } = useContext(SetupContext);
+  const isConnected = networkDeviceConnected && internetIsReachable === true;
+  const scanningIsEnabled =
+    boardIsReachable && !isConnected && !networkStepSkipped;
   const {
     data: networkList,
     isFetching: isScanning,
     refetch: scanNetworkList,
   } = useQuery(['networkList'], getNetworkList, {
-    enabled: boardIsReachable,
-    refetchOnWindowFocus: false,
     onSuccess: (data) => {
       const list = data || [];
-      setScanCount(list.length > 0 ? 2 : (c): number => c + 1);
+      setScanCount(list.length > 0 ? 8 : (c): number => c + 1);
     },
-    refetchInterval: scanCount < 2 ? 1500 : false,
+    enabled: scanningIsEnabled,
+    refetchInterval: scanningIsEnabled && scanCount < 8 ? 1500 : false,
   });
 
   const isStatusConnecting =
@@ -102,7 +134,7 @@ export function useNetwork(): NetworkContextValue {
   const [manualNetworkSetup, setManualNetworkSetup] = useState(false);
 
   return {
-    isScanning,
+    isScanning: isScanning || (scanningIsEnabled && scanCount < 8),
     networkList: networkList || [],
     isNetworkStatusLoading:
       isWiFiStatusLoading || isEthernetStatusLoading || isInternetStatusLoading,
@@ -112,7 +144,8 @@ export function useNetwork(): NetworkContextValue {
       (!networkDeviceConnected || internetStatusChecked), // internetStatusChecked only matters if there is a network connection
     scanNetworkList,
     connectToWifiNetwork,
-    isConnected: networkDeviceConnected && internetIsReachable === true,
+    disconnectFromNetwork,
+    isConnected,
     isStatusConnecting,
     isConnecting:
       connectRequestIsLoading ||

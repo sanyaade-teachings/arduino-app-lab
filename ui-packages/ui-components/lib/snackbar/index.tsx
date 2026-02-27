@@ -64,11 +64,20 @@ const variantStyles: Record<Variants, string> = {
   warning: styles['Snackbar--warning'],
 };
 
+const sizes = ['sm', 'xl'] as const;
+type Sizes = typeof sizes[number];
+
+const sizeStyles: Record<Sizes, string> = {
+  sm: styles['Snackbar--sm'],
+  xl: styles['Snackbar--xl'],
+};
+
 export type SnackbarProps = ComponentPropsWithRef<'div'> & {
   message: string;
   toastId: string | number;
   title?: string;
   variant?: Variants;
+  size?: Sizes;
   actions?: SizedArray<
     {
       text: string;
@@ -92,6 +101,7 @@ export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
       title,
       message,
       variant = 'info',
+      size = 'xl',
       className,
       actions,
       onClose,
@@ -109,7 +119,7 @@ export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
       <div
         className={clsx(
           styles.Snackbar,
-          styles['Snackbar--xl'],
+          sizeStyles[size],
           variantStyles[variant],
           className,
         )}

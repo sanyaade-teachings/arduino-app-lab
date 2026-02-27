@@ -1,6 +1,6 @@
 import { Config } from '@cloud-editor-mono/common';
 
-import { httpGet } from '../fetch/fetch';
+import { httpGet } from '../fetch';
 import { mapGetUserRestrictionsRecap } from './mapper';
 import {
   type GetUserRecap_Params,
@@ -14,14 +14,12 @@ export async function getUserRestrictionsRecapRequest(
   const { header } = params;
 
   const endpoint = `/v1/recap/${params.user_id}`;
-  const response = await httpGet<GetUserRestrictionsRecap_Response>(
-    Config.RESTRICTIONS_API_URL,
-    undefined,
+  const response = await httpGet<GetUserRestrictionsRecap_Response>({
+    url: Config.RESTRICTIONS_API_URL,
     endpoint,
     token,
-    undefined,
-    header,
-  );
+    headers: header,
+  });
 
   if (!response) {
     throw new Error(

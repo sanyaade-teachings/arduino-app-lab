@@ -1,4 +1,5 @@
 import { Config } from '@cloud-editor-mono/common';
+import { WretchError } from 'wretch/resolver';
 
 import {
   httpDelete,
@@ -10,7 +11,7 @@ import {
   httpPost,
   httpPut,
   httpPutRaw,
-} from '../fetch/fetch';
+} from '../fetch';
 import {
   EventSourceHandlers,
   getEventSource,
@@ -18,6 +19,8 @@ import {
 } from '../fetch-event-source';
 import { getWebSocket, WebSocketHandlers } from '../websocket';
 import {
+  AIModelItem,
+  AIModelsListResult,
   AppDetailedInfo,
   AppPort,
   BrickCreateUpdateRequest,
@@ -48,13 +51,11 @@ export async function getAppsV1Request(
 ): Promise<ListAppResult> {
   const endpoint = `/v1/apps`;
 
-  const response = await httpGet<ListAppResult>(
-    origin,
-    undefined,
+  const response = await httpGet<ListAppResult>({
+    url: origin,
     endpoint,
-    undefined,
-    params.query,
-  );
+    params: params.query,
+  });
 
   if (!response) {
     throw new Error(
@@ -71,7 +72,7 @@ export async function getAppDetailV1Request(
 ): Promise<AppDetailedInfo> {
   const endpoint = `/v1/apps/${id}`;
 
-  const response = await httpGet<AppDetailedInfo>(origin, undefined, endpoint);
+  const response = await httpGet<AppDetailedInfo>({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -88,12 +89,11 @@ export async function createAppV1Request(
 ): Promise<string | undefined> {
   const endpoint = `/v1/apps`;
 
-  const response = await httpPost<CreateAppResult>(
-    origin,
-    undefined,
+  const response = await httpPost<CreateAppResult>({
+    url: origin,
     endpoint,
     body,
-  );
+  });
 
   return response?.id;
 }
@@ -104,11 +104,10 @@ export async function getAppBricksV1Request(
 ): Promise<ListAppBrickInstancesResult> {
   const endpoint = `/v1/apps/${id}/bricks`;
 
-  const response = await httpGet<ListAppBrickInstancesResult>(
-    origin,
-    undefined,
+  const response = await httpGet<ListAppBrickInstancesResult>({
+    url: origin,
     endpoint,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -125,11 +124,7 @@ export async function getAppPortsV1Request(
 ): Promise<AppPort[]> {
   const endpoint = `/v1/apps/${id}/exposed-ports`;
 
-  const response = await httpGet<ListAppPortsResult>(
-    origin,
-    undefined,
-    endpoint,
-  );
+  const response = await httpGet<ListAppPortsResult>({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -147,12 +142,11 @@ export async function updateAppDetailV1Request(
 ): Promise<string | undefined> {
   const endpoint = `/v1/apps/${id}`;
 
-  const response = await httpPatch<AppDetailedInfo>(
-    origin,
-    undefined,
+  const response = await httpPatch<AppDetailedInfo>({
+    url: origin,
     endpoint,
     body,
-  );
+  });
 
   return response?.id;
 }
@@ -163,7 +157,7 @@ export async function deleteAppV1Request(
 ): Promise<boolean> {
   const endpoint = `/v1/apps/${id}`;
 
-  const response = await httpDeleteRaw(origin, endpoint);
+  const response = await httpDeleteRaw({ url: origin, endpoint });
 
   return response?.status === 200;
 }
@@ -175,7 +169,7 @@ export async function getAppBrickInstanceV1Request(
 ): Promise<BrickInstance> {
   const endpoint = `/v1/apps/${appId}/bricks/${brickId}`;
 
-  const response = await httpGet<BrickInstance>(origin, undefined, endpoint);
+  const response = await httpGet<BrickInstance>({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -194,7 +188,7 @@ export async function addAppBrickV1Request(
 ): Promise<boolean> {
   const endpoint = `/v1/apps/${appId}/bricks/${brickId}`;
 
-  const response = await httpPutRaw(origin, endpoint, params);
+  const response = await httpPutRaw({ url: origin, endpoint, body: params });
 
   return response?.status === 200;
 }
@@ -206,7 +200,7 @@ export async function deleteAppBrickV1Request(
 ): Promise<boolean> {
   const endpoint = `/v1/apps/${appId}/bricks/${brickId}`;
 
-  const response = await httpDeleteRaw(origin, endpoint);
+  const response = await httpDeleteRaw({ url: origin, endpoint });
 
   return response?.status === 200;
 }
@@ -219,7 +213,7 @@ export async function updateAppBrickV1Request(
 ): Promise<boolean> {
   const endpoint = `/v1/apps/${appId}/bricks/${brickId}`;
 
-  const response = await httpPatchRaw(origin, endpoint, params);
+  const response = await httpPatchRaw({ url: origin, endpoint, body: params });
 
   return response?.status === 200;
 }
@@ -231,12 +225,11 @@ export async function cloneAppV1Request(
 ): Promise<string | undefined> {
   const endpoint = `/v1/apps/${id}/clone`;
 
-  const response = await httpPost<CloneAppResult>(
-    origin,
-    undefined,
+  const response = await httpPost<CloneAppResult>({
+    url: origin,
     endpoint,
     body,
-  );
+  });
 
   return response?.id;
 }
@@ -246,7 +239,7 @@ export async function getBricksV1Request(
 ): Promise<ListBrickResult> {
   const endpoint = `/v1/bricks`;
 
-  const response = await httpGet<ListBrickResult>(origin, undefined, endpoint);
+  const response = await httpGet<ListBrickResult>({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -263,7 +256,7 @@ export async function getBrickDetailsV1Request(
 ): Promise<BrickDetails> {
   const endpoint = `/v1/bricks/${id}`;
 
-  const response = await httpGet<BrickDetails>(origin, undefined, endpoint);
+  const response = await httpGet<BrickDetails>({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -279,7 +272,7 @@ export async function getConfigV1Request(
 ): Promise<GetConfigResult> {
   const endpoint = `/v1/config`;
 
-  const response = await httpGet<GetConfigResult>(origin, undefined, endpoint);
+  const response = await httpGet<GetConfigResult>({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -379,8 +372,12 @@ export async function checkBoardUpdateV1Request(
     endpoint += '?only-arduino=true';
   }
 
-  const response = await httpGetRaw(origin, endpoint, undefined, (error) => {
-    throw error;
+  const response = await httpGetRaw({
+    url: origin,
+    endpoint,
+    handleError: (error) => {
+      throw error;
+    },
   });
 
   if (response?.status === 204) {
@@ -416,16 +413,13 @@ export async function applyBoardUpdateV1Request(
     endpoint += '?only-arduino=true';
   }
 
-  const response = await httpPutRaw(
-    origin,
+  const response = await httpPutRaw({
+    url: origin,
     endpoint,
-    undefined,
-    undefined,
-    undefined,
-    (error) => {
+    handleError: (error: WretchError) => {
       throw error;
     },
-  );
+  });
 
   return response?.status === 204 ? null : true;
 }
@@ -435,7 +429,7 @@ export async function getVersionV1Request(
 ): Promise<string> {
   const endpoint = `/v1/version`;
 
-  const response = await httpGet<Version>(origin, undefined, endpoint);
+  const response = await httpGet<Version>({ url: origin, endpoint });
 
   if (!response || !response.version) {
     throw new Error(
@@ -451,11 +445,10 @@ export async function getSystemPropertyKeysV1Request(
 ): Promise<SystemPropertyKeysResponse> {
   const endpoint = `/v1/properties`;
 
-  const response = await httpGet<SystemPropertyKeysResponse>(
-    origin,
-    undefined,
+  const response = await httpGet<SystemPropertyKeysResponse>({
+    url: origin,
     endpoint,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -477,7 +470,7 @@ export async function getSystemPropertyV1Request(
 ): Promise<SystemPropertyValue> {
   const endpoint = `/v1/properties/${key}`;
 
-  const response = await httpGetRaw(origin, endpoint);
+  const response = await httpGetRaw({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -496,7 +489,7 @@ export async function upsertSystemPropertyV1Request(
 ): Promise<SystemPropertyValue> {
   const endpoint = `/v1/properties/${key}`;
 
-  const response = await httpPutRaw(origin, endpoint, body);
+  const response = await httpPutRaw({ url: origin, endpoint, body });
 
   if (!response) {
     throw new Error(
@@ -514,7 +507,7 @@ export async function deleteSystemPropertyV1Request(
 ): Promise<SystemPropertyValue> {
   const endpoint = `/v1/properties/${key}`;
 
-  const response = await httpDeleteRaw(origin, endpoint);
+  const response = await httpDeleteRaw({ url: origin, endpoint });
 
   if (!response) {
     throw new Error(
@@ -531,13 +524,11 @@ export async function getSketchLibrariesV1Request(
 ): Promise<LibraryListResponse> {
   const endpoint = `/v1/libraries`;
 
-  const response = await httpGet<LibraryListResponse>(
-    origin,
-    undefined,
+  const response = await httpGet<LibraryListResponse>({
+    url: origin,
     endpoint,
-    undefined,
-    params.query,
-  );
+    params: params.query,
+  });
 
   if (!response) {
     throw new Error(
@@ -554,11 +545,10 @@ export async function getAppSketchLibrariesV1Request(
 ): Promise<{ libraries: string[] }> {
   const endpoint = `/v1/apps/${appId}/sketch/libraries`;
 
-  const response = await httpGet<{ libraries: string[] }>(
-    origin,
-    undefined,
+  const response = await httpGet<{ libraries: string[] }>({
+    url: origin,
     endpoint,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -576,8 +566,13 @@ export async function addAppSketchLibraryV1Request(
 ): Promise<void> {
   const endpoint = `/v1/apps/${appId}/sketch/libraries/${libRef}`;
 
-  const response = await httpPut(origin, undefined, endpoint, {}, undefined, {
-    add_deps: 'true',
+  const response = await httpPut({
+    url: origin,
+    endpoint,
+    body: {},
+    params: {
+      add_deps: 'true',
+    },
   });
 
   if (!response) {
@@ -594,8 +589,93 @@ export async function deleteAppSketchLibraryV1Request(
 ): Promise<void> {
   const endpoint = `/v1/apps/${appId}/sketch/libraries/${libRef}`;
 
-  const response = await httpDelete(origin, undefined, endpoint, undefined, {
-    remove_deps: 'true',
+  const response = await httpDelete({
+    url: origin,
+    endpoint,
+    params: {
+      remove_deps: 'true',
+    },
+  });
+
+  if (!response) {
+    throw new Error(
+      `Call to "${endpoint}" did not respond with the expected result`,
+    );
+  }
+}
+
+export async function getAIModelsV1Request(
+  source?: 'arduino' | 'edgeimpulse',
+  origin: string = Config.ORCHESTRATOR_API_URL,
+): Promise<AIModelsListResult> {
+  const qs = source ? `?source=${source}` : '';
+  const endpoint = `/v1/models${qs}`;
+
+  const response = await httpGet<AIModelsListResult>({
+    url: origin,
+    endpoint,
+  });
+
+  if (!response) {
+    throw new Error(
+      `Call to "${endpoint}" did not respond with the expected result`,
+    );
+  }
+
+  return response;
+}
+
+export async function installEIModelV1Request(
+  apiKey: string,
+  projectId: string,
+  impulseId: string,
+  origin: string = Config.ORCHESTRATOR_API_URL,
+): Promise<AIModelItem> {
+  const endpoint = `/v1/models/ei/projects/${projectId}`;
+  const body = {
+    impulse_id: parseInt(impulseId),
+  };
+
+  const response = await httpPut<AIModelItem>({
+    url: origin,
+    endpoint,
+    body,
+    headers: { 'x-api-key': apiKey },
+    handleError: (error) => {
+      if (error.status === 507) {
+        throw new Error('Insufficient space on the board.');
+      }
+      if (error.json && error.json.details) {
+        throw new Error(error.json.details);
+      }
+      throw error;
+    },
+  });
+
+  if (!response) {
+    throw new Error(
+      `Call to "${endpoint}" did not respond with the expected result`,
+    );
+  }
+
+  return response;
+}
+
+export async function deleteAIModelV1Request(
+  id: string,
+  origin: string = Config.ORCHESTRATOR_API_URL,
+): Promise<void> {
+  const endpoint = `/v1/models/${id}`;
+
+  const response = await httpDelete({
+    url: origin,
+    endpoint,
+    handleError: (error) => {
+      if (error.json && error.json.details) {
+        throw new Error(error.json.details);
+      }
+      throw error;
+    },
   });
 
   if (!response) {

@@ -12,14 +12,12 @@ interface SidePanelItemProps {
   label: MessageDescriptor;
   Icon?: React.FC | string;
   isActive?: boolean;
-  externalLink?: string;
-  children?: React.ReactNode;
 }
 
 const SidePanelItem: React.FC<SidePanelItemProps> = (
   props: SidePanelItemProps,
 ) => {
-  const { id, label, Icon, isActive, externalLink, children } = props;
+  const { id, label, Icon, isActive } = props;
 
   const { formatMessage } = useI18n();
 
@@ -31,25 +29,16 @@ const SidePanelItem: React.FC<SidePanelItemProps> = (
         [styles['active']]: isActive,
       })}
     >
-      {children ? (
-        children
-      ) : (
-        <Link
-          to={externalLink ? externalLink : `/${id}`}
-          target={externalLink ? '_blank' : undefined}
-          rel="noreferrer"
-          className={styles['link']}
-        >
-          <div className={styles['icon']}>
-            {typeof Icon === 'string' ? (
-              <img src={Icon} alt="Icon" />
-            ) : (
-              Icon && <Icon />
-            )}
-          </div>
-          <XXXSmall>{formatMessage(label)}</XXXSmall>
-        </Link>
-      )}
+      <Link to={`/${id}`} rel="noreferrer" className={styles['link']}>
+        <div className={styles['icon']}>
+          {typeof Icon === 'string' ? (
+            <img src={Icon} alt="Icon" />
+          ) : (
+            Icon && <Icon />
+          )}
+        </div>
+        <XXXSmall>{formatMessage(label)}</XXXSmall>
+      </Link>
     </li>
   );
 };

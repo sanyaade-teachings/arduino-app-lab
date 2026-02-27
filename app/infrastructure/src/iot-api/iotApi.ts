@@ -1,7 +1,7 @@
 import { Config } from '@cloud-editor-mono/common';
 import { WretchError } from 'wretch/types';
 
-import { httpGet, httpPut, httpPutRaw } from '../fetch/fetch';
+import { httpGet, httpPut, httpPutRaw } from '../fetch';
 import { ORGANIZATION_HEADER } from '../utils';
 import {
   ArduinoDevicev2_IoTApi,
@@ -31,14 +31,13 @@ export async function listDevicesV2Request(
   const { header, query } = { ...params };
   const endpoint = '/v2/devices';
 
-  const response = await httpGet<ArduinoDevicev2_IoTApi[]>(
-    Config.IOT_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoDevicev2_IoTApi[]>({
+    url: Config.IOT_API_URL,
     endpoint,
     token,
-    query,
-    header,
-  );
+    params: query,
+    headers: header,
+  });
 
   if (!response) {
     throw new Error(
@@ -56,14 +55,12 @@ export async function showDeviceV2Request(
   const { path, header } = { ...params };
   const endpoint = `/v2/devices/${path.id}`;
 
-  const response = await httpGet<ArduinoDevicev2_IoTApi>(
-    Config.IOT_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoDevicev2_IoTApi>({
+    url: Config.IOT_API_URL,
     endpoint,
     token,
-    undefined,
-    header,
-  );
+    headers: header,
+  });
 
   if (!response) {
     throw new Error(
@@ -81,14 +78,13 @@ export async function showThingDeviceRequest(
   const { path, query, header } = { ...params };
   const endpoint = `/v1/things/${path.id}/device`;
 
-  const response = await httpGet<ArduinoDevicev2_IoTApi>(
-    Config.IOT_API_URL,
-    undefined,
+  const response = await httpGet<ArduinoDevicev2_IoTApi>({
+    url: Config.IOT_API_URL,
     endpoint,
     token,
-    query,
-    header,
-  );
+    params: query,
+    headers: header,
+  });
 
   if (!response) {
     throw new Error(
@@ -111,13 +107,13 @@ export async function deviceV2SendRequest(
   const { path, header } = { ...params };
   const endpoint = `/v2/devices/${path.id}/ota`;
 
-  const response = await httpPutRaw(
-    Config.IOT_API_URL,
+  const response = await httpPutRaw({
+    url: Config.IOT_API_URL,
     endpoint,
     body,
     token,
-    header,
-  );
+    headers: header,
+  });
 
   if (!response || (response.status !== 200 && response.status !== 202)) {
     throw new Error(
@@ -136,18 +132,15 @@ export async function checkThingCertRequest(
   const endpoint = `/v2/things/${path.id}/check`;
 
   let error: WretchError | undefined = undefined;
-  const response = await httpPut<CheckThingCert_IotApi>(
-    Config.IOT_API_URL,
-    undefined,
+  const response = await httpPut<CheckThingCert_IotApi>({
+    url: Config.IOT_API_URL,
     endpoint,
-    undefined,
     token,
-    header,
-    undefined,
-    (err) => {
+    headers: header,
+    handleError: (err: WretchError) => {
       error = err;
     },
-  );
+  });
 
   if (!response || error) {
     throw new Error(

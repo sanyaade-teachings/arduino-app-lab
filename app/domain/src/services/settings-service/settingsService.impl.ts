@@ -26,6 +26,11 @@ export let connectToWiFi: SettingsService['connectToWiFi'] = async function (
   throw new Error('connectToWiFi service not implemented');
 };
 
+export let disconnectWiFi: SettingsService['disconnectWiFi'] =
+  async function () {
+    throw new Error('disconnectWiFi service not implemented');
+  };
+
 export let getConnectionName: SettingsService['getConnectionName'] =
   async function () {
     throw new Error('getConnectionName service not implemented');
@@ -36,6 +41,7 @@ export const setSettingsService = (service: SettingsService): void => {
   getEthernetStatus = service.getEthernetStatus;
   getWiFiStatus = service.getWiFiStatus;
   connectToWiFi = service.connectToWiFi;
+  disconnectWiFi = service.disconnectWiFi;
   getInternetStatus = service.getInternetStatus;
   getConnectionName = service.getConnectionName;
 };

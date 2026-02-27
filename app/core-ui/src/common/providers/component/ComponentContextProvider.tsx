@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import { ComponentContext } from './componentContext';
 import { useComponent } from './componentContextProvider.logic';
 
-export type ComponentAppEnv = 'development' | 'test' | 'production';
+export type ComponentAppEnv = 'development' | 'test' | 'production' | 'mock';
 
 export interface ComponentEnvironment {
   APP_ENV: ComponentAppEnv;

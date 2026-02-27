@@ -3,34 +3,51 @@ import {
   AuthClient,
   GetTokenSilentlyOptions,
 } from '@bcmi-labs/art-auth';
-import { setGlobalConfig } from '@cloud-editor-mono/common';
+import { Config, setGlobalConfig } from '@cloud-editor-mono/common';
+import {
+  AUTH_KEYRING_USER,
+  eventsOn,
+} from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   AppState,
   Auth0GetTokenError,
   auth0IsAuthenticated,
   createAuth0Instance,
+  createAuth0InstanceSync,
   getAuth0AppState,
   getAuth0TokenSilently,
   getAuth0User,
   loginAuth0WithRedirect,
-  logoutAuth0,
   USER_CLAIM_CONNECTION,
   USER_CLAIM_ROLES,
 } from '@cloud-editor-mono/infrastructure';
 import { set } from 'idb-keyval';
 
 import {
+  deleteAuthRefreshToken,
+  openLinkExternal,
+} from '../services-by-app/app-lab';
+import { defaultDesktopAuth0Options } from './arduinoAuthDesktopUtils';
+import {
   AUTH_COOKIE_SUBSTRING,
   AUTH_REDIRECT_TO_STORAGE_KEY,
   defaultAuth0Options,
+  DefaultAuthOptions,
   EXPIRED_COOKIE,
   NO_AUTH_TOKEN_PLACEHOLDER,
   NOT_ADULT_TYPES,
   SILENT_AUTHENTICATION_TIMEOUT,
 } from './arduinoAuthUtils';
 
+function getOptions(): DefaultAuthOptions {
+  return Config.APP_NAME === 'App Lab'
+    ? defaultDesktopAuth0Options
+    : defaultAuth0Options;
+}
+
 export let authServiceClient: AuthClient | null = null;
 export let injectedUser: ArduinoUser | null = null;
+let cancelPendingLogin: (() => void) | null = null;
 
 export async function getAuthClient(): Promise<AuthClient> {
   if (!authServiceClient) {
@@ -39,9 +56,18 @@ export async function getAuthClient(): Promise<AuthClient> {
   return authServiceClient;
 }
 
+export function getAuthClientSync(): AuthClient {
+  if (!authServiceClient) {
+    authServiceClient = initializeSync();
+  }
+
+  return authServiceClient;
+}
+
 async function initialize(): Promise<AuthClient> {
+  const options = getOptions();
   const instance = await createAuth0Instance(
-    defaultAuth0Options,
+    options,
     SILENT_AUTHENTICATION_TIMEOUT,
   );
 
@@ -54,6 +80,15 @@ async function initialize(): Promise<AuthClient> {
       SERIAL_MONITOR_PARENT_ORIGIN: customUrl,
     });
   }
+
+  authServiceClient = instance;
+
+  return instance;
+}
+
+function initializeSync(optionsOverride?: DefaultAuthOptions): AuthClient {
+  const options = optionsOverride || getOptions();
+  const instance = createAuth0InstanceSync(options);
 
   authServiceClient = instance;
 
@@ -78,6 +113,75 @@ export async function login(): Promise<void> {
   });
 }
 
+export async function loginWithBrowser(
+  storeRedirect = true,
+  redirectUri?: string,
+): Promise<void> {
+  if (!authServiceClient) {
+    authServiceClient = await initialize();
+  }
+  const client = authServiceClient;
+
+  if (cancelPendingLogin) {
+    cancelPendingLogin();
+    cancelPendingLogin = null;
+  }
+
+  return new Promise((resolve, reject) => {
+    const cancelListener = eventsOn('auth-deep-link', async (url: string) => {
+      try {
+        await client.handleRedirectCallback(url);
+        resolve();
+      } catch (err) {
+        reject(err);
+      } finally {
+        if (cancelPendingLogin) {
+          cancelPendingLogin();
+          cancelPendingLogin = null;
+        }
+      }
+    });
+
+    cancelPendingLogin = cancelListener;
+
+    const executeLogin = async (): Promise<void> => {
+      try {
+        const options = getOptions();
+
+        if (redirectUri) {
+          options.authorizationParams.redirect_uri = redirectUri;
+        }
+
+        const { state: previousState, ...restOptions } =
+          options.authorizationParams;
+
+        if (storeRedirect) {
+          await set(AUTH_REDIRECT_TO_STORAGE_KEY, {
+            previousState,
+            redirectTo: window.location.pathname + window.location.search,
+          });
+        }
+
+        await loginAuth0WithRedirect(client, {
+          ...restOptions,
+          async openUrl(url) {
+            openLinkExternal(url);
+          },
+          appState: { previousState },
+        });
+      } catch (error) {
+        if (cancelPendingLogin) {
+          cancelPendingLogin();
+          cancelPendingLogin = null;
+        }
+        reject(error);
+      }
+    };
+
+    executeLogin();
+  });
+}
+
 export async function getAuthState(): Promise<AppState | null> {
   if (!authServiceClient) {
     throw new Error('Cannot get auth state when Auth client not initialized');
@@ -89,14 +193,14 @@ export async function getAuthState(): Promise<AppState | null> {
 export async function logout(): Promise<void> {
   removeAuthenticatedCookie();
 
-  if (!authServiceClient) {
-    throw new Error('Cannot logout when Auth client not initialized');
+  try {
+    await deleteAuthRefreshToken(AUTH_KEYRING_USER);
+  } catch (e) {
+    console.error('Error deleting refresh token', e);
   }
-  logoutAuth0(authServiceClient, {
-    logoutParams: {
-      returnTo: defaultAuth0Options.authorizationParams.logout_uri,
-    },
-  });
+
+  injectedUser = null;
+  authServiceClient = null;
 }
 
 export async function isAuthenticated(): Promise<boolean> {

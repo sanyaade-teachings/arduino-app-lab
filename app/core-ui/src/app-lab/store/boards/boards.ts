@@ -7,13 +7,10 @@ import {
 import { Board } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useQuery } from '@tanstack/react-query';
 import { del, get, set } from 'idb-keyval';
-import { useCallback, useEffect, useReducer } from 'react';
-import { useIntl } from 'react-intl';
+import { useCallback, useEffect, useReducer, useState } from 'react';
 import { create } from 'zustand';
 
-import { sendAppLabNotification } from '../../features/notifications';
-import { useIsBoard } from '../../hooks/board';
-import { messages } from './messages';
+import { useIsBoard } from '../../hooks/useIsBoard';
 
 const CONNECT_TIMEOUT_MS = 15_000;
 const AUTO_SELECT_BOARD_ID = 'arduino:auto-select-board-id';
@@ -46,16 +43,17 @@ export const useBoardLifecycleStore = create<BoardLifecycleState>((set) => ({
 
 export type UseBoards = () => {
   boards: Board[];
+  selectedBoard?: Board;
   selectBoard: (board: Board) => Promise<void>;
+  autoSelectBoard: (boardId: string) => Promise<void>;
+  isAutoSelectingBoard: boolean;
   showBoardConnPswPrompt: boolean;
   onConnPswCancel: () => void;
   onConnPswSubmit: (password: string) => Promise<void>;
   isConnectingToBoard: boolean;
   connToBoardError?: string;
   connToBoardCompleted: boolean;
-  selectedBoard?: Board;
   setSelectedBoardCheckingStatus: () => void;
-  autoSelectBoard: (boardId: string) => Promise<void>;
 };
 
 type BoardsState = {
@@ -203,8 +201,6 @@ export const useBoards: UseBoards = () => {
     setNeedsImageUpdate,
   } = useBoardLifecycleStore();
 
-  const { formatMessage } = useIntl();
-
   const { data: isBoard } = useIsBoard();
   const [
     {
@@ -218,8 +214,9 @@ export const useBoards: UseBoards = () => {
     dispatch,
   ] = useReducer(boardsReducer, boardsInitialState);
 
+  const [isAutoSelectingBoard, setIsAutoSelectingBoard] = useState(true);
+
   const { data: retrievedBoards } = useQuery(['boards'], getBoards, {
-    refetchOnWindowFocus: false,
     refetchInterval: isBoard ? undefined : 3000,
     enabled: !isBoard,
   });
@@ -286,16 +283,10 @@ export const useBoards: UseBoards = () => {
         dispatch({ type: 'BOARD_CONN_ERROR', payload: msg });
 
         console.error('Failed to select board', err);
-        sendAppLabNotification({
-          message: formatMessage(messages.boardConnectionError, {
-            boardName: board.name || formatMessage(messages.genericBoard),
-          }),
-          variant: 'error',
-        });
         throw err;
       }
     },
-    [formatMessage, setBoardIsReachable, setSelectedConnectedBoard],
+    [setBoardIsReachable, setSelectedConnectedBoard],
   );
 
   const handleSelectBoard = useCallback(
@@ -360,25 +351,41 @@ export const useBoards: UseBoards = () => {
   // retrieve boardId from idb to auto-select board on app reload after it has been switched
   useEffect(() => {
     const autoSelectBoard = async (): Promise<void> => {
-      if (isBoard) return;
+      if (isBoard) {
+        setIsAutoSelectingBoard(false);
+        return;
+      }
 
       const boardId = await get<string>(AUTO_SELECT_BOARD_ID);
-      if (!boardId || !boards.length) return;
+
+      if (!boardId) {
+        if (!boardStatus || boardStatus === 'conn-error') {
+          setIsAutoSelectingBoard(false);
+        }
+        return;
+      }
+
+      if (!boards.length) return;
 
       const board = boards.find((board) => board.id === boardId);
-      if (!board) return;
+
+      if (!board) {
+        setIsAutoSelectingBoard(false);
+        return;
+      }
 
       await handleSelectBoard(board);
     };
 
     autoSelectBoard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boards, isBoard]);
+  }, [boardStatus, boards, handleSelectBoard, isBoard]);
 
   return {
     boards,
     selectedBoard: selectedConnectedBoard,
     selectBoard: handleSelectBoard,
+    autoSelectBoard,
+    isAutoSelectingBoard,
     showBoardConnPswPrompt: selectedBoard?.connectionType === 'Network',
     onConnPswCancel,
     onConnPswSubmit: handleBoardConnectionWithPassword,
@@ -386,6 +393,5 @@ export const useBoards: UseBoards = () => {
     connToBoardError: boardStatus === 'conn-error' ? boardError : undefined,
     connToBoardCompleted: boardStatus === 'conn-and-selection-done',
     setSelectedBoardCheckingStatus,
-    autoSelectBoard,
   };
 };

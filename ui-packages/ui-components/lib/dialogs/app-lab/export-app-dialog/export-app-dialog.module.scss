@@ -2,8 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 32px 40px !important;
-  overflow: visible;
+  min-width: 720px;
+  padding-left: 120px !important;
+  padding-right: 120px !important;
 
   &-title {
     font-size: 20px;
@@ -31,14 +32,6 @@
   gap: 8px;
 }
 
-.checkbox-input {
-  background: transparent !important;
-}
-
-.checkbox-label-wrapper.checked .checkbox-input {
-  background: transparent !important;
-}
-
 .checkbox-label {
   font-size: 14px;
   line-height: 20px;
@@ -48,22 +41,18 @@
 }
 
 .info-icon-wrapper {
-  position: relative;
   display: inline-flex;
 }
 
 .info-icon {
   display: flex;
-  border-radius: 32px;
-  border: 1px solid;
-  border-color: var(--button-primary-background, #25C2C7);
   justify-content: center;
   align-items: center;
   cursor: pointer;
 
   svg {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
 
     path {
       fill: var(--button-primary-background, #25C2C7);
@@ -73,22 +62,6 @@
   &:hover {
     opacity: 0.8;
   }
-}
-
-.tooltip-content {
-  width: 240px !important;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 16px 24px;
-  border-radius: 3px;
-  background: var(--surface-bg-above, #374146) !important;
-  color: #ffffff;
-  box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.25) !important;
-  position: fixed !important;
-  z-index: 99999 !important;
-  max-width: 240px;
-  pointer-events: auto !important;
 }
 
 .action-button {
@@ -130,5 +103,56 @@
     line-height: 20px;
     color: var(--text-primary, #ffffff);
     text-align: center;
+  }
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  cursor: pointer;
+
+  &.checked {
+    .icon {
+      display: block;
+    }
+
+    .input {
+      background: #25C2C7;
+      border: 1px solid #25C2C7;
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.icon {
+  display: none;
+  width: 10px;
+  height: 10px;
+
+  path,
+  * {
+    fill: #1a3a3a;
+    stroke: #1a3a3a;
+  }
+}
+
+.input {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #7f8c8d;
+  border-radius: 2px;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+
+  &.focus-visible {
+    outline: 2px solid #7fcbcd;
   }
 }

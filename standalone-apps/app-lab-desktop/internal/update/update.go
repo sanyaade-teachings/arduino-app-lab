@@ -21,7 +21,7 @@ type Updater struct {
 func NewUpdater(version, userAgent, updateURL string) (*Updater, error) {
 
 	if updateURL == "" {
-		updateURL = "https://downloads.arduino.cc/"
+		updateURL = "https://downloads.arduino.cc"
 	}
 	parsedURL, err := url.Parse(updateURL)
 	if err != nil {

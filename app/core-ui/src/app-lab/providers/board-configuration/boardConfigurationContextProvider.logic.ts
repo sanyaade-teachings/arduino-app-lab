@@ -74,7 +74,6 @@ export function useBoardConfiguration(): BoardConfigurationContextValue {
     isError: getBoardNameIsError,
     isSuccess: boardNameChecked,
   } = useQuery(['get-board-name'], getBoardName, {
-    refetchOnWindowFocus: false,
     enabled: boardIsReachable,
   });
 
@@ -83,7 +82,6 @@ export function useBoardConfiguration(): BoardConfigurationContextValue {
     isError: getKeyboardLayoutIsError,
     isSuccess: keyboardLayoutChecked,
   } = useQuery(['get-keyboard-layout'], getKeyboardLayout, {
-    refetchOnWindowFocus: false,
     enabled: boardIsReachable,
   });
 
@@ -91,7 +89,6 @@ export function useBoardConfiguration(): BoardConfigurationContextValue {
     ['list-keyboard-layouts'],
     listKeyboardLayouts,
     {
-      refetchOnWindowFocus: false,
       enabled: boardIsReachable,
     },
   );

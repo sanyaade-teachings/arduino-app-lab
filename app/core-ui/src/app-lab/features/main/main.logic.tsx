@@ -1,31 +1,41 @@
 import {
   boardNeedsImageUpdate,
   boardNeedsOSUpdate,
-  login,
-  logout,
+  getReleaseImageSrc,
+  getReleaseNotes,
   openLinkExternal,
   reloadApp,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   BoardUpdateDialogLogic,
   FlashBoardDialogLogic,
+  SidePanelItemId,
   SidePanelItemInterface,
   sidePanelItems,
   SidePanelLogic,
   SidePanelSectionId,
+  snackbar,
   UpdaterStatus,
+  WhatsNewAdHocLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from '@tanstack/react-router';
+import { get, set } from 'idb-keyval';
 import {
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
-import { useIsBoard } from '../../hooks/board';
-import { useUpdater } from '../../hooks/updater';
+import { useIsBoard } from '../../hooks/useIsBoard';
+import { useUpdater } from '../../hooks/useUpdater';
+import { AuthContext } from '../../providers/auth/authContext';
+import { NetworkContext } from '../../providers/network/networkContext';
+import { SetupContext } from '../../providers/setup/setupContext';
 import { useBoardLifecycleStore } from '../../store/boards/boards';
 import { useSystemPropsStore } from '../../store/systemProps';
 import { UseMainLogic } from './main.type';
@@ -42,6 +52,9 @@ export const useMainLogic: UseMainLogic =
   function (): ReturnType<UseMainLogic> {
     const useSidePanelLogic = (): ReturnType<SidePanelLogic> => {
       const { pathname } = useLocation();
+
+      const { user } = useContext(AuthContext);
+
       const activeItem = pathname
         .split('/')
         .filter((it) => it.length > 0)
@@ -53,38 +66,112 @@ export const useMainLogic: UseMainLogic =
             (acc, item) => {
               const { sectionId, enabled } = item;
 
-              item.active = activeItem === item.id;
-
               if (!sectionId || !enabled) {
                 return acc;
               }
+              const currentItem = { ...item };
+
+              currentItem.active = activeItem === item.id;
+
               if (!acc.items[sectionId]) {
                 acc.items[sectionId] = [];
               }
-              acc.items[sectionId].push(item);
+
+              if (currentItem.id === SidePanelItemId.Account && user) {
+                currentItem.Icon = user.picture;
+              }
+
+              acc.items[sectionId].push(currentItem);
               return acc;
             },
             {
               items: {} as Record<SidePanelSectionId, SidePanelItemInterface[]>,
             },
           ),
-        [activeItem],
+        [activeItem, user],
       );
 
       return {
         sidePanelItemsBySection,
         activeItem,
-        user: undefined,
+        user,
         visible: pathname.split('/').length <= 2,
-        login,
-        logout,
       };
     };
     const sidePanelLogic = useCallback(useSidePanelLogic, []);
 
+    // Temp. to be removed in versions following 0.5.0
+    const useWhatsNewAdHocLogic = (): ReturnType<WhatsNewAdHocLogic> => {
+      const [open, setOpen] = useState(false);
+      const [releaseNotes, setReleaseNotes] = useState<{
+        content: string;
+        image: string;
+      }>();
+
+      const queryClient = useQueryClient();
+
+      const { mutate: dismissWhatsNew } = useMutation({
+        mutationFn: () => set('whats-new-adhoc', true),
+        onSuccess: () => {
+          queryClient.invalidateQueries(['whats-new-adhoc']);
+        },
+      });
+
+      const { data: isWhatsNewDismissed, isLoading: isWhatsNewIsLoading } =
+        useQuery(['whats-new-adhoc'], async () => {
+          const data = await get('whats-new-adhoc');
+          return data ?? null;
+        });
+
+      const whatsNewFetched = useRef(false);
+      useEffect(() => {
+        if (
+          isWhatsNewDismissed ||
+          isWhatsNewDismissed === undefined ||
+          isWhatsNewIsLoading ||
+          whatsNewFetched.current
+        )
+          return;
+
+        const _getReleaseNotes = async (): Promise<void> => {
+          const version = '0.5.0_';
+          try {
+            const response = await getReleaseNotes(version);
+            setReleaseNotes({
+              content: response,
+              image: getReleaseImageSrc(version),
+            });
+            setOpen(true);
+          } catch (e) {
+            console.error('Error fetching release notes', e);
+            setReleaseNotes(undefined);
+          }
+        };
+
+        _getReleaseNotes();
+        whatsNewFetched.current = true;
+      }, [isWhatsNewDismissed, isWhatsNewIsLoading]);
+
+      const onClose = useCallback(() => {
+        setOpen(false);
+        dismissWhatsNew();
+      }, [dismissWhatsNew]);
+
+      return {
+        open,
+        onClose,
+        releaseNotes,
+      };
+    };
+
+    const whatsNewAdHocLogic = useCallback(useWhatsNewAdHocLogic, []);
+
     const useBoardUpdateDialogLogic =
       (): ReturnType<BoardUpdateDialogLogic> => {
         const [open, setOpen] = useState(false);
+
+        const { setSetupCompleted, setNetworkStepSkipped } =
+          useContext(SetupContext);
 
         const {
           isError: getPropsError,
@@ -96,16 +183,54 @@ export const useMainLogic: UseMainLogic =
           status,
           canStartUpdate,
           boardUpdates,
-          boardLogErrors,
           boardLogs,
           newAppVersion,
+          releaseNotes,
           checkForUpdates,
           startUpdate,
           skipUpdate: updaterSkipUpdate,
           boardUpdateSucceeded,
           appUpdateSucceeded,
           bypassSkipUpdate,
+          setStatus: setUpdaterStatus,
+          setBoardLogs: setBoardUpdaterLogs,
         } = useUpdater();
+
+        const {
+          disconnectFromNetwork,
+          setSelectedNetwork,
+          setManualNetworkSetup,
+        } = useContext(NetworkContext);
+
+        const changeNetwork = useCallback(async (): Promise<void> => {
+          try {
+            await disconnectFromNetwork();
+          } catch (e) {
+            console.error(`Failed to disconnect from network: ${e}`);
+            snackbar({
+              message: 'Failed to disconnect current network. Update skipped.',
+              variant: 'error',
+            });
+          } finally {
+            setUpdaterStatus(UpdaterStatus.None);
+            setBoardUpdaterLogs([]);
+            setOpen(false);
+
+            setSetupCompleted(false);
+
+            setNetworkStepSkipped(false);
+            setSelectedNetwork(undefined);
+            setManualNetworkSetup(false);
+          }
+        }, [
+          disconnectFromNetwork,
+          setUpdaterStatus,
+          setBoardUpdaterLogs,
+          setSetupCompleted,
+          setNetworkStepSkipped,
+          setSelectedNetwork,
+          setManualNetworkSetup,
+        ]);
 
         const { data: isBoard } = useIsBoard();
 
@@ -125,27 +250,16 @@ export const useMainLogic: UseMainLogic =
           }
         }, [status, isCheckUpdateBlocking]);
 
+        const { networkStepSkipped } = useContext(SetupContext);
         useEffect(() => {
-          if (canStartUpdate && status === UpdaterStatus.None) {
+          if (
+            canStartUpdate &&
+            status === UpdaterStatus.None &&
+            !networkStepSkipped
+          ) {
             checkForUpdates();
           }
-        }, [canStartUpdate, checkForUpdates, status]);
-
-        const logStatus = useMemo(() => {
-          if (
-            [UpdaterStatus.CheckingFailed, UpdaterStatus.UpdateFailed].includes(
-              status,
-            )
-          ) {
-            return 'failed';
-          }
-
-          if ([UpdaterStatus.UpdateComplete].includes(status)) {
-            return 'success';
-          }
-
-          return 'pending';
-        }, [status]);
+        }, [canStartUpdate, checkForUpdates, networkStepSkipped, status]);
 
         const openFlasherTool = async (): Promise<void> => {
           openLinkExternal(FLASHER_TOOL_URL);
@@ -166,14 +280,14 @@ export const useMainLogic: UseMainLogic =
           status,
           boardUpdates,
           boardLogs,
-          boardLogErrors,
           newAppVersion,
-          logStatus,
+          releaseNotes,
           startUpdate,
           reloadApp,
           openFlasherTool,
           openArduinoSupport,
           skipUpdate,
+          changeNetwork,
           boardUpdateSucceeded,
           appUpdateSucceeded,
           bypassSkipUpdate,
@@ -225,5 +339,6 @@ export const useMainLogic: UseMainLogic =
       sidePanelLogic,
       boardUpdateDialogLogic,
       flashBoardDialogLogic,
+      whatsNewAdHocLogic,
     };
   };

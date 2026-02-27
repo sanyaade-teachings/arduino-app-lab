@@ -106,7 +106,6 @@ export const useIotSketch: UseIoTSketch = function (
       }
     },
     {
-      refetchOnWindowFocus: false,
       enabled: isIotSketch,
     },
   );
@@ -158,7 +157,6 @@ export const useIotSketch: UseIoTSketch = function (
 
   const fqbnQueries = useQueries({
     queries: (iotDevicesToEnrich ?? []).map(({ fqbn: deviceFqbn, name }) => ({
-      refetchOnWindowFocus: false,
       queryKey: ['get-board-by-fqbn', deviceFqbn, name],
       queryFn: () =>
         deviceFqbn
@@ -202,7 +200,6 @@ export const useIotSketch: UseIoTSketch = function (
     ['get-iot-cloud-devices'],
     () => getIotCloudDevices(sketchData?.thingId),
     {
-      refetchOnWindowFocus: false,
       staleTime: 0,
       refetchInterval: 1500,
       isDataEqual: (prev, next) => {
@@ -548,7 +545,6 @@ export const useIotUploadQueries: UseIotUploadQueries = function (
           payload: { sketch_id: commandParams.initialSketchData.id },
         });
       },
-      refetchOnWindowFocus: false,
       enabled: false,
     },
   );

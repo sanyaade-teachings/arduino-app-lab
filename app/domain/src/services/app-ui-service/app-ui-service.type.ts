@@ -1,4 +1,6 @@
 export interface AppUIService {
   findUIPort: (appId: string) => Promise<number>;
-  openUIWhenReady: (port: number) => Promise<void>;
+  findUIPorts: (appId: string) => Promise<number[]>;
+  openUIWhenReady: (port: number, timeout: number) => Promise<void>;
+  forwardNonUIPort: (port: number) => Promise<void>;
 }

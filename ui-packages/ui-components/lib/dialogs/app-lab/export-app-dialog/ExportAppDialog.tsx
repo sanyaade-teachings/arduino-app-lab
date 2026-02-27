@@ -1,5 +1,5 @@
 import {
-  InfoIconI,
+  InfoIconOutline,
   TriangleSharp,
 } from '@cloud-editor-mono/images/assets/icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -60,6 +60,7 @@ export const ExportAppDialog: React.FC<ExportAppDialogProps> = ({
   const { props: tooltipProps, renderTooltip } = useTooltip({
     content: formatMessage(messages.includeDataTooltipContent),
     title: formatMessage(messages.includeDataTooltipTitle),
+    direction: 'up-right',
   });
 
   const handleClose = useCallback((): void => {
@@ -146,22 +147,20 @@ export const ExportAppDialog: React.FC<ExportAppDialogProps> = ({
               isSelected={includeData}
               onChange={(isSelected): void => setIncludeData(isSelected)}
               id="include-data"
-              classes={{
-                input: styles['checkbox-input'],
-                label: styles['checkbox-label-wrapper'],
-              }}
             />
             <label htmlFor="include-data" className={styles['checkbox-label']}>
               {formatMessage(messages.includeDataLabel)}
             </label>
-            <div className={styles['info-icon-wrapper']}>
-              <div {...tooltipProps}>
-                <div className={styles['info-icon']}>
-                  <InfoIconI />
-                </div>
+            <div
+              {...tooltipProps}
+              ref={tooltipProps.ref}
+              className={styles['info-icon-wrapper']}
+            >
+              <div className={styles['info-icon']}>
+                <InfoIconOutline />
               </div>
-              {renderTooltip(styles['tooltip-content'])}
             </div>
+            {renderTooltip()}
           </div>
         </>
       )}

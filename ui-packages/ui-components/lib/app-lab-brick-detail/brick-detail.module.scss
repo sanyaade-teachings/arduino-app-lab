@@ -95,6 +95,33 @@
     flex-direction: column;
     gap: 16px;
 
+    .ai-models-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
+      &:has(> :nth-child(1):last-child) {
+        justify-content: flex-end;
+      }
+
+      .train-new-model-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+
+        svg {
+          width: 16px;
+          height: 16px;
+
+          path {
+            fill: #25c2c7;
+          }
+        }
+      }
+    }
+
     .ai-models-info {
       .link {
         color: var(--link-default, #25c2c7);
@@ -141,7 +168,7 @@
       .brick-usage-card {
         height: 150px;
         flex: 0 0 180px;
-        background-color: #171E21;
+        background-color: #171e21;
         border: 1px solid var(--border-inverted, #232b2e);
         padding: 8px;
         box-sizing: border-box;

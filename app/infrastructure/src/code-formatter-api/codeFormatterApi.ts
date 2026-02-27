@@ -1,6 +1,6 @@
 import { Config } from '@cloud-editor-mono/common';
 
-import { httpPost } from '../fetch/fetch';
+import { httpPost } from '../fetch';
 import {
   CodeFormatterPrettify_Body,
   CodeFormatterPrettify_CodeFormatterApi,
@@ -14,14 +14,13 @@ export async function postPrettifyCodeRequest(
   abortController?: AbortController,
 ): Promise<CodeFormatterPrettify_Response | void> {
   const endpoint = '/prettify';
-  const response = await httpPost<CodeFormatterPrettify_CodeFormatterApi>(
-    Config.CODE_FORMATTER_API_URL,
-    undefined,
+  const response = await httpPost<CodeFormatterPrettify_CodeFormatterApi>({
+    url: Config.CODE_FORMATTER_API_URL,
     endpoint,
-    payload,
+    body: payload,
     token,
     abortController,
-  );
+  });
 
   if (response) {
     return mapPostPrettifyCodeResponse(response);

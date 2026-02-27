@@ -1,7 +1,7 @@
 import { Config } from '@cloud-editor-mono/common';
 import { FetchEventSourceInit } from '@microsoft/fetch-event-source';
 
-import { httpDelete, httpGet, httpPost } from '../fetch/fetch';
+import { httpDelete, httpGet, httpPost } from '../fetch';
 import { EventSourceHandlers, postEventSource } from '../fetch-event-source';
 import {
   AiPromptMessage,
@@ -26,15 +26,13 @@ export async function genAISketchPlanConfirmRequest(
 ): Promise<AiPromptMessage> {
   const endpoint = `/v1/conversation/sketches`;
 
-  const response = await httpPost<NewMessageResponse_GenAiApi>(
-    Config.GEN_AI_API_URL,
-    undefined,
+  const response = await httpPost<NewMessageResponse_GenAiApi>({
+    url: Config.GEN_AI_API_URL,
     endpoint,
-    message,
+    body: message,
     token,
-    undefined,
     headers,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -52,13 +50,12 @@ export async function genAISketchPlanDeleteRequest(
 ): Promise<void> {
   const endpoint = `/v1/conversation/messages/${sourceMessageTs}`;
 
-  await httpDelete<ConversationResponse_GenAiApi>(
-    Config.GEN_AI_API_URL,
-    undefined,
+  await httpDelete<ConversationResponse_GenAiApi>({
+    url: Config.GEN_AI_API_URL,
     endpoint,
     token,
     headers,
-  );
+  });
 }
 
 export async function genAISketchPlanRefreshRequest(
@@ -68,15 +65,12 @@ export async function genAISketchPlanRefreshRequest(
 ): Promise<AiPromptMessage> {
   const endpoint = `/v1/conversation/messages/${sourceMessageTs}`;
 
-  const response = await httpPost<NewMessageResponse_GenAiApi>(
-    Config.GEN_AI_API_URL,
-    undefined,
+  const response = await httpPost<NewMessageResponse_GenAiApi>({
+    url: Config.GEN_AI_API_URL,
     endpoint,
-    undefined,
     token,
-    undefined,
     headers,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -95,14 +89,12 @@ export async function genAIGetConversationV2Request(
 ): Promise<ConversationResponse_GenAiApi> {
   const endpoint = `/v2/${sourceType}/${sourceId}/conversation`;
 
-  const response = await httpGet<ConversationResponse_GenAiApi>(
-    Config.GEN_AI_API_URL,
-    undefined,
+  const response = await httpGet<ConversationResponse_GenAiApi>({
+    url: Config.GEN_AI_API_URL,
     endpoint,
     token,
-    undefined,
     headers,
-  );
+  });
 
   if (!response) {
     throw new Error(
@@ -121,13 +113,12 @@ export async function genAIDeleteConversationV2Request(
 ): Promise<void> {
   const endpoint = `/v2/${sourceType}/${sourceId}/conversation`;
 
-  await httpDelete<ConversationResponse_GenAiApi>(
-    Config.GEN_AI_API_URL,
-    undefined,
+  await httpDelete<ConversationResponse_GenAiApi>({
+    url: Config.GEN_AI_API_URL,
     endpoint,
     token,
     headers,
-  );
+  });
 }
 
 export async function genAICreateConversationV2Request(
@@ -138,15 +129,12 @@ export async function genAICreateConversationV2Request(
 ): Promise<NewConversationResponse_GenAiApi> {
   const endpoint = `/v2/${sourceType}/${sourceId}/conversation`;
 
-  const response = await httpPost<NewConversationResponse_GenAiApi>(
-    Config.GEN_AI_API_URL,
-    undefined,
+  const response = await httpPost<NewConversationResponse_GenAiApi>({
+    url: Config.GEN_AI_API_URL,
     endpoint,
-    undefined,
     token,
-    undefined,
     headers,
-  );
+  });
 
   if (!response) {
     throw new Error(

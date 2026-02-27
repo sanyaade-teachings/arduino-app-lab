@@ -16,4 +16,6 @@ export interface UpdaterService {
     abortController?: AbortController,
   ): Promise<void>;
   getMandatoryUpdatesList?: () => Promise<MandatoryUpdateList>;
+  getReleaseImageSrc?: (tag: string) => string;
+  getReleaseNotes?: (tag: string) => Promise<string>;
 }

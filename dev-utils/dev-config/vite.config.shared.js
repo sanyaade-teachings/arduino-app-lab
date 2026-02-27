@@ -94,6 +94,18 @@ function appConfig(port, envDir, pathLevel, isWails) {
     const routesRootDir = getRoutesRootDir(env.VITE_ROUTER_TYPE, startPath);
 
     return {
+      resolve: {
+        dedupe: [
+          '@codemirror/state',
+          '@codemirror/language',
+          '@lezer/common',
+          '@lezer/highlight',
+          '@lezer/lr',
+          '@codemirror/lang-html',
+          '@codemirror/lang-javascript',
+          '@codemirror/lang-css',
+        ],
+      },
       plugins: [
         augmentWithDatePlugin(),
         reactVirtualized(),
@@ -159,11 +171,7 @@ function appConfig(port, envDir, pathLevel, isWails) {
       optimizeDeps:
         mode === 'test' || mode === 'production'
           ? {
-              exclude: [
-                '@codemirror/language',
-                '@codemirror/lang-html',
-                '@lezer/highlight',
-              ],
+              exclude: [],
             }
           : {
               exclude: [
@@ -180,6 +188,8 @@ function appConfig(port, envDir, pathLevel, isWails) {
                 '@bcmi-labs/app-lab-desktop',
                 '@codemirror/language',
                 '@codemirror/lang-html',
+                '@codemirror/lang-javascript',
+                '@codemirror/lang-css',
                 '@lezer/highlight',
               ],
             },

@@ -1,6 +1,5 @@
 @use "@cloud-editor-mono/ui-components/public/shared.module.scss";
 
-$borderColor: #232b2e;
 .tree-container {
   width: 100%;
   box-sizing: border-box;
@@ -55,13 +54,14 @@ $borderColor: #232b2e;
   }
 
   &:hover {
-    background: rgba(174, 184, 184, 0.15);
+    background: var(--component-bg-flexible, #aeb8b826);
   }
 
   &-selected {
-    background: rgba(35, 43, 46, 1);
+    background: var(--surface-bg-baseline, #232b2e);
+
     .tree-node {
-      color: white;
+      color: var(--text-default, #fff);
     }
   }
 }
@@ -74,8 +74,13 @@ $borderColor: #232b2e;
   color: var(--text-subtle, #c9d2d2);
   font-size: 12px;
 
-  &-closed {
-    transform: rotate(270deg);
+  &-caret {
+    min-height: 16px;
+    min-width: 16px;
+
+    &--closed {
+      transform: rotate(270deg);
+    }
   }
 
   &-icon {
@@ -92,7 +97,7 @@ $borderColor: #232b2e;
   .tree-node-input {
     background: transparent;
     border: none;
-    color: white;
+    color: var(--text-default, #fff);
     font-size: inherit;
     font-family: inherit;
     width: 100%;
@@ -101,7 +106,7 @@ $borderColor: #232b2e;
     box-sizing: border-box;
 
     &:focus {
-      outline: 1px solid #25c2c7;
+      outline: 1px solid var(--border-accent, #25c2c7);
       border-radius: 4px;
     }
   }
@@ -113,10 +118,10 @@ $borderColor: #232b2e;
 }
 
 .tree-row-context-menu-trigger[data-state="open"] .tree-row {
-  outline: 1px solid #25c2c7;
+  outline: 1px solid var(--border-accent, #25c2c7);
 }
 .tree-row-context-menu {
-  background: #374146;
+  background: var(--component-bg-above, #374146);
   border-radius: 8px;
   min-width: 180px;
   padding: 4px;
@@ -124,7 +129,7 @@ $borderColor: #232b2e;
 .tree-row-context-menu-item {
   display: flex;
   align-items: center;
-  color: white;
+  color: var(--text-default, #fff);
   height: 28px;
   gap: 4px;
   border-radius: 4px;
@@ -135,7 +140,7 @@ $borderColor: #232b2e;
   user-select: none;
   -webkit-user-select: none;
   &:hover {
-    background-color: #aeb8b826;
+    background-color: var(--component-bg-flexible, #aeb8b826);
   }
 
   &.danger {
