@@ -10,10 +10,13 @@ import { BrickDetailLogic } from '../../../app-lab-brick-detail';
 import BrickDetail from '../../../app-lab-brick-detail/BrickDetail';
 import { AppLabBricksList } from '../../../app-lab-bricks-list';
 import {
+  BoardResourcesValue,
   Button,
   ButtonType,
   ConfigureAppBrickDialog,
   ConfigureAppBrickDialogLogic,
+  UseArduinoAccountLogic,
+  UseEdgeImpulseAccountLogic,
 } from '../../../components-by-app/app-lab';
 import { useI18n } from '../../../i18n/useI18n';
 import { AppLabDialog } from '../app-lab-dialog/AppLabDialog';
@@ -27,6 +30,10 @@ export type AddAppBrickDialogLogic = () => {
   brickDetailLogic: BrickDetailLogic;
   confirmAction: (brick: BrickListItem) => Promise<boolean>;
   onOpenChange: (open: boolean) => void;
+  arduinoAuthAccountLogic: UseArduinoAccountLogic;
+  edgeImpulseAuthAccountLogic: UseEdgeImpulseAccountLogic;
+  openAndAssociateToDevice: () => void;
+  boardResourcesLogic: () => BoardResourcesValue;
 };
 
 type AddAppBrickDialogProps = { logic: AddAppBrickDialogLogic };
@@ -41,6 +48,10 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
     brickDetailLogic,
     confirmAction,
     onOpenChange,
+    arduinoAuthAccountLogic,
+    edgeImpulseAuthAccountLogic,
+    openAndAssociateToDevice,
+    boardResourcesLogic,
   } = logic();
   const [loading, setLoading] = useState(false);
   const [selectedBrick, setSelectedBrick] = useState<BrickListItem>();
@@ -92,9 +103,21 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
             loadBrickInstance,
             onOpenChange: (): void => setBrickDetails(undefined),
             confirmAction: updateBrickDetails,
+            arduinoAuthAccountLogic,
+            edgeImpulseAuthAccountLogic,
+            openAndAssociateToDevice,
+            boardResourcesLogic,
           })
         : null,
-    [brickDetails, loadBrickInstance, updateBrickDetails],
+    [
+      arduinoAuthAccountLogic,
+      brickDetails,
+      edgeImpulseAuthAccountLogic,
+      loadBrickInstance,
+      updateBrickDetails,
+      openAndAssociateToDevice,
+      boardResourcesLogic,
+    ],
   );
 
   return configureLogic ? (

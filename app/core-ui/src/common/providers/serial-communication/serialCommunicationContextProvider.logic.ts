@@ -136,7 +136,6 @@ export const useSerialCommunication: UseSerialCommunication =
                 { pid: port.productId, vid: port.vendorId },
                 port,
               ),
-            refetchOnWindowFocus: false,
           };
         }) ?? [],
     });
@@ -296,7 +295,7 @@ const useAgent: UseAgent = function (
   const { data: agentMetadata } = useQuery(
     ['agent-metadata'],
     getAgentMetadata,
-    { enabled: agentEnabled, refetchOnWindowFocus: false },
+    { enabled: agentEnabled },
   );
   const agentMetadataRetrieved = Boolean(agentMetadata);
 
@@ -310,7 +309,6 @@ const useAgent: UseAgent = function (
           ),
     {
       enabled: agentMetadataRetrieved,
-      refetchOnWindowFocus: false,
       onSuccess() {
         poolForAgent.current = false;
       },
@@ -326,7 +324,6 @@ const useAgent: UseAgent = function (
     downloadDefaultTools,
     {
       enabled: agentConnectedDone,
-      refetchOnWindowFocus: false,
     },
   );
   const defaultDownloadsDone = Boolean(defaultDownloadsResponse);

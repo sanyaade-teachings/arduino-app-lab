@@ -1,4 +1,4 @@
-import wretch, { WretchOptions } from 'wretch';
+import wretch from 'wretch';
 import AbortAddon from 'wretch/addons/abort';
 import FormDataAddon from 'wretch/addons/formData';
 import QueryAddon from 'wretch/addons/queryString';
@@ -6,24 +6,41 @@ import { WretchError } from 'wretch/resolver';
 
 import {
   BaseRequest,
+  CreateRawRequestOptions,
+  CreateRequestOptions,
+  HttpDeleteOptions,
+  HttpDeleteRawOptions,
+  HttpFormDataPostOptions,
+  HttpGetOptions,
+  HttpGetRawOptions,
+  HttpHeadRawOptions,
+  HttpJsonDeleteOptions,
+  HttpPatchOptions,
+  HttpPatchRawOptions,
+  HttpPostOptions,
+  HttpPostRawOptions,
+  HttpPutOptions,
+  HttpPutRawOptions,
   QueriedRequest,
+  QueryRequestOptions,
   RawResponse,
-  WretchQueryParams,
 } from './fetch.type';
 
 function defaultHandleError(error: WretchError): void {
   console.error(error);
 }
 
-function createRequest<T>(
-  url: string,
-  options: WretchOptions,
-  token?: string,
-  abortController?: AbortController,
-  headers?: HeadersInit,
-): BaseRequest<T> {
+function createRequest<T>({
+  url,
+  wretchOptions = {},
+  token,
+  abortController,
+  headers,
+}: CreateRequestOptions): BaseRequest<T> {
   let base = (
-    token ? wretch(url, options).auth(`Bearer ${token}`) : wretch(url, options)
+    token
+      ? wretch(url, wretchOptions).auth(`Bearer ${token}`)
+      : wretch(url, wretchOptions)
   ).addon(AbortAddon());
 
   if (headers) {
@@ -39,27 +56,27 @@ function createRequest<T>(
   });
 }
 
-function queryRequest<T>(
-  baseRequest: BaseRequest<T>,
-  params: WretchQueryParams,
-): QueriedRequest<T> {
+function queryRequest<T>({
+  baseRequest,
+  params,
+}: QueryRequestOptions<T>): QueriedRequest<T> {
   return baseRequest.addon(QueryAddon).query(params);
 }
 
-export async function httpGet<T>(
-  url: string,
-  wretchOptions: WretchOptions = {},
-  endpoint: string,
-  token?: string,
-  params?: WretchQueryParams,
-  headers?: HeadersInit,
+export async function httpGet<T>({
+  url,
+  endpoint,
+  wretchOptions = {},
+  token,
+  params,
+  headers,
   handleError = defaultHandleError,
-): Promise<T | void> {
-  const api = createRequest<T>(url, wretchOptions, token, undefined, headers);
+}: HttpGetOptions): Promise<T | void> {
+  const api = createRequest<T>({ url, wretchOptions, token, headers });
 
   try {
     const response = await (params
-      ? queryRequest(api, params).get(endpoint)
+      ? queryRequest({ baseRequest: api, params }).get(endpoint)
       : api.get(endpoint));
     return response;
   } catch (error) {
@@ -67,21 +84,21 @@ export async function httpGet<T>(
   }
 }
 
-export async function httpPut<T>(
-  url: string,
-  wretchOptions: WretchOptions = {},
-  endpoint: string,
+export async function httpPut<T>({
+  url,
+  endpoint,
+  wretchOptions = {},
   body = {},
-  token?: string,
-  params?: WretchQueryParams,
-  headers?: HeadersInit,
+  token,
+  params,
+  headers,
   handleError = defaultHandleError,
-): Promise<T | void> {
-  const api = createRequest<T>(url, wretchOptions, token, undefined, headers);
+}: HttpPutOptions): Promise<T | void> {
+  const api = createRequest<T>({ url, wretchOptions, token, headers });
 
   try {
     const response = await (params
-      ? queryRequest(api, params).put(body, endpoint)
+      ? queryRequest({ baseRequest: api, params }).put(body, endpoint)
       : api.put(body, endpoint));
     return response;
   } catch (error) {
@@ -89,23 +106,23 @@ export async function httpPut<T>(
   }
 }
 
-export async function httpPost<T>(
-  url: string,
+export async function httpPost<T>({
+  url,
+  endpoint,
   wretchOptions = {},
-  endpoint: string,
   body = {},
-  token?: string,
-  abortController?: AbortController,
-  headers?: HeadersInit,
+  token,
+  abortController,
+  headers,
   handleError = defaultHandleError,
-): Promise<T | void> {
-  const api = createRequest<T>(
+}: HttpPostOptions): Promise<T | void> {
+  const api = createRequest<T>({
     url,
     wretchOptions,
     token,
     abortController,
     headers,
-  );
+  });
 
   try {
     const response = await api.post(body, endpoint);
@@ -115,20 +132,20 @@ export async function httpPost<T>(
   }
 }
 
-export async function httpDelete<T>(
-  url: string,
+export async function httpDelete<T>({
+  url,
+  endpoint,
   wretchOptions = {},
-  endpoint: string,
-  token?: string,
-  params?: WretchQueryParams,
-  headers?: HeadersInit,
+  token,
+  params,
+  headers,
   handleError = defaultHandleError,
-): Promise<T | void> {
-  const api = createRequest<T>(url, wretchOptions, token, undefined, headers);
+}: HttpDeleteOptions): Promise<T | void> {
+  const api = createRequest<T>({ url, wretchOptions, token, headers });
 
   try {
     const response = await (params
-      ? queryRequest(api, params).delete(endpoint)
+      ? queryRequest({ baseRequest: api, params }).delete(endpoint)
       : api.delete(endpoint));
     return response;
   } catch (error) {
@@ -136,16 +153,16 @@ export async function httpDelete<T>(
   }
 }
 
-export async function httpPatch<T>(
-  url: string,
-  wretchOptions: WretchOptions = {},
-  endpoint: string,
+export async function httpPatch<T>({
+  url,
+  endpoint,
+  wretchOptions = {},
   body = {},
-  token?: string,
-  headers?: HeadersInit,
+  token,
+  headers,
   handleError = defaultHandleError,
-): Promise<T | void> {
-  const api = createRequest<T>(url, wretchOptions, token, undefined, headers);
+}: HttpPatchOptions): Promise<T | void> {
+  const api = createRequest<T>({ url, wretchOptions, token, headers });
 
   try {
     const response = await api.patch(body, endpoint);
@@ -155,11 +172,11 @@ export async function httpPatch<T>(
   }
 }
 
-function createRawRequest(
-  url: string,
-  token?: string,
-  headers?: HeadersInit,
-): BaseRequest<RawResponse> {
+function createRawRequest({
+  url,
+  token,
+  headers,
+}: CreateRawRequestOptions): BaseRequest<RawResponse> {
   let base = (token ? wretch(url).auth(`Bearer ${token}`) : wretch(url))
     .addon(AbortAddon())
     .resolve((r) => r.res());
@@ -171,13 +188,13 @@ function createRawRequest(
   return base;
 }
 
-export async function httpGetRaw(
-  url: string,
-  endpoint: string,
-  token?: string,
+export async function httpGetRaw({
+  url,
+  endpoint,
+  token,
   handleError = defaultHandleError,
-): Promise<RawResponse | void> {
-  const api = createRawRequest(url, token);
+}: HttpGetRawOptions): Promise<RawResponse | void> {
+  const api = createRawRequest({ url, token });
 
   try {
     const response = await api.get(endpoint);
@@ -187,15 +204,15 @@ export async function httpGetRaw(
   }
 }
 
-export async function httpPostRaw(
-  url: string,
-  endpoint: string,
+export async function httpPostRaw({
+  url,
+  endpoint,
   body = {},
-  token?: string,
-  headers?: HeadersInit,
+  token,
+  headers,
   handleError = defaultHandleError,
-): Promise<RawResponse | void> {
-  const api = createRawRequest(url, token, headers);
+}: HttpPostRawOptions): Promise<RawResponse | void> {
+  const api = createRawRequest({ url, token, headers });
 
   try {
     const response = await api.post(body, endpoint);
@@ -205,15 +222,15 @@ export async function httpPostRaw(
   }
 }
 
-export async function httpPutRaw(
-  url: string,
-  endpoint: string,
+export async function httpPutRaw({
+  url,
+  endpoint,
   body = {},
-  token?: string,
-  headers?: HeadersInit,
+  token,
+  headers,
   handleError = defaultHandleError,
-): Promise<RawResponse | void> {
-  const api = createRawRequest(url, token, headers);
+}: HttpPutRawOptions): Promise<RawResponse | void> {
+  const api = createRawRequest({ url, token, headers });
 
   try {
     const response = await api.put(body, endpoint);
@@ -223,15 +240,15 @@ export async function httpPutRaw(
   }
 }
 
-export async function httpPatchRaw(
-  url: string,
-  endpoint: string,
+export async function httpPatchRaw({
+  url,
+  endpoint,
   body = {},
-  token?: string,
-  headers?: HeadersInit,
+  token,
+  headers,
   handleError = defaultHandleError,
-): Promise<RawResponse | void> {
-  const api = createRawRequest(url, token, headers);
+}: HttpPatchRawOptions): Promise<RawResponse | void> {
+  const api = createRawRequest({ url, token, headers });
 
   try {
     const response = await api.patch(body, endpoint);
@@ -241,14 +258,14 @@ export async function httpPatchRaw(
   }
 }
 
-export async function httpDeleteRaw(
-  url: string,
-  endpoint: string,
-  token?: string,
-  headers?: HeadersInit,
+export async function httpDeleteRaw({
+  url,
+  endpoint,
+  token,
+  headers,
   handleError = defaultHandleError,
-): Promise<RawResponse | void> {
-  const api = createRawRequest(url, token, headers);
+}: HttpDeleteRawOptions): Promise<RawResponse | void> {
+  const api = createRawRequest({ url, token, headers });
 
   try {
     const response = await api.delete(endpoint);
@@ -258,12 +275,12 @@ export async function httpDeleteRaw(
   }
 }
 
-export async function httpHeadRaw(
-  url: string,
-  endpoint: string,
-  token?: string,
-): Promise<RawResponse | void> {
-  const api = createRawRequest(url, token);
+export async function httpHeadRaw({
+  url,
+  endpoint,
+  token,
+}: HttpHeadRawOptions): Promise<RawResponse | void> {
+  const api = createRawRequest({ url, token });
 
   try {
     const response = await api.head(endpoint);
@@ -273,35 +290,40 @@ export async function httpHeadRaw(
   }
 }
 
-export async function httpFormDataPost<T>(
-  url: string,
-  wretchOptions: WretchOptions = {},
-  endpoint: string,
+export async function httpFormDataPost<T>({
+  url,
+  endpoint,
+  wretchOptions = {},
   body = {},
-  token?: string,
+  token,
   handleError = defaultHandleError,
-): Promise<T | void> {
-  const api = createRequest<T>(url + endpoint, wretchOptions, token);
+}: HttpFormDataPostOptions): Promise<T | void> {
+  const api = createRequest<T>({ url: url + endpoint, wretchOptions, token });
 
   try {
-    const response = await api.addon(FormDataAddon).formData(body).post();
+    const response = await api
+      .addon(FormDataAddon)
+      .formData(body as Record<string, unknown>)
+      .post();
     return response;
   } catch (error) {
     handleError(error as WretchError);
   }
 }
 
-export async function httpJsonDelete<T>(
-  url: string,
-  wretchOptions: WretchOptions = {},
-  endpoint: string,
+export async function httpJsonDelete<T>({
+  url,
+  endpoint,
+  wretchOptions = {},
   body = {},
-  token?: string,
-): Promise<T | void> {
-  const api = createRequest<T>(url, wretchOptions, token);
+  token,
+}: HttpJsonDeleteOptions): Promise<T | void> {
+  const api = createRequest<T>({ url, wretchOptions, token });
 
   try {
-    const response = await api.json(body).delete(endpoint);
+    const response = await api
+      .json(body as Record<string, unknown>)
+      .delete(endpoint);
     return response;
   } catch (error) {
     defaultHandleError(error as WretchError);

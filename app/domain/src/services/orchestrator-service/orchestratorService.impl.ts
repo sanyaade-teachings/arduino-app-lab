@@ -92,9 +92,9 @@ export let getAppLogs: OrchestratorService['getAppLogs'] = async function () {
   throw new Error('getAppLogs service not implemented');
 };
 
-export let getAppStatus: OrchestratorService['getAppsStatus'] =
+export let getAppStatus: OrchestratorService['getAppStatus'] =
   async function () {
-    throw new Error('getAppsStatus service not implemented');
+    throw new Error('getAppStatus service not implemented');
   };
 
 export let getSerialMonitorLogs: OrchestratorService['getSerialMonitorLogs'] =
@@ -179,9 +179,23 @@ export let importAppFromFile: OrchestratorService['importAppFromFile'] =
     throw new Error('importAppFromFile service not implemented');
   };
 
+export let getAIModels: OrchestratorService['getAIModels'] = async function () {
+  throw new Error('installEIModel service not implemented');
+};
+
+export let installEIModel: OrchestratorService['installEIModel'] =
+  async function () {
+    throw new Error('installEIModel service not implemented');
+  };
+
+export let deleteAIModel: OrchestratorService['deleteAIModel'] =
+  async function () {
+    throw new Error('deleteAIModel service not implemented');
+  };
+
 export const setOrchestratorService = (service: OrchestratorService): void => {
   getApps = service.getApps;
-  getAppStatus = service.getAppsStatus;
+  getAppStatus = service.getAppStatus;
   getAppDetail = service.getAppDetail;
   updateAppDetail = service.updateAppDetail;
   createApp = service.createApp;
@@ -219,4 +233,7 @@ export const setOrchestratorService = (service: OrchestratorService): void => {
   importApp = service.importApp;
   importAppFromPath = service.importAppFromPath;
   importAppFromFile = service.importAppFromFile;
+  installEIModel = service.installEIModel;
+  getAIModels = service.getAIModels;
+  deleteAIModel = service.deleteAIModel;
 };

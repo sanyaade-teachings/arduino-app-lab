@@ -8,6 +8,13 @@
   "frontend:dev:serverUrl": "auto",
   "info": {
     "companyName": "Arduino",
-    "copyright": "Copyright © 2025 Arduino SA"
+    "copyright": "Copyright © 2025 Arduino SA",
+    "protocols": [
+        {
+          "scheme": "arduino-app-lab",
+          "description": "Arduino App Lab Protocol",
+          "role": "Editor"
+        }
+      ]
   }
 }

@@ -1,5 +1,7 @@
 import {
   getMandatoryUpdatesListRequest,
+  getReleaseImageUrl,
+  getReleaseNotesRequest,
   MandatoryUpdateList,
 } from '@cloud-editor-mono/infrastructure';
 
@@ -15,6 +17,14 @@ export let getBoardUpdateLogsWailsFallback: UpdaterService['getBoardUpdateLogsWa
 export let getMandatoryUpdatesList: () => Promise<MandatoryUpdateList> = () => {
   return getMandatoryUpdatesListRequest();
 };
+export let getReleaseImageSrc: (tag: string) => string = (tag: string) => {
+  return getReleaseImageUrl(tag);
+};
+export let getReleaseNotes: (tag: string) => Promise<string> = (
+  tag: string,
+) => {
+  return getReleaseNotesRequest(tag);
+};
 
 export const setUpdaterService = (service: UpdaterService): void => {
   newVersion = service.newVersion;
@@ -25,5 +35,11 @@ export const setUpdaterService = (service: UpdaterService): void => {
   getBoardUpdateLogsWailsFallback = service.getBoardUpdateLogsWailsFallback;
   if (service.getMandatoryUpdatesList) {
     getMandatoryUpdatesList = service.getMandatoryUpdatesList;
+  }
+  if (service.getReleaseNotes) {
+    getReleaseNotes = service.getReleaseNotes;
+  }
+  if (service.getReleaseImageSrc) {
+    getReleaseImageSrc = service.getReleaseImageSrc;
   }
 };

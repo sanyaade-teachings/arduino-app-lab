@@ -1,8 +1,4 @@
-import {
-  AppDetailedInfo,
-  AppStatus,
-  UpdateAppDetailRequest,
-} from '@cloud-editor-mono/infrastructure';
+import { AppDetailedInfo, AppStatus } from '@cloud-editor-mono/infrastructure';
 
 import {
   CreateAppDialogLogic,
@@ -32,10 +28,3 @@ export type AppTitleLogic = () => {
   createAppDialogLogic: CreateAppDialogLogic;
   exportAppDialogLogic: ExportAppDialogLogic;
 };
-
-export type UseCreateAppTitleLogic = (
-  app: AppDetailedInfo | undefined,
-  appStatus?: AppStatus,
-  section?: string,
-  updateApp?: (request: UpdateAppDetailRequest) => Promise<boolean>,
-) => AppTitleLogic;

@@ -52,4 +52,37 @@ export const messages = defineMessages({
     defaultMessage: 'Used in',
     description: 'Title for the section listing apps that use the brick',
   },
+  trainNewModelButton: {
+    id: 'brickDetail.trainNewModelButton',
+    defaultMessage: 'Train new AI model',
+    description: 'Label for the button to train a new AI model',
+  },
+});
+
+export const aiModelMessages = defineMessages({
+  moreInfo: {
+    id: 'aiModel.moreInfo',
+    defaultMessage: '+ more info',
+    description: 'Label for the button to show more info',
+  },
+  lessInfo: {
+    id: 'aiModel.lessInfo',
+    defaultMessage: '- less info',
+    description: 'Label for the button to show less info',
+  },
+  modelCard: {
+    id: 'aiModel.modelCard',
+    defaultMessage: 'Model card',
+    description: 'Label for the model card',
+  },
+  source: {
+    id: 'aiModel.source',
+    defaultMessage: 'Source: {source}',
+    description: 'Label for the source',
+  },
+  eiProjectID: {
+    id: 'aiModel.eiProjectID',
+    defaultMessage: 'EI Project ID: {id}',
+    description: 'Label for the EI Project ID',
+  },
 });

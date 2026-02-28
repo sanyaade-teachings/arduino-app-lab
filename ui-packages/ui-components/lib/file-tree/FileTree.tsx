@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import {
   forwardRef,
+  memo,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -8,7 +9,13 @@ import {
   useRef,
   useState,
 } from 'react';
-import { NodeApi, RowRendererProps, Tree, TreeApi } from 'react-arborist';
+import {
+  NodeApi,
+  NodeRendererProps,
+  RowRendererProps,
+  Tree,
+  TreeApi,
+} from 'react-arborist';
 
 import { Skeleton } from '../skeleton';
 import styles from './file-tree.module.scss';
@@ -141,6 +148,56 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
     handleFolderCreate,
   }));
 
+  const renderFileNode = useCallback(
+    (nodeProps: NodeRendererProps<TreeNode>): JSX.Element => (
+      <FileNode
+        {...nodeProps}
+        isEditing={
+          nodeProps.node.data.path === isEditingAt ||
+          nodeProps.node.data.path ===
+            `${isCreating?.path}/${TEMP_CREATED_NODE_NAME}`
+        }
+        isReadOnly={isReadOnly}
+        onEditStart={(): void => {
+          setIsEditingAt(nodeProps.node.data.path);
+        }}
+        onEditSubmit={async (newName): Promise<void> => {
+          if (isCreating !== null) {
+            const path = isCreating?.path
+              ? `${isCreating.path}/${newName}`
+              : newName;
+            if (isCreating.type === 'file') {
+              await onFileCreate(path);
+            } else {
+              await onFolderCreate(path);
+            }
+            setIsCreating(null);
+          }
+          if (isEditingAt !== null) {
+            await onFileRename(isEditingAt, newName);
+            setIsEditingAt(null);
+          }
+        }}
+        onEditCancel={(): void => {
+          setIsCreating(null);
+          setIsEditingAt(null);
+        }}
+        onDelete={(): Promise<void> => onFileDelete(nodeProps.node.data.path)}
+        renderNodeIcon={renderNodeIcon}
+      />
+    ),
+    [
+      isCreating,
+      isEditingAt,
+      isReadOnly,
+      onFileCreate,
+      onFolderCreate,
+      onFileRename,
+      onFileDelete,
+      renderNodeIcon,
+    ],
+  );
+
   return (
     <>
       <div className={styles['tree-container']} style={{ height }}>
@@ -181,45 +238,7 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
               );
             }}
           >
-            {(nodeProps): JSX.Element => (
-              <FileNode
-                {...nodeProps}
-                isEditing={
-                  nodeProps.node.data.path === isEditingAt ||
-                  nodeProps.node.data.path ===
-                    `${isCreating?.path}/${TEMP_CREATED_NODE_NAME}`
-                }
-                isReadOnly={isReadOnly}
-                onEditStart={(): void => {
-                  setIsEditingAt(nodeProps.node.data.path);
-                }}
-                onEditSubmit={async (newName): Promise<void> => {
-                  if (isCreating !== null) {
-                    const path = isCreating?.path
-                      ? `${isCreating.path}/${newName}`
-                      : newName;
-                    if (isCreating.type === 'file') {
-                      await onFileCreate(path);
-                    } else {
-                      await onFolderCreate(path);
-                    }
-                    setIsCreating(null);
-                  }
-                  if (isEditingAt !== null) {
-                    await onFileRename(isEditingAt, newName);
-                    setIsEditingAt(null);
-                  }
-                }}
-                onEditCancel={(): void => {
-                  setIsCreating(null);
-                  setIsEditingAt(null);
-                }}
-                onDelete={(): Promise<void> =>
-                  onFileDelete(nodeProps.node.data.path)
-                }
-                renderNodeIcon={renderNodeIcon}
-              />
-            )}
+            {renderFileNode}
           </Tree>
         ) : (
           <div className={clsx(styles['code-editor-skeleton'])}>
@@ -232,4 +251,4 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
 });
 
 FileTree.displayName = 'FileTree';
-export default FileTree;
+export default memo(FileTree);

@@ -4,6 +4,8 @@ import {
 } from '@cloud-editor-mono/infrastructure';
 import { SelectableFileData } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
+import { EdgeImpulseModelsContextValue } from '../../providers/edge-impulse-models/edgeImpulseModelsContext';
+
 export interface EditorLogicParams {
   appPath?: string;
   appBricks?: BrickInstance[];
@@ -11,6 +13,7 @@ export interface EditorLogicParams {
   selectFile: (fileId?: string, openAtIndex?: number) => void;
   selectableMainFile?: SelectableFileData;
   unsavedFileIds?: Set<string>;
+  edgeImpulseValue: EdgeImpulseModelsContextValue;
   closeFile: (fileId: string) => void;
   updateOpenFilesOrder: (fileIds: string[]) => void;
   deleteAppFile: (path: string) => Promise<void>;

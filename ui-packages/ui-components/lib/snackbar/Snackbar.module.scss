@@ -12,18 +12,9 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  width: fit-content;
   overflow: hidden;
-  min-width: 340px;
-
-  /* Strong Shadow */
+  font-family: 'Open Sans', sans-serif;
   box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.25);
-
-  color: var(--color, white);
-
-  @include bp.breakpoint(vars.$breakpoint-md) {
-    min-width: 300px;
-  }
 
   @include bp.breakpoint(vars.$breakpoint-xs) {
     flex-direction: column;
@@ -31,57 +22,59 @@
   }
 
   &--info {
-    background-color: vars.$jet;
-    --color: white;
+    background-color: var(--feedback-neutral-default, #aeb8b8);
+    --color: var(--text-inverted, #171e21);
+    --divider-color: var(--feedback-diver-light, #7E8C8D);
+    --divider-opacity: 1;
   }
 
   &--success {
     background-color: var(--feedback-success-default, #16a588) !important;
-    --color: #171e21 !important;
-    color: #171e21 !important;
+    --color: var(--text-inverted, #171e21) !important;
+    color: var(--text-inverted, #171e21) !important;
 
     .Snackbar_content {
-      color: #171e21 !important;
-      
+      color: var(--text-inverted, #171e21) !important;
+
       .Snackbar_content-text {
-        color: #171e21 !important;
-        
+        color: var(--text-inverted, #171e21) !important;
+
         * {
-          color: #171e21 !important;
+          color: var(--text-inverted, #171e21) !important;
         }
       }
-      
+
       .Snackbar_content-icon {
-        color: #171e21 !important;
-        
+        color: var(--text-inverted, #171e21) !important;
+
         svg {
-          color: #171e21 !important;
-          fill: #171e21 !important;
+          color: var(--text-inverted, #171e21) !important;
+          fill: var(--text-inverted, #171e21) !important;
         }
       }
     }
 
     .Snackbar_actions {
-      color: #171e21 !important;
-      
+      color: var(--text-inverted, #171e21) !important;
+
       * {
-        color: #171e21 !important;
+        color: var(--text-inverted, #171e21) !important;
       }
     }
 
     svg {
-      color: #171e21 !important;
-      fill: #171e21 !important;
+      color: var(--text-inverted, #171e21) !important;
+      fill: var(--text-inverted, #171e21) !important;
     }
 
     * {
-      color: #171e21 !important;
+      color: var(--text-inverted, #171e21) !important;
     }
   }
 
   &--error {
     background-color: vars.$notifyerror;
-    --color: white;
+    --color: var(--text-inverted, #171e21);
   }
 
   &--warning {
@@ -90,19 +83,49 @@
   }
 
   &--sm {
-    padding: 4px 12px;
-    min-height: 36px;
+    width: 345px;
+    height: 36px;
     border-radius: 8px;
+    padding: 4px 12px;
     gap: 12px;
+
     --icon-size: 14px;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 160%;
+    letter-spacing: 0.01em;
+
+    .Snackbar-action {
+      min-height: 24px;
+      max-height: 28px;
+      border-radius: 32px;
+      padding: 2px 0;
+    }
   }
 
   &--xl {
-    padding: 8px 24px 8px 20px;
+    width: 710px;
+    height: 52px;
     min-height: 52px;
     border-radius: 16px;
+    padding: 8px 24px 8px 20px;
     gap: 16px;
     --icon-size: 21px;
+
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 160%;
+    letter-spacing: 0.01em;
+
+    .Snackbar-action {
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 160%;
+      letter-spacing: 0.01em;
+      text-align: center;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
   }
 
   &_content {
@@ -135,6 +158,7 @@
     display: flex;
     align-items: center;
     gap: inherit;
+    flex-shrink: 0;
 
     @include bp.breakpoint(vars.$breakpoint-xs) {
       padding-left: 40px;
@@ -163,6 +187,7 @@
 
   &-action {
     text-transform: uppercase;
+    white-space: nowrap;
     color: inherit;
     border: none;
     padding: 0;
@@ -172,9 +197,9 @@
 
   &-separator {
     width: 1px;
-    min-height: 36px;
-    opacity: 0.5;
-    background-color: var(--color);
+    align-self: stretch;
+    background-color: var(--divider-color, var(--color));
+    opacity: var(--divider-opacity, 0.5);
   }
 }
 
@@ -198,11 +223,11 @@
     width: stretch;
 
     transition:
-      transform 0.4s,
-      opacity 0.4s,
-      height 0.4s,
-      box-shadow 0.2s,
-      filter 0.4s;
+            transform 0.4s,
+            opacity 0.4s,
+            height 0.4s,
+            box-shadow 0.2s,
+            filter 0.4s;
 
     // Blur previous snackbars, if not expanded
     &:not([data-index="0"]):not([data-expanded="true"]) {

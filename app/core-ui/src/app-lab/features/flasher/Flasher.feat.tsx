@@ -2,9 +2,11 @@ import {
   FlashEvent,
   OSImageRelease,
 } from '@cloud-editor-mono/domain/src/services/flasher-service';
-import { Checkmark } from '@cloud-editor-mono/images/assets/icons';
+import { Checkmark, Exit } from '@cloud-editor-mono/images/assets/icons';
 import {
-  AppLabDialog,
+  Button,
+  ButtonType,
+  ButtonVariant,
   useI18n,
   XSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
@@ -38,7 +40,6 @@ export const Flasher: React.FC<FlasherProps> = ({
 }: FlasherProps) => {
   const { formatMessage } = useI18n();
   const [flashEvent, setFlashEvent] = useState<FlashEvent | null>(null);
-  const [succeeded, setSucceeded] = useState<boolean | null>(null);
 
   const step = useMemo(() => {
     if (flashEvent?.step !== 'flashing') return FlashBoardStep.Configuration;
@@ -49,6 +50,8 @@ export const Flasher: React.FC<FlasherProps> = ({
 
   const {
     loading,
+    succeeded,
+    setSucceeded,
     close,
     listAvailableImages,
     getAvailableFreeSpace,
@@ -77,13 +80,13 @@ export const Flasher: React.FC<FlasherProps> = ({
         setSucceeded(false);
       }
     },
-    [flashBoard, formatMessage],
+    [flashBoard, formatMessage, setSucceeded],
   );
 
   const handleRetry = useCallback((): void => {
     setFlashEvent(null);
     setSucceeded(null);
-  }, []);
+  }, [setSucceeded]);
 
   const getTitle = (step: FlashBoardStep): string => {
     switch (step) {
@@ -129,49 +132,63 @@ export const Flasher: React.FC<FlasherProps> = ({
   };
 
   return (
-    <AppLabDialog
-      open
-      title={formatMessage(messages.title)}
-      closeable={false}
-      classes={{
-        body: styles['dialog-body'],
-        content: styles['dialog'],
-        header: styles['dialog-header'],
-      }}
-    >
-      <div className={styles['stepper-container']}>
-        {steps.map((value) => (
-          <div key={value} className={styles['step-item']}>
-            <div className={styles['step-item-header']}>
-              <div
-                className={clsx(styles['step-indicator'], {
-                  [styles['step-indicator--active']]: value === step,
-                  [styles['step-indicator--completed']]: value < step,
-                })}
-              >
-                {value < step ? (
-                  <Checkmark />
-                ) : (
-                  <XSmall className={styles['step-indicator-counter']}>
-                    {value}
-                  </XSmall>
-                )}
-              </div>
-              <XSmall className={styles['step-item-title']}>
-                {getTitle(value)}
-              </XSmall>
-            </div>
-            <div className={styles['step-item-content']}>
-              <div
-                className={clsx(styles['step-item-border'], {
-                  [styles['visible']]: value !== steps[steps.length - 1],
-                })}
-              />
-              {value === step && getContent(value)}
-            </div>
-          </div>
-        ))}
+    <section className={styles['main']}>
+      <div className={styles['header']}>
+        <Button
+          type={ButtonType.Secondary}
+          variant={ButtonVariant.LowContrast}
+          Icon={Exit}
+          disabled={flashEvent !== null}
+          onClick={close}
+        >
+          {formatMessage(messages.exitButton)}
+        </Button>
       </div>
-    </AppLabDialog>
+      <div className={styles['body']}>
+        <div className={styles['stepper']}>
+          <div className={styles['stepper-header']}>
+            <XSmall className={styles['stepper-header-title']}>
+              {formatMessage(messages.title)}
+            </XSmall>
+          </div>
+          <div className={styles['stepper-body']}>
+            {steps.map((value, index) => (
+              <div key={value} className={styles['step-item']}>
+                <div className={styles['step-item-header']}>
+                  <div
+                    className={clsx(styles['step-indicator'], {
+                      [styles['step-indicator--active']]: value === step,
+                      [styles['step-indicator--completed']]: value < step,
+                    })}
+                  >
+                    {value < step ? (
+                      <Checkmark />
+                    ) : (
+                      <XSmall className={styles['step-indicator-counter']}>
+                        {value}
+                      </XSmall>
+                    )}
+                  </div>
+                  <XSmall className={styles['step-item-title']}>
+                    {getTitle(value)}
+                  </XSmall>
+                </div>
+                <div className={styles['step-item-content']}>
+                  <div
+                    className={clsx(styles['step-item-border'], {
+                      [styles['step-item-border--visible']]:
+                        index !== steps.length - 1,
+                    })}
+                  />
+
+                  {value === step && getContent(value)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className={styles['footer']} />
+    </section>
   );
 };

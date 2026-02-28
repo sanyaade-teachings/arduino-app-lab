@@ -1,34 +1,28 @@
-import { ChevronDown } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
+import { forwardRef } from 'react';
 
-import { IconButton } from '../../../essential/icon-button';
 import { XXSmall } from '../../../typography';
 import type { Notification } from '../../AppLabFooterBar.type';
 import styles from './notification-panel.module.scss';
 
 interface NotificationPanelProps {
   items: Notification[];
-  onClose: () => void;
 }
 
-const NotificationPanel: React.FC<NotificationPanelProps> = ({
-  items,
-  onClose,
-}: NotificationPanelProps) => {
-  return (
-    <div className={clsx(styles['notification-menu'])}>
-      <div className={clsx(styles['notification-menu-header'])}>
-        <XXSmall>Notifications</XXSmall>
-        <IconButton
-          label="Close"
-          Icon={ChevronDown}
-          classes={{
-            button: styles['notification-menu-header-button'],
-          }}
-          onPress={onClose}
-        />
-      </div>
-      <div className={clsx(styles['notification-menu-content'])}>
+const NotificationPanel = forwardRef<HTMLDivElement, NotificationPanelProps>(
+  ({ items }, ref) => (
+    <div
+      role="menu"
+      tabIndex={0}
+      ref={ref}
+      className={styles['notification-menu']}
+      onClick={(e): void => e.stopPropagation()}
+      onKeyUp={(e): void => e.stopPropagation()}
+    >
+      <XXSmall className={styles['notification-menu-header']}>
+        Notifications
+      </XXSmall>
+      <div className={styles['notification-menu-content']}>
         {items.length > 0 ? (
           items.map((item, index) => (
             <div
@@ -44,22 +38,25 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
               {item.icon && (
                 <span
                   title={item.tooltip}
-                  className={clsx(styles['notification-icon'])}
+                  className={styles['notification-icon']}
                 >
                   {item.icon}
                 </span>
               )}
-              {item.label}
+              <XXSmall className={styles['notification-text']}>
+                {item.label}
+              </XXSmall>
             </div>
           ))
         ) : (
-          <div className={clsx(styles['no-notifications'])}>
+          <XXSmall className={clsx(styles['no-notifications'])}>
             No new notifications
-          </div>
+          </XXSmall>
         )}
       </div>
     </div>
-  );
-};
+  ),
+);
+NotificationPanel.displayName = 'NotificationPanel';
 
 export default NotificationPanel;

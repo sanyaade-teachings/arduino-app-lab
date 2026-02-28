@@ -3,10 +3,14 @@ import React, { useEffect, useRef } from 'react';
 
 import styles from './app-lab-tabs.module.scss';
 
-interface AppLabTabsProps<T extends string> {
+export type AppLabTabsLogic<T extends string> = () => {
   tabs: readonly T[];
   setTab: (tab: T) => void;
   activeTab: T;
+};
+
+interface AppLabTabsProps<T extends string> {
+  appLabTabsLogic: AppLabTabsLogic<T>;
   classes?: {
     container?: string;
     tab?: string;
@@ -17,7 +21,8 @@ interface AppLabTabsProps<T extends string> {
 const AppLabTabs = <T extends string>(
   props: AppLabTabsProps<T>,
 ): React.ReactElement => {
-  const { tabs, setTab, activeTab, classes, size = 'default' } = props;
+  const { appLabTabsLogic, classes, size = 'default' } = props;
+  const { tabs, setTab, activeTab } = appLabTabsLogic();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 

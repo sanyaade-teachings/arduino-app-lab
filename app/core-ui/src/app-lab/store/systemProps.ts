@@ -87,7 +87,6 @@ export const useSystemProps: UseSystemProps = () => {
       onSuccess: (data) => {
         setData(data);
       },
-      refetchOnWindowFocus: false,
       enabled: boardIsReachable,
     },
   );

@@ -5,7 +5,7 @@ import {
 } from '@cloud-editor-mono/ui-components';
 import { useCallback, useEffect, useRef } from 'react';
 
-let reset = () => {};
+let reset = (): void => {};
 
 const App: React.FC = () => {
   const useContentUpdate = (

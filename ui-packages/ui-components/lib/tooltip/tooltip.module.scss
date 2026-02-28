@@ -30,10 +30,34 @@
 }
 
 .tooltip-show {
-    display: unset;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .tooltip-up {
     top: auto;
     bottom: 40px;
+}
+
+.tooltip-up-right {
+    width: 240px;
+    max-width: 240px;
+    padding: 16px 24px;
+    background-color: #374146 !important;
+    border-radius: 3px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    color: #ffffff;
+}
+
+.tooltip-title {
+    span {
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #ffffff !important;
+    }
 }

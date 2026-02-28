@@ -24,7 +24,10 @@ export async function agentIsAlive(): Promise<boolean> {
 
   const agentInfo = getAgentInfo();
   if (agentInfo && agentInfo.endpointUrl) {
-    const infoResponse = await httpGetRaw(agentInfo.endpointUrl, '');
+    const infoResponse = await httpGetRaw({
+      url: agentInfo.endpointUrl,
+      endpoint: '',
+    });
 
     return infoResponse?.status == 200;
   }
@@ -71,7 +74,10 @@ function setAgentProtocol(agentInfo: AgentInfoResponse): void {
 function updateAgent(): ReturnType<typeof httpPostRaw> {
   const agentUrl = getAgentUrl();
 
-  return httpPostRaw(agentUrl, Config.AGENT_UPDATE_ENDPOINT);
+  return httpPostRaw({
+    url: agentUrl,
+    endpoint: Config.AGENT_UPDATE_ENDPOINT,
+  });
 }
 
 async function attemptUpdateAgent(

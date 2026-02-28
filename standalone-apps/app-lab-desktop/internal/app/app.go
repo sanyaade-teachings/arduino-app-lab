@@ -1,6 +1,7 @@
 package app
 
 import (
+	"app-lab-desktop/internal/auth"
 	"app-lab-desktop/internal/board"
 	"app-lab-desktop/internal/context"
 	"app-lab-desktop/internal/emoji"
@@ -9,6 +10,7 @@ import (
 	"app-lab-desktop/internal/learn"
 	"app-lab-desktop/internal/update"
 	"fmt"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -19,6 +21,7 @@ type App struct {
 	version        string
 	updater        *update.Updater
 	learnSvc       *learn.Learn
+	AuthFlow       *auth.Flow
 	detectedBoards []*board.Board
 	selectedBoard  *board.Board
 }
@@ -34,6 +37,26 @@ func New(version string, learnSvc *learn.Learn) *App {
 
 func (a *App) GetTitle() string {
 	return "Arduino App Lab - " + a.GetCurrentVersion()
+}
+
+func (a *App) HandleSecondInstanceLaunch(secondInstanceData options.SecondInstanceData) {
+	for _, arg := range secondInstanceData.Args {
+		if strings.HasPrefix(arg, "arduino-app-lab://") {
+			ctx := a.ctxHolder.Get()
+			if a.AuthFlow != nil {
+				a.AuthFlow.HandleAuthRedirect(ctx, arg)
+			}
+			return
+		}
+	}
+}
+
+func (a *App) OnUrlOpen(url string) {
+	ctx := a.ctxHolder.Get()
+
+	if a.AuthFlow != nil {
+		a.AuthFlow.HandleAuthRedirect(ctx, url)
+	}
 }
 
 func (a *App) GetAboutMessage() string {

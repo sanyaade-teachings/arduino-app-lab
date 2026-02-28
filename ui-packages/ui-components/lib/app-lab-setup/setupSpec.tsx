@@ -1,3 +1,4 @@
+import { AppLabLogin } from '../app-lab-account';
 import { AppLabNetwork } from '../app-lab-settings';
 import BoardConfiguration from './sections/BoardConfiguration';
 import LinuxCredentials from './sections/LinuxCredentials';
@@ -18,6 +19,10 @@ export const setupItems: AppLabSetupItem[] = [
   },
   {
     id: AppLabSetupItemId.LinuxCredentials,
+    enabled: true,
+  },
+  {
+    id: AppLabSetupItemId.ArduinoAccount,
     enabled: true,
   },
 ];
@@ -42,6 +47,13 @@ export const sections: SetupSections = {
     return [
       logic.setUserPasswordIsLoading,
       <LinuxCredentials ref={ref} logic={logic} />, // eslint-disable-line react/jsx-key
+    ];
+  },
+  [AppLabSetupItemId.ArduinoAccount]: (useLogic, ref) => {
+    const logic = useLogic();
+    return [
+      logic.isLoginLoading,
+      <AppLabLogin ref={ref} isSetupFlow={true} {...logic} />, // eslint-disable-line react/jsx-key
     ];
   },
 };

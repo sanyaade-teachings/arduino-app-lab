@@ -4,6 +4,7 @@ import { PluggableList } from 'react-markdown/lib/react-markdown';
 import { AllowElement } from 'react-markdown/lib/rehype-filter';
 import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
+import remarkGfm from 'remark-gfm';
 import remarkRemoveComments from 'remark-remove-comments';
 
 import { Skeleton } from '../skeleton';
@@ -41,7 +42,7 @@ const MarkdownReader: React.FC<MarkdownReaderProps> = (
   ) : (
     <ReactMarkdown
       className={clsx(styles['markdown-reader'], classes?.reader)}
-      remarkPlugins={[remarkRemoveComments] as PluggableList}
+      remarkPlugins={[remarkRemoveComments, remarkGfm] as PluggableList}
       rehypePlugins={[rehypeRaw, rehypeSlug] as PluggableList}
       components={{
         a: MarkdownReaderTagA(onOpenExternalLink, onOpenInternalLink),

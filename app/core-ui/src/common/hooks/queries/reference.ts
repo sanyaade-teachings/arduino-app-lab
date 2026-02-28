@@ -14,12 +14,8 @@ import {
 export const useGetReferenceCategories: UseGetReferenceCategories = function (
   langCode = 'en',
 ): ReturnType<UseGetReferenceCategories> {
-  const { isLoading, data } = useQuery(
-    ['reference', langCode],
-    () => getReferenceCategoriesTree(),
-    {
-      refetchOnWindowFocus: false,
-    },
+  const { isLoading, data } = useQuery(['reference', langCode], () =>
+    getReferenceCategoriesTree(),
   );
 
   const categoryTree = data ? data[0] : undefined;
@@ -40,7 +36,6 @@ export const useGetReferenceItem: UseGetReferenceItem = function (
     ['reference', langCode, path.category, ...(path.itemPath || [])],
     () => getReferenceItemTemplate(path, langCode),
     {
-      refetchOnWindowFocus: false,
       enabled,
     },
   );
@@ -59,7 +54,6 @@ export const useSearchReferenceItem: UseSearchReferenceItem = function (
     ['reference', 'search', query],
     () => searchReferenceItem(query),
     {
-      refetchOnWindowFocus: false,
       enabled,
     },
   );

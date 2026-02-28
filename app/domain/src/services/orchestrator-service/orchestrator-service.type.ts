@@ -1,5 +1,6 @@
-import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app-list/importAppDialog.type';
+import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app/app-list/importAppDialog.type';
 import {
+  AIModelItem,
   AppConfig,
   AppDetailedInfo,
   AppInfo,
@@ -23,7 +24,7 @@ import { TreeNode } from '@cloud-editor-mono/ui-components/lib/components-by-app
 
 export interface OrchestratorService {
   getApps(params: ListAppParams): Promise<AppInfo[]>;
-  getAppsStatus(
+  getAppStatus(
     handlers: EventSourceHandlers,
     abortController?: AbortController,
   ): Promise<void>;
@@ -100,4 +101,7 @@ export interface OrchestratorService {
   importApp(): Promise<ImportAppResult | null>;
   importAppFromPath(filePath: string): Promise<ImportAppResult>;
   importAppFromFile(file: File): Promise<ImportAppResult>;
+  getAIModels(): Promise<AIModelItem[]>;
+  installEIModel(projectId: string, impulseId: string): Promise<AIModelItem>;
+  deleteAIModel(id: string): Promise<void>;
 }

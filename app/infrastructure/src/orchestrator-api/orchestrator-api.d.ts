@@ -52,7 +52,7 @@ export interface paths {
      */
     get: operations['getAppPorts'];
   };
-  [path: `/v1/apps/${string}/sketch/libraries/`]: {
+  [path: `/v1/apps/${string}/sketch/libraries`]: {
     /**
      * Lists the libraries used in the App' sketch.
      * @description Lists the libraries used in the App' sketch.
@@ -102,6 +102,13 @@ export interface paths {
      */
     get: operations['getAppEvents'];
   };
+  [path: `/v1/apps/${string}/export`]: {
+    /**
+     * Exports an app as ZIP
+     * @description Exports the application folder structure as a ZIP file.
+     */
+    get: operations['exportApp'];
+  };
   [path: `/v1/apps/${string}/logs`]: {
     /**
      * Get the logs of a running app
@@ -140,6 +147,13 @@ export interface paths {
      * 'data: {"code":"INTERNAL_SERVER_ERROR","message":"An error occurred during operation"}'
      */
     get: operations['getAppsEvents'];
+  };
+  '/v1/apps/import': {
+    /**
+     * Imports an app from ZIP
+     * @description Imports a new application from a ZIP file. The system extracts the archive, validates the app.yaml manifest, sanitizes the name, and returns the ID in Base64.
+     */
+    post: operations['importApp'];
   };
   '/v1/bricks': {
     /**
@@ -182,6 +196,18 @@ export interface paths {
      * @description Returns the details of a specific AI model.
      */
     get: operations['getAIModelDetails'];
+    /**
+     * Delete an AI model
+     * @description Deletes a specific AI model. By default, fails if referenced by apps unless force=true is provided.
+     */
+    delete: operations['deleteAIModel'];
+  };
+  '/v1/models/edge-impulse': {
+    /**
+     * Download and install a custom Edge Impulse AI model
+     * @description Download and install a custom Edge Impulse AI model using the provided project API key.
+     */
+    post: operations['installEIModel'];
   };
   '/v1/properties': {
     /**
@@ -256,11 +282,10 @@ export interface components {
     AIModelItem: {
       brick_ids?: string[] | null;
       description?: string;
+      disk_usage?: number | null;
       id?: string;
+      is_builtin?: boolean;
       metadata?: {
-        [key: string]: string;
-      };
-      model_configuration?: {
         [key: string]: string;
       };
       name?: string;
@@ -479,7 +504,6 @@ export interface components {
       libraries?: components['schemas']['Library'][] | null;
       pagination?: components['schemas']['Pagination'];
     };
-    LibraryReleaseID: Record<string, never>;
     /**
      * @description Package type
      * @enum {string}
@@ -514,13 +538,14 @@ export interface components {
       keys?: string[] | null;
     };
     SketchAddLibraryResponse: {
-      libraries?: components['schemas']['LibraryReleaseID'][] | null;
+      libraries?: string[] | null;
     };
     SketchListLibraryResponse: {
-      libraries?: components['schemas']['LibraryReleaseID'][] | null;
+      dependencies?: string[] | null;
+      libraries?: string[] | null;
     };
     SketchRemoveLibraryResponse: {
-      libraries?: components['schemas']['LibraryReleaseID'][] | null;
+      libraries?: string[] | null;
     };
     /**
      * @description Application status
@@ -579,6 +604,12 @@ export interface components {
     };
     /** @description Precondition Failed */
     PreconditionFailed: {
+      content: {
+        'application/json': components['schemas']['ErrorResponse'];
+      };
+    };
+    /** @description Unauthorized */
+    Unauthorized: {
       content: {
         'application/json': components['schemas']['ErrorResponse'];
       };
@@ -825,7 +856,7 @@ export interface operations {
     parameters: {
       query?: {
         /** @description if set to "true", the library's dependencies will be added as well. */
-        add_deps?: string;
+        add_deps?: boolean;
       };
       path: {
         /** @description application identifier. */
@@ -854,7 +885,7 @@ export interface operations {
     parameters: {
       query?: {
         /** @description if set to "true", the library's dependencies will be removed as well if not needed anymore. */
-        remove_deps?: string;
+        remove_deps?: boolean;
       };
       path: {
         /** @description application identifier. */
@@ -998,6 +1029,33 @@ export interface operations {
     };
   };
   /**
+   * Exports an app as ZIP
+   * @description Exports the application folder structure as a ZIP file.
+   */
+  exportApp: {
+    parameters: {
+      query?: {
+        /** @description If true, the exported archive will include the 'data' directory. Default is false. */
+        include_data?: boolean;
+      };
+      path: {
+        /** @description application identifier. */
+        id: string;
+      };
+    };
+    responses: {
+      /** @description The ZIP archive containing the application structure. */
+      200: {
+        content: {
+          'application/zip': string;
+        };
+      };
+      400: components['responses']['BadRequest'];
+      404: components['responses']['NotFound'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  /**
    * Get the logs of a running app
    * @description Obtain a ServerSentEvnt stream of logs. It is possible to apply different filters.
    */
@@ -1132,6 +1190,43 @@ export interface operations {
     };
   };
   /**
+   * Imports an app from ZIP
+   * @description Imports a new application from a ZIP file. The system extracts the archive, validates the app.yaml manifest, sanitizes the name, and returns the ID in Base64.
+   */
+  importApp: {
+    parameters: {
+      query?: {
+        /** @description The ZIP archive. Must contain app.yaml (with a valid 'name') and python/main.py. The app folder name will be calculated from the app name. */
+        file?: string;
+      };
+    };
+    requestBody?: {
+      content: {
+        'application/x-www-form-urlencoded': {
+          /**
+           * Format: base64
+           * @description The ZIP archive. Must contain app.yaml (with a valid 'name') and python/main.py. The app folder name will be calculated from the app name.
+           */
+          file?: string;
+        };
+      };
+    };
+    responses: {
+      /** @description Application imported successfully. */
+      201: {
+        content: {
+          'application/json': {
+            /** @description The Base64 encoded identifier of the imported application. */
+            id?: string;
+          };
+        };
+      };
+      400: components['responses']['BadRequest'];
+      409: components['responses']['Conflict'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  /**
    * Get a list of available bricks
    * @description Returns all the existing bricks. Bricks that are ready to use are marked as installed.
    */
@@ -1261,6 +1356,69 @@ export interface operations {
           'application/json': components['schemas']['AIModelItem'];
         };
       };
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  /**
+   * Delete an AI model
+   * @description Deletes a specific AI model. By default, fails if referenced by apps unless force=true is provided.
+   */
+  deleteAIModel: {
+    parameters: {
+      query?: {
+        /** @description If true, deletes the model even if referenced by apps. */
+        force?: boolean;
+      };
+      path: {
+        /** @description AI model identifier */
+        id: string;
+      };
+    };
+    responses: {
+      /** @description AI model successfully deleted */
+      204: {
+        content: never;
+      };
+      404: components['responses']['NotFound'];
+      409: components['responses']['Conflict'];
+      412: components['responses']['PreconditionFailed'];
+      500: components['responses']['InternalServerError'];
+    };
+  };
+  /**
+   * Download and install a custom Edge Impulse AI model
+   * @description Download and install a custom Edge Impulse AI model using the provided project API key.
+   */
+  installEIModel: {
+    requestBody?: {
+      content: {
+        'application/json': {
+          /**
+           * @description Edge Impulse impulse ID
+           * @example 1
+           */
+          impulse_id: number;
+          /**
+           * @description Edge Impulse project API key
+           * @example your_edge_impulse_api_token
+           */
+          prj_api_key: string;
+          /**
+           * @description Edge Impulse project ID
+           * @example 123456
+           */
+          project_id: number;
+        };
+      };
+    };
+    responses: {
+      /** @description Successful response */
+      200: {
+        content: {
+          'application/json': components['schemas']['AIModelItem'];
+        };
+      };
+      401: components['responses']['Unauthorized'];
       500: components['responses']['InternalServerError'];
     };
   };

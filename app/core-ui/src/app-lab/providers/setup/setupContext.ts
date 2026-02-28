@@ -9,6 +9,12 @@ const SetupContextValue: SetupContextValue = {
   setSetupCompleted: () => {},
   networkStepSkipped: false,
   setNetworkStepSkipped: () => {},
+  currentStep: 'waiting-selection',
+  setCurrentStep: () => {},
+  networkCredentialsDraft: undefined,
+  setNetworkCredentialsDraft: () => {},
+  autoFlowLocked: false,
+  setAutoFlowLocked: () => {},
 } as SetupContextValue;
 
 export const SetupContext = createContext<SetupContextValue>(SetupContextValue);

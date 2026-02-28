@@ -7,6 +7,8 @@ export type UseFlasherLogic = (
   selectBoard: (boardId: string) => Promise<void>,
 ) => {
   loading: boolean;
+  succeeded: boolean | null;
+  setSucceeded: (value: boolean | null) => void;
   close: () => void;
   listAvailableImages: () => Promise<OSImageRelease[]>;
   getAvailableFreeSpace: () => Promise<number>;

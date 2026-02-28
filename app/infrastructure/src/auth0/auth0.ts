@@ -3,7 +3,6 @@ import {
   Auth0ClientOptions,
   AuthClient,
   GetTokenSilentlyOptions,
-  LogoutOptions,
   RedirectLoginOptions,
 } from '@bcmi-labs/art-auth';
 import { Config } from '@cloud-editor-mono/common';
@@ -36,6 +35,14 @@ export async function createAuth0Instance(
   return auth0;
 }
 
+export function createAuth0InstanceSync(
+  options: Auth0ClientOptions,
+): AuthClient {
+  return AuthClient.create({
+    config: { ...options, useRefreshTokens: true },
+  });
+}
+
 export async function getAuth0AppState(
   client: AuthClient,
 ): Promise<AppState | null> {
@@ -53,13 +60,6 @@ export async function loginAuth0WithRedirect(
   options: RedirectLoginOptions<any>,
 ): Promise<void> {
   client.loginWithRedirect(options);
-}
-
-export async function logoutAuth0(
-  client: AuthClient,
-  options: LogoutOptions,
-): Promise<void> {
-  client.logout(options);
 }
 
 export async function getAuth0User(

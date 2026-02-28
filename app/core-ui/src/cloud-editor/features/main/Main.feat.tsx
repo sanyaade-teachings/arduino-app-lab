@@ -7,7 +7,7 @@ import { AuthContext } from '../../../common/providers/auth/authContext';
 import EditSection from '../../../sections/EditSection';
 import DialogSwitch from '../dialog-switch/DialogSwitch';
 import HelmetWrapper from '../helmet/HelmetWrapper';
-import NotificationsFeat from '../notificatons/Notifications.feat';
+import NotificationsFeat from '../notifications/Notifications.feat';
 import { useMainLogic } from './main.logic';
 import styles from './main.module.scss';
 

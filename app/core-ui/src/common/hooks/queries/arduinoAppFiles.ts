@@ -70,7 +70,6 @@ export const useRetrieveArduinoAppFileContents: UseRetrieveArduinoAppFileContent
           setCodeSubjects(data);
           getUnsavedFilesSubjectNext(data.path, false);
         },
-        refetchOnWindowFocus: false,
         enabled,
         staleTime: 0,
         cacheTime: 0,
@@ -220,7 +219,6 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
             };
           });
         },
-        refetchOnWindowFocus: false,
         enabled,
         staleTime: 0,
         cacheTime: 0,

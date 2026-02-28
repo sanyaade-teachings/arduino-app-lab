@@ -1,3 +1,5 @@
+@use "@cloud-editor-mono/arduino-sass";
+
 .welcome-container {
   height: 100%;
   display: flex;
@@ -58,6 +60,11 @@
   background: transparent !important;
   border-color: #434f54;
 
+  &.has-error {
+    border-color: #c11f09;
+    box-shadow: 0 0 0 3px rgba(193, 31, 9, 0.5);
+  }
+
   &.password {
     div[role="tooltip"] {
       color: var(--text-inverted, #171e21) !important;
@@ -73,7 +80,7 @@
     }
 
     .error-message {
-      top: 48px !important;
+      top: 54px !important;
     }
   }
 
@@ -108,8 +115,18 @@
   }
 
   &-body {
-    padding: 16px !important;
+    padding: 16px 16px 28px 16px !important;
     gap: 16px;
+
+    .app-name-input-error {
+      box-shadow: 0 0 0 3px transparentize(arduino-sass.$darknotifyerror, 0.5);
+
+      .app-name-input-container {
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+
 
     *[class*="InputBox"] {
       background: transparent !important;

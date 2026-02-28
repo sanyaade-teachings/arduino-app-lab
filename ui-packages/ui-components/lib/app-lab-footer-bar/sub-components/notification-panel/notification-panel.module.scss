@@ -1,58 +1,47 @@
 
 .notification-menu {
-    min-width: 332px;
+    min-width: 250px;
     position: absolute;
     bottom: 36px;
     /* Position above the icon with some space */
     right: 20px;
-    background-color: var(--component-bg-above, rgba(55, 65, 70, 1));
+    background-color: var(--surface-bg-below-1, #171e21);
     color: var(--text-default, rgba(255, 255, 255, 1));
-    border-radius: 0;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    white-space: nowrap;
+    border-radius: 4px;
     z-index: 60;
+    padding: 4px;
 }
 
 .notification-menu-header {
-    font-weight: 400;
-    margin-bottom: 0.5rem;
     color: var(--text-default, rgba(255, 255, 255, 1));
-    padding: 4px 8px 4px 12px;
-    font-size: 12px;
-    background-color: var(--component-bg-baseline, rgba(35, 43, 46, 1));
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    &-button {
-        color: var(--text-default, rgba(255, 255, 255, 1));
-        cursor: pointer;
-    }
+    padding: 4px 12px;
 }
 
 .notification-menu-content {
-    font-weight: 400;
-    color: var(--text-default, rgba(255, 255, 255, 1));
-    padding: 2px;
-    margin: 0 4px 4px;
+    background: var(--surface-bg-baseline, #232b2e);
+    padding: 4px;
 }
 
 .notification-item {
     color: var(--text-default, rgba(255, 255, 255, 1));
-    border: none;
-    cursor: pointer;
-    font-weight: 400;
-    font-size: 12px;
-    border-radius: 4px;
-    padding: 0.5rem;
+    border-radius: 2px;
+    padding: 4px 8px;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     &.is-clickable {
         cursor: pointer;
     }
 
     .notification-icon {
+        height: 16px;
+        width: 16px;
+        display: flex;
+        align-items: center;
+        
         svg {
-            height: 12px;
             path {
                 fill: var(--text-default, rgba(255, 255, 255, 1));
             }
@@ -65,22 +54,8 @@
     }
 }
 
-/* Small pointer arrow for the menu */
-/*
-._notification-menu::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    right: 10px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #4a5568 transparent transparent transparent;
-}
-*/
-
 .no-notifications {
-    padding: 1rem;
+    padding: 4px 8px;
     color: var(--text-subtle, rgba(201, 210, 210, 1));
-    font-size: 12px;
     text-align: center;
 }

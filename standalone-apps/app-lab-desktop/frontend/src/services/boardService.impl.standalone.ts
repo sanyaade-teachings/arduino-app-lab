@@ -15,6 +15,7 @@ import {
   SetUserPassword,
 } from '../../wailsjs/go/app/App';
 import { mapGetBoards } from './boardService.mapper';
+import { filterBoards } from './boardService.utils';
 
 export const isBoard: BoardService['isBoard'] = async function () {
   return IsBoard();
@@ -23,7 +24,14 @@ export const isBoard: BoardService['isBoard'] = async function () {
 export const getBoards: BoardService['getBoards'] = async function () {
   try {
     const result = await GetBoardList();
-    return mapGetBoards(result);
+
+    const mapped = mapGetBoards(result);
+
+    const filtered = await filterBoards(mapped);
+
+    const sorted = filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+    return sorted;
   } catch (e) {
     console.error('Error fetching boards:', e);
     return [];

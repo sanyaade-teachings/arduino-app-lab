@@ -57,6 +57,11 @@ export const setupMessages = defineMessages<AppLabSetupItemId>({
     defaultMessage: 'Linux Credentials',
     description: 'Linux Credentials',
   },
+  [AppLabSetupItemId.ArduinoAccount]: {
+    id: 'appLabSetup.arduinoAccount',
+    defaultMessage: 'Arduino Account',
+    description: 'Arduino Account',
+  },
 });
 
 export const boardConfigurationMessages = defineMessages({
@@ -135,6 +140,11 @@ export const sectionTitleMessages = defineMessages<AppLabSetupItemId>({
     defaultMessage: 'Linux Credentials',
     description: 'Title for the linux credentials setup section',
   },
+  [AppLabSetupItemId.ArduinoAccount]: {
+    id: 'appLabSetup.arduinoAccount.title',
+    defaultMessage: 'Arduino Account',
+    description: 'Title for the Arduino account setup section',
+  },
 });
 
 export const sectionActionMessages = defineMessages<AppLabSetupItemId>({
@@ -153,20 +163,38 @@ export const sectionActionMessages = defineMessages<AppLabSetupItemId>({
     defaultMessage: 'Confirm',
     description: 'Action for the linux credentials setup section',
   },
+  [AppLabSetupItemId.ArduinoAccount]: {
+    id: 'appLabSetup.arduinoAccount.action',
+    defaultMessage: 'Confirm',
+    description: 'Action for the Arduino account setup section',
+  },
 });
 
 export const tooltipMessages = defineMessages({
-  tooltipTitle: {
-    id: 'appLabSetup.tooltip.title',
+  wifiTooltipTitle: {
+    id: 'appLabSetup.wifi.tooltip.title',
     defaultMessage: 'Why we ask for this',
     description:
-      'Title for the tooltip explaining network connection requirements',
+      'Title for the wifi tooltip explaining network connection requirements',
   },
-  tooltipContent: {
-    id: 'appLabSetup.tooltip.content',
+  wifiTooltipContent: {
+    id: 'appLabSetup.wifi.tooltip.content',
     defaultMessage:
       'App Lab requires a network connection only during the initial configuration to ensure the most up-to-date experience.',
     description:
-      'Content for the tooltip explaining network connection requirements',
+      'Content for the wifi tooltip explaining network connection requirements',
+  },
+  accountTooltipTitle: {
+    id: 'appLabSetup.account.tooltip.title',
+    defaultMessage: 'Why do we ask for this?',
+    description:
+      'Title for the account tooltip explaining Arduino account requirements',
+  },
+  accountTooltipContent: {
+    id: 'appLabSetup.account.tooltip.content',
+    defaultMessage:
+      'App Lab works out of the box without an Arduino account, but signing in lets you unlock the full experience and enjoy every feature.',
+    description:
+      'Content for the account tooltip explaining Arduino account requirements',
   },
 });

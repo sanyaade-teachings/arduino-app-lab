@@ -84,6 +84,7 @@ export type UseNetworkLogic = () => {
   isScanning: boolean;
   scanNetworkList: () => void;
   connectToWifiNetwork: (network: NetworkCredentials) => void;
+  disconnectFromNetwork: () => Promise<void>;
   isNetworkStatusLoading?: boolean;
   networkStatusChecked: boolean;
   isConnected?: boolean;

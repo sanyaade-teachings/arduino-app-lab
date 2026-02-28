@@ -27,15 +27,18 @@ const MarkdownEditorToolbar: React.FC<MarkdownEditorToolbarProps> = (
     [onToggleRender],
   );
 
+  const appLabTabsLogic = useCallback(
+    () => ({
+      tabs,
+      setTab: setTabAndToggleRender,
+      activeTab,
+    }),
+    [activeTab, setTabAndToggleRender],
+  );
+
   return (
     <div className={styles.container}>
-      {!readOnly && (
-        <AppLabTabs
-          tabs={tabs}
-          setTab={setTabAndToggleRender}
-          activeTab={activeTab}
-        />
-      )}
+      {!readOnly && <AppLabTabs appLabTabsLogic={appLabTabsLogic} />}
     </div>
   );
 };

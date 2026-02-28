@@ -481,9 +481,6 @@ export const useGenAiLegalDisclaimer = (): ReturnType<
       const data = (await get(GEN_AI_DISCLAIMER_KEY)) ?? false;
       return data;
     },
-    {
-      refetchOnWindowFocus: false,
-    },
   );
 
   return {

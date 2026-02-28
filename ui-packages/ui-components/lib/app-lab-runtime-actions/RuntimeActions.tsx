@@ -2,10 +2,12 @@ import {
   AppLabToggleOff,
   AppLabToggleOn,
   CaretDown,
+  Play,
   Power,
   Spinner,
   StatusError,
   StatusSuccess,
+  Stop,
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
@@ -28,15 +30,8 @@ import {
   RuntimeActionsProps,
 } from './runtimeActions.type';
 
-const RuntimeActions = <T extends string>(
-  props: RuntimeActionsProps<T>,
-): React.ReactElement => {
-  const {
-    runtimeActionsLogic,
-    setTab,
-    runtimeDisable,
-    size = 'default',
-  } = props;
+const RuntimeActions = (props: RuntimeActionsProps): React.ReactElement => {
+  const { runtimeActionsLogic, runtimeDisable } = props;
   const [open, setOpen] = useState(false);
   const { formatMessage } = useI18n();
 
@@ -54,20 +49,6 @@ const RuntimeActions = <T extends string>(
     isBannerEnabled = true,
     showStop = true,
   } = runtimeActionsLogic();
-
-  const stopHandler = (): void => {
-    if (appId) {
-      stopApp(appId, appStatus);
-      setTab && setTab('console' as T);
-    }
-  };
-
-  const runHandler = (): void => {
-    if (appId) {
-      runApp(appId);
-      setTab && setTab('console' as T);
-    }
-  };
 
   const getStatusBanner = (params: {
     action: AppLabAction;
@@ -178,35 +159,41 @@ const RuntimeActions = <T extends string>(
       >
         {stopShown && (
           <Button
-            classes={
-              setAsDefaultApp && {
-                button: styles['button'],
-              }
-            }
-            onClick={stopHandler}
+            classes={{
+              button: clsx(
+                { [styles['button']]: setAsDefaultApp },
+                styles['icon-only'],
+              ),
+            }}
+            onClick={stopApp}
             type={ButtonType.Secondary}
-            size={size === 'small' ? ButtonSize.XSmall : ButtonSize.Small}
+            size={ButtonSize.Small}
             variant={ButtonVariant.Destructive}
             disabled={stopDisabled || runtimeDisable}
+            Icon={Stop}
+            iconPosition="left"
           >
             Stop
           </Button>
         )}
         {!stopShown && (
           <Button
-            classes={
-              setAsDefaultApp && {
-                button: styles['button'],
-              }
-            }
-            onClick={runHandler}
+            classes={{
+              button: clsx(
+                { [styles['button']]: setAsDefaultApp },
+                styles['icon-only'],
+              ),
+            }}
+            onClick={runApp}
             type={ButtonType.Primary}
-            size={size === 'small' ? ButtonSize.XSmall : ButtonSize.Small}
+            size={ButtonSize.Small}
             variant={ButtonVariant.Action}
             disabled={
               currentActionStatus === AppLabActionStatus.Pending ||
               runtimeDisable
             }
+            Icon={Play}
+            iconPosition="left"
           >
             Run
           </Button>
@@ -238,12 +225,12 @@ const RuntimeActions = <T extends string>(
                           {appDefault && appDefault.id !== appId
                             ? formatMessage(messages.overrideAsDefault, {
                                 appName: (
-                                  <button
-                                    className={styles['app-name']}
+                                  <Button
+                                    classes={{ button: styles['app-name'] }}
                                     onClick={(): void => openApp?.(appDefault)}
                                   >
                                     {appDefault.name}
-                                  </button>
+                                  </Button>
                                 ),
                                 bold: (text: string) => <b>{text}</b>,
                               })

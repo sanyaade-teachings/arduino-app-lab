@@ -135,7 +135,7 @@ export type NewTabMenuItemDictionary = NewTabMenuDictionary<TabMenuItemType>;
 
 export type UnsavedFileIds = Set<string>;
 
-export const SUPPORTED_IMAGE_TYPES = ['.jpg', '.png', '.svg'];
+export const SUPPORTED_IMAGE_TYPES = ['.jpg', '.png', '.svg', '.webp', '.gif'];
 
 export const SUPPORTED_TYPES = [
   ...SUPPORTED_IMAGE_TYPES,

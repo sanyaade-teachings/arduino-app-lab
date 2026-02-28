@@ -1,6 +1,16 @@
-import { BrickSettings as BrickSettingsIcon } from '@cloud-editor-mono/images/assets/icons';
-import { BrickDetails, BrickInstance } from '@cloud-editor-mono/infrastructure';
-import { useEffect, useState } from 'react';
+import {
+  BrickSettings as BrickSettingsIcon,
+  OpenInNewTab,
+} from '@cloud-editor-mono/images/assets/icons';
+import {} from '@cloud-editor-mono/images/assets/icons';
+import {
+  AIModel,
+  AIModelItem,
+  BrickCreateUpdateRequest,
+  BrickDetails,
+  BrickInstance,
+} from '@cloud-editor-mono/infrastructure';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Item } from 'react-stately';
 
 import BrickIcon from '../app-lab-brick-icon/BrickIcon';
@@ -17,6 +27,7 @@ import {
   ConfigureAppBrickDialog,
   ConfigureAppBrickDialogLogic,
 } from '../dialogs/app-lab/configure-app-brick-dialog/ConfigureAppBrickDialog';
+import { TrainNewModelDialog } from '../dialogs/app-lab/train-new-model-dialog/TrainNewModelDialog';
 import { Tabs } from '../essential/tab-list/Tabs';
 import { Medium, XSmall } from '../typography';
 import styles from './brick-detail.module.scss';
@@ -57,13 +68,55 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
   const {
     initialTab,
     showConfigure,
+    edgeImpulseProps,
+    boardResourcesLogic,
     loadBrickInstance,
     loadBrickDetails,
     loadFileContent,
     onOpenExternalLink,
     updateBrickDetails,
+    arduinoAuthAccountLogic,
+    edgeImpulseAuthAccountLogic,
+    showTrainNewModel = true,
   } = brickDetailLogic();
   const [selectedTab, setSelectedTab] = useState(initialTab || 'overview');
+  const [showTrainModel, setShowTrainModel] = useState(false);
+
+  const { user: arduinoUser } = arduinoAuthAccountLogic();
+
+  const { user: edgeImpulseUser } = edgeImpulseAuthAccountLogic();
+
+  useEffect(() => {
+    edgeImpulseProps?.enabledEIAutoRefresh(true);
+    return () => edgeImpulseProps?.enabledEIAutoRefresh(false);
+  }, [edgeImpulseProps]);
+
+  const downloadModel = useCallback(
+    async (modelId: string, impulseId: string) => {
+      const model = await edgeImpulseProps?.downloadImpulse(modelId, impulseId);
+      if (model) {
+        setBrick((brick) => ({
+          ...brick,
+          compatible_models: (brick?.compatible_models || []).concat(model),
+        }));
+      }
+    },
+    [edgeImpulseProps],
+  );
+
+  const removeModel = useCallback(
+    async (modelId: string, impulseId?: string) => {
+      await edgeImpulseProps?.removeEIModel(modelId, impulseId);
+      const id = impulseId ? `ei-model-${modelId}-${impulseId}` : modelId;
+      setBrick((brick) => ({
+        ...brick,
+        compatible_models: (brick?.compatible_models || []).filter(
+          (model) => model.id !== id,
+        ),
+      }));
+    },
+    [edgeImpulseProps],
+  );
 
   useEffect(() => {
     const loadDetails = async (): Promise<void> => {
@@ -130,28 +183,120 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
 
   const readme = brick?.readme?.trim().length ? brick.readme : null;
 
-  const configureLogic: ConfigureAppBrickDialogLogic | null =
-    showConfigure &&
-    brick &&
-    ((brick.compatible_models ?? []).length > 0 ||
-      (brick.config_variables ?? []).length > 0) &&
-    loadBrickInstance &&
-    updateBrickDetails
+  const configureLogic: ConfigureAppBrickDialogLogic | null = useMemo(() => {
+    const canUseLogic =
+      showConfigure &&
+      brick &&
+      ((brick.compatible_models ?? []).length > 0 ||
+        (brick.config_variables ?? []).length > 0) &&
+      loadBrickInstance &&
+      updateBrickDetails;
+
+    return canUseLogic
       ? (): ReturnType<ConfigureAppBrickDialogLogic> => ({
           brick,
           open: configureOpen,
           loadBrickInstance,
           onOpenChange: setConfigureOpen,
-          confirmAction: updateBrickDetails,
+          getInstalledModel: edgeImpulseProps?.getInstalledModel,
+          confirmAction: async (
+            brickId: string,
+            req: BrickCreateUpdateRequest,
+          ): Promise<boolean> => {
+            const success = await updateBrickDetails(brickId, req);
+            const model = req.model;
+            if (success && model) {
+              setInstance((prev) => ({ ...prev, model }));
+            }
+            return success;
+          },
+          arduinoAuthAccountLogic,
+          edgeImpulseAuthAccountLogic,
+          openAndAssociateToDevice: edgeImpulseProps?.openAndAssociateToDevice,
+          boardResourcesLogic,
         })
       : null;
+  }, [
+    arduinoAuthAccountLogic,
+    brick,
+    configureOpen,
+    edgeImpulseAuthAccountLogic,
+    edgeImpulseProps?.getInstalledModel,
+    loadBrickInstance,
+    showConfigure,
+    updateBrickDetails,
+    edgeImpulseProps?.openAndAssociateToDevice,
+    boardResourcesLogic,
+  ]);
 
   const openConfigureDialog = (): void => {
     setConfigureOpen(true);
   };
 
+  const onOpenTrainNewModelDialogChange = useCallback((value: boolean) => {
+    setShowTrainModel(value);
+  }, []);
+
+  const openModelPage = useCallback(
+    (modelId: string, impulseId?: string): void => {
+      let url: string | undefined = undefined;
+      const installedModel = edgeImpulseProps?.getInstalledModel(modelId);
+      const _projectId = installedModel?.metadata?.['ei-project-id'] || modelId;
+      const _impulseId =
+        installedModel?.metadata?.['ei-impulse-id'] || impulseId;
+      const _modelUrl = installedModel?.metadata?.['ei-model-url'];
+      if (_modelUrl) {
+        url = _modelUrl;
+      } else {
+        url = `https://studio.edgeimpulse.com/studio/${_projectId}`;
+        if (_impulseId) {
+          url += `/impulse/${_impulseId}/create-impulse`;
+        }
+      }
+      url && onOpenExternalLink?.(url);
+    },
+    [edgeImpulseProps, onOpenExternalLink],
+  );
+
+  const eiModels = edgeImpulseProps?.getEIProjectsByBrickType(brick?.id || '');
+  // Builtin models and installed models without an active EI project/impulse
+  const otherModels = (brick?.compatible_models ?? [])
+    .map((model) => edgeImpulseProps?.getInstalledModel(model.id || ''))
+    .filter((model): model is AIModelItem => {
+      if (!model || !model.id) {
+        return false;
+      }
+      if (model?.is_builtin) {
+        return true; // preinstalled models
+      }
+      const installed = edgeImpulseProps?.getInstalledModel(model.id);
+      const installedProjectId = installed?.metadata?.['ei-project-id'];
+      const installedImpulseId = installed?.metadata?.['ei-impulse-id'];
+      const eiProject = eiModels?.find(
+        (eiModel) => eiModel.id === installedProjectId,
+      );
+      if (!eiProject) {
+        return true; // deleted project in ei studio
+      }
+      return !eiProject.impulses?.find(
+        (impulse) => impulse.id === installedImpulseId,
+      ); // deleted impulse in ei studio, but project still present
+    });
+  const allModels: Array<AIModel | AIModelItem> = (eiModels ?? []).concat(
+    otherModels,
+  );
+
   return (
     <div className={styles['container']}>
+      {
+        <TrainNewModelDialog
+          arduinoAuthAccountLogic={arduinoAuthAccountLogic}
+          edgeImpulseAuthAccountLogic={edgeImpulseAuthAccountLogic}
+          open={showTrainModel}
+          onOpenChange={onOpenTrainNewModelDialogChange}
+          openAndAssociateToDevice={edgeImpulseProps?.openAndAssociateToDevice}
+        />
+      }
       {configureLogic && <ConfigureAppBrickDialog logic={configureLogic} />}
       <div className={styles['header']}>
         <BrickIcon category={brick?.category} />
@@ -213,28 +358,60 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                   />
                 ) : (
                   <div className={styles['ai-models-container']}>
-                    {configureLogic && (
-                      <XSmall className={styles['ai-models-info']}>
-                        {formatMessage(messages.aiModelsInfo, {
-                          link: (msg: string) => (
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              className={styles['link']}
-                              onClick={openConfigureDialog}
-                              onKeyUp={openConfigureDialog}
-                            >
-                              {msg}
-                            </span>
-                          ),
-                        })}
-                      </XSmall>
-                    )}
-                    {brick?.compatible_models?.map((model) => (
+                    <div className={styles['ai-models-header']}>
+                      {configureLogic && (
+                        <XSmall className={styles['ai-models-info']}>
+                          {formatMessage(messages.aiModelsInfo, {
+                            link: (msg: string) => (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                className={styles['link']}
+                                onClick={openConfigureDialog}
+                                onKeyUp={openConfigureDialog}
+                              >
+                                {msg}
+                              </span>
+                            ),
+                          })}
+                        </XSmall>
+                      )}
+                      {showTrainNewModel ? (
+                        <Button
+                          type={ButtonType.Tertiary}
+                          size={ButtonSize.XSmall}
+                          onClick={(): void => {
+                            if (!!edgeImpulseUser && !!arduinoUser) {
+                              edgeImpulseProps?.openAndAssociateToDevice();
+                              return;
+                            }
+
+                            setShowTrainModel(true);
+                          }}
+                          Icon={OpenInNewTab}
+                          classes={{
+                            button: styles['train-new-model-button'],
+                          }}
+                        >
+                          {formatMessage(messages.trainNewModelButton)}
+                        </Button>
+                      ) : null}
+                    </div>
+                    {allModels?.map((model) => (
                       <AppLabAiModel
                         key={model.id}
                         inUseModelId={instance?.model}
                         model={model}
+                        boardResourcesLogic={boardResourcesLogic}
+                        downloadModel={downloadModel}
+                        modelDownloadInfo={
+                          model.id
+                            ? edgeImpulseProps?.getEIModelDownloadInfo(model.id)
+                            : undefined
+                        }
+                        getInstalledModel={edgeImpulseProps?.getInstalledModel}
+                        openEdgeImpulse={openModelPage}
+                        removeModel={removeModel}
                       />
                     ))}
                   </div>

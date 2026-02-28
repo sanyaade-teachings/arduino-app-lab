@@ -22,12 +22,24 @@ export function CreateFolder(arg1) {
   return window['go']['app']['App']['CreateFolder'](arg1);
 }
 
+export function DeleteRefreshToken(arg1) {
+  return window['go']['app']['App']['DeleteRefreshToken'](arg1);
+}
+
+export function DisconnectWiFi() {
+  return window['go']['app']['App']['DisconnectWiFi']();
+}
+
 export function ExportApp(arg1, arg2, arg3) {
   return window['go']['app']['App']['ExportApp'](arg1, arg2, arg3);
 }
 
 export function Flash(arg1, arg2) {
   return window['go']['app']['App']['Flash'](arg1, arg2);
+}
+
+export function ForwardNonUIPort(arg1) {
+  return window['go']['app']['App']['ForwardNonUIPort'](arg1);
 }
 
 export function GetAboutMessage() {
@@ -106,6 +118,10 @@ export function GetOrchestratorURL() {
   return window['go']['app']['App']['GetOrchestratorURL']();
 }
 
+export function GetRefreshToken(arg1) {
+  return window['go']['app']['App']['GetRefreshToken'](arg1);
+}
+
 export function GetTags() {
   return window['go']['app']['App']['GetTags']();
 }
@@ -116,6 +132,10 @@ export function GetTitle() {
 
 export function GetWiFiStatus() {
   return window['go']['app']['App']['GetWiFiStatus']();
+}
+
+export function HandleSecondInstanceLaunch(arg1) {
+  return window['go']['app']['App']['HandleSecondInstanceLaunch'](arg1);
 }
 
 export function ImportApp() {
@@ -162,6 +182,10 @@ export function NewVersion() {
   return window['go']['app']['App']['NewVersion']();
 }
 
+export function OnUrlOpen(arg1) {
+  return window['go']['app']['App']['OnUrlOpen'](arg1);
+}
+
 export function OpenBoardTerminal() {
   return window['go']['app']['App']['OpenBoardTerminal']();
 }
@@ -170,8 +194,8 @@ export function OpenFile(arg1) {
   return window['go']['app']['App']['OpenFile'](arg1);
 }
 
-export function OpenUIWhenReady(arg1) {
-  return window['go']['app']['App']['OpenUIWhenReady'](arg1);
+export function OpenUIWhenReady(arg1, arg2) {
+  return window['go']['app']['App']['OpenUIWhenReady'](arg1, arg2);
 }
 
 export function RemoveFile(arg1) {
@@ -196,6 +220,10 @@ export function SetBoardName(arg1) {
 
 export function SetKeyboardLayout(arg1) {
   return window['go']['app']['App']['SetKeyboardLayout'](arg1);
+}
+
+export function SetRefreshToken(arg1, arg2) {
+  return window['go']['app']['App']['SetRefreshToken'](arg1, arg2);
 }
 
 export function SetUserPassword(arg1) {

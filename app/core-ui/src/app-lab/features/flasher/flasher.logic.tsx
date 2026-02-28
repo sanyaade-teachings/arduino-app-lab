@@ -7,7 +7,7 @@ import {
   openLinkExternal,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useState } from 'react';
 
 import { useBoardLifecycleStore } from '../../store/boards/boards';
 import { UseFlasherLogic } from './flasher.type';
@@ -19,22 +19,22 @@ export const useFlasherLogic: UseFlasherLogic = function (
 ): ReturnType<UseFlasherLogic> {
   const { selectedConnectedBoard, setBoardIsFlashing } =
     useBoardLifecycleStore();
-  const flashingBoard = useMemo(
-    () => selectedConnectedBoard!,
-    [selectedConnectedBoard],
-  );
+  const [succeeded, setSucceeded] = useState<boolean | null>(null);
 
   const { data: boards } = useQuery(['list-boards'], getBoards, {
-    refetchOnWindowFocus: false,
     refetchInterval: 1000,
   });
 
   return {
-    loading: boards?.every((b) => b.serial !== flashingBoard.serial) ?? true,
+    loading:
+      boards?.every((b) => b.serial !== selectedConnectedBoard?.serial) ?? true,
+    succeeded,
+    setSucceeded,
     close: (): void => {
-      setBoardIsFlashing(false);
-      if (selectedConnectedBoard) {
-        selectBoard(selectedConnectedBoard.id);
+      if (succeeded) {
+        selectBoard(selectedConnectedBoard?.id ?? '');
+      } else {
+        setBoardIsFlashing(false);
       }
     },
     listAvailableImages: listAvailableOSImages,

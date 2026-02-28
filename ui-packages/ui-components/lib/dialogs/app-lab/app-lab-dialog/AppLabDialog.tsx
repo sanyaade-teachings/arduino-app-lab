@@ -21,7 +21,7 @@ type AppLabDialogStyles = {
 };
 
 type AppLabDialogProps = ComponentProps<typeof BaseModal> & {
-  title?: string;
+  title?: string | React.ReactNode;
   asChild?: boolean;
   classes?: AppLabDialogStyles;
   footer?: React.ReactNode;
@@ -55,7 +55,7 @@ export const AppLabDialog = forwardRef(
         closeable={closeable}
         contentProps={{
           ...contentProps,
-          'aria-describedby': title ?? undefined,
+          'aria-describedby': typeof title === 'string' ? title : undefined,
           className: clsx(styles['app-lab-dialog'], classes.root),
         }}
         ref={ref}
@@ -64,23 +64,23 @@ export const AppLabDialog = forwardRef(
           {...rest}
           className={clsx(styles['app-lab-dialog-content'], classes.content)}
         >
-          {title && (
+          {title ? (
             <div
               className={clsx(styles['app-lab-dialog-header'], classes.header)}
             >
               <DialogTitle>{title}</DialogTitle>
-              {closeable && (
+              {closeable ? (
                 <Close
                   className={clsx(
                     styles['app-lab-dialog-header-close'],
                     classes.closeButton,
                   )}
                 >
-                  <CloseXIcon></CloseXIcon>
+                  <CloseXIcon />
                 </Close>
-              )}
+              ) : null}
             </div>
-          )}
+          ) : null}
           <ModalBody
             className={clsx(styles['app-lab-dialog-body'], classes.body)}
             asChild={asChild}

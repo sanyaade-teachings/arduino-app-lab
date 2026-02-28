@@ -1,5 +1,6 @@
 import { Terminal } from '@cloud-editor-mono/images/assets/icons';
 import {
+  CONSOLE_SOURCE_KEYS,
   ConsolePanelProps,
   SerialMonitor,
   useI18n,
@@ -7,12 +8,10 @@ import {
 import clsx from 'clsx';
 import { useMemo } from 'react';
 
+import { codeMirrorParams } from './config';
+import { useSendMessage } from './hooks/useSendMessage';
 import { messages } from './messages';
 import styles from './multiple-console-panel.module.scss';
-import {
-  createAppLabConsolePanelLogic,
-  useSendMessage,
-} from './multipleConsolePanelUtils';
 import ConsoleTabs from './sub-components/ConsoleTabs';
 import { getOrderedConsoleTabs } from './utils';
 
@@ -28,17 +27,12 @@ const MultipleConsolePanel: React.FC<ConsolePanelProps> = (
     activeTab,
     setActiveTab,
     resetSource,
-    onMessageSend,
     selectedBoard,
+    serialMonitorLogic,
   } = multipleConsolePanelLogic();
 
   const placeholder = useSendMessage(selectedBoard);
   const { formatMessage } = useI18n();
-
-  const codeMirrorParams = {
-    lineSeparator: '\r',
-    wrapLines: true,
-  };
 
   const orderedConsoleTabs = useMemo(
     () => getOrderedConsoleTabs(consoleTabs),
@@ -72,7 +66,8 @@ const MultipleConsolePanel: React.FC<ConsolePanelProps> = (
               wrapper: styles['serial-monitor-wrapper'],
               contents: {
                 wrapper: clsx(styles['serial-monitor-contents-wrapper'], {
-                  [styles['has-actions']]: tab === 'serial-monitor',
+                  [styles['has-actions']]:
+                    tab === CONSOLE_SOURCE_KEYS.SERIAL_MONITOR,
                 }),
               },
               actions: {
@@ -89,8 +84,8 @@ const MultipleConsolePanel: React.FC<ConsolePanelProps> = (
             }}
             sendMessagePlaceholder={placeholder}
             hasToolbar={false}
-            hasActions={tab === 'serial-monitor'}
-            serialMonitorLogic={createAppLabConsolePanelLogic(onMessageSend)}
+            hasActions={tab === CONSOLE_SOURCE_KEYS.SERIAL_MONITOR}
+            serialMonitorLogic={serialMonitorLogic}
             resetSource={resetSource}
             logSource={consoleSources[tab].subject}
             codeMirrorParams={codeMirrorParams}

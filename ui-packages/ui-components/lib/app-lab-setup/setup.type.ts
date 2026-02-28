@@ -1,4 +1,5 @@
-import { FooterItem } from '../app-lab-footer-bar';
+import { UseArduinoAccountLogic } from '../app-lab-account';
+import { BoardItem } from '../app-lab-board-section';
 import {
   UseBoardConfigurationLogic,
   UseLinuxCredentialsLogic,
@@ -22,7 +23,11 @@ export type Board = {
 export type UseSetupLogic = () => {
   isBoard?: boolean;
   boards: Board[];
+  selectedBoard: Board | undefined;
   selectBoard: (board: Board) => void;
+  autoSelectBoard: (boardId: string) => void;
+  isAutoSelectingBoard: boolean;
+  showLoader: boolean;
   showBoardSelectionPage: boolean;
   showPostSelectionSetup: boolean;
   currentStep?: AppLabSetupItemId;
@@ -34,9 +39,9 @@ export type UseSetupLogic = () => {
   isBoardConnectingOrChecking: boolean;
   connToBoardError?: string;
   showConfirmButton?: boolean;
-  boardItem?: FooterItem;
-  onOpenTerminal?: () => Promise<void>;
-  terminalError?: string | null;
+  boardItem?: BoardItem;
+  onOpenTerminal: () => Promise<void>;
+  terminalError: string | null;
   onBackStep?: () => void;
   unlockAutoFlow?: () => void;
 };
@@ -45,12 +50,14 @@ export enum AppLabSetupItemId {
   BoardConfiguration,
   NetworkSetup,
   LinuxCredentials,
+  ArduinoAccount,
 }
 
 export interface SetupContentLogicMap {
   [AppLabSetupItemId.BoardConfiguration]: UseBoardConfigurationLogic;
   [AppLabSetupItemId.NetworkSetup]: UseNetworkLogic;
   [AppLabSetupItemId.LinuxCredentials]: UseLinuxCredentialsLogic;
+  [AppLabSetupItemId.ArduinoAccount]: UseArduinoAccountLogic;
 }
 
 export type AppLabSetupItem = {

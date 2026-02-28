@@ -50,7 +50,7 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
   const { formatMessage } = useI18n();
   const [boardConnPsw, setBoardConnPsw] = useState('');
 
-  const passwordRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     passwordRef?.current?.focus();
@@ -142,7 +142,6 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
           }
         >
           <Input
-            ref={passwordRef}
             inputStyle={InputStyle.AppLab}
             type="text"
             label="Username"
@@ -158,6 +157,7 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
             }}
           />
           <Input
+            ref={passwordRef}
             inputStyle={InputStyle.AppLab}
             value={boardConnPsw}
             sensitive={true}
@@ -167,9 +167,9 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
             label="Password"
             classes={{
               input: clsx([styles['input'], styles['password']]),
-              inputContainer: styles['app-name-input-container'],
-              error: styles['app-name-input-error'],
-              inputError: styles['error-message'],
+              inputContainer: clsx(styles['app-name-input-container']),
+              error: clsx(styles['app-name-input-error']),
+              inputError: clsx(styles['error-message']),
             }}
           />
         </AppLabDialog>

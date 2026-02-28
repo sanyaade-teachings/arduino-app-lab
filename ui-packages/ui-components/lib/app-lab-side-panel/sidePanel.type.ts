@@ -6,8 +6,6 @@ export type SidePanelLogic = () => {
   activeItem?: string;
   user?: ArduinoUser | null;
   visible: boolean;
-  login?: () => Promise<void>;
-  logout?: () => Promise<void>;
 };
 
 export type SidePanelSectionId = 'top' | 'middle' | 'bottom';
@@ -19,11 +17,11 @@ export enum SidePanelItemId {
   AiModels = 'models',
   Learn = 'learn',
   Settings = 'settings',
-  Login = 'login',
+  Account = 'account',
 }
 
 export interface SidePanelItemInterface {
-  Icon: React.FC;
+  Icon: React.FC | string;
   label: MessageDescriptor;
   id: SidePanelItemId;
   sectionId?: SidePanelSectionId;

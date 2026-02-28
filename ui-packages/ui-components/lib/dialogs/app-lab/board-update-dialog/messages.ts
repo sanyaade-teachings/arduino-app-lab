@@ -1,39 +1,37 @@
 import { defineMessages } from 'react-intl';
 
 export const messages = defineMessages({
-  // Titles
-  titleCheckingForUpdates: {
-    id: 'app-lab.board-update-dialog.checking-for-updates-title',
-    defaultMessage: 'Checking for updates',
-    description:
-      'Title shown on the board update dialog when checking for updates',
-  },
-  titleUpdatesAvailable: {
-    id: 'app-lab.board-update-dialog.updates-available',
-    defaultMessage: 'Updates available',
-    description: 'Title shown when updates are available',
-  },
-  titleInstallingUpdates: {
-    id: 'app-lab.board-update-dialog.installing-updates',
-    defaultMessage: 'Installing updates...',
-    description: 'Title shown when installing updates',
-  },
-  titleUpdates: {
-    id: 'app-lab.board-update-dialog.updates',
-    defaultMessage: 'Updates',
+  title: {
+    id: 'app-lab.board-update-dialog.title',
+    defaultMessage: "What's new",
     description: 'Title shown on the board update dialog for updates',
   },
 
   // Buttons
+  showDetails: {
+    id: 'app-lab.board-update-dialog.show-details',
+    defaultMessage: 'Show update details',
+    description: 'Button text to show update details',
+  },
+  hideDetails: {
+    id: 'app-lab.board-update-dialog.hide-details',
+    defaultMessage: 'Hide update details',
+    description: 'Button text to hide update details',
+  },
   installUpdate: {
     id: 'app-lab.board-update-dialog.install-update',
-    defaultMessage: 'Install Updates',
+    defaultMessage: 'Install updates',
     description: 'Button text to install the available update',
   },
   skipUpdate: {
     id: 'app-lab.board-update-dialog.skip-update',
-    defaultMessage: 'Next Time',
+    defaultMessage: 'Skip',
     description: 'Button text to skip the update and close the dialog',
+  },
+  changeNetwork: {
+    id: 'app-lab.board-update-dialog.change-network',
+    defaultMessage: 'Change Network',
+    description: 'Button text to change network settings to allow update check',
   },
   retry: {
     id: 'app-lab.board-update-dialog.retry',
@@ -46,26 +44,24 @@ export const messages = defineMessages({
     description: 'Button text to restart the app lab after update',
   },
 
-  // Status messages
+  // Checking messages
   checkingForUpdates: {
     id: 'app-lab.board-update-dialog.checking-for-updates',
-    defaultMessage: 'We are checking for updates',
+    defaultMessage: 'Looking for updates...',
     description: 'Status text shown when the updater is checking for updates',
   },
-  onlyMoment: {
-    id: 'app-lab.board-update-dialog.only-moment',
-    defaultMessage: 'This will only take a moment, thank you for your patience',
+  checkingForUpdatesDescription: {
+    id: 'app-lab.board-update-dialog.checking-for-updates-description',
+    defaultMessage: 'Gathering fresh system bits almost there!',
     description: 'Additional info text shown when checking for updates',
   },
-
-  // Error states
-  updateFailed: {
-    id: 'app-lab.board-update-dialog.update-failed',
+  checkingFailed: {
+    id: 'app-lab.board-update-dialog.checking-failed',
     defaultMessage: 'Update failed',
     description: 'Status text shown when the update has failed',
   },
-  updateFailedDescription: {
-    id: 'app-lab.board-update-dialog.update-failed-description',
+  checkingFailedDescription: {
+    id: 'app-lab.board-update-dialog.checking-failed-description',
     defaultMessage:
       'If problem persists try flashing the latest OS image using',
     description: 'Description text for update failure',
@@ -85,12 +81,23 @@ export const messages = defineMessages({
     defaultMessage: 'Arduino Support.',
     description: 'Link text for Arduino Support',
   },
-  errorEncountered: {
-    id: 'app-lab.board-update-dialog.error-encountered',
-    defaultMessage:
-      'Updates were applied successfully, but we encountered some errors',
+
+  // Update states
+  updateInstalling: {
+    id: 'app-lab.board-update-dialog.update-installing',
+    defaultMessage: 'Installing updates...',
+    description: 'Status text shown when the update is being installed',
+  },
+  updateCompleted: {
+    id: 'app-lab.board-update-dialog.update-completed',
+    defaultMessage: 'Update complete',
     description:
-      'Text shown when errors were encountered during the update process',
+      'Status text shown when the update has been installed successfully',
+  },
+  updateFailed: {
+    id: 'app-lab.board-update-dialog.update-failed',
+    defaultMessage: 'Update failed, try again or check out error details',
+    description: 'Status text shown when the update has failed',
   },
 
   // Update labels
@@ -118,12 +125,5 @@ export const messages = defineMessages({
     id: 'app-lab.board-update-dialog.installed',
     defaultMessage: 'Installed',
     description: 'Status text shown when installation is complete',
-  },
-
-  // Notes
-  sbcRestartNote: {
-    id: 'app-lab.board-update-dialog.sbc-restart-note',
-    defaultMessage: 'Please close and reopen App Lab',
-    description: 'Note shown for SBC users to manually restart the app',
   },
 });

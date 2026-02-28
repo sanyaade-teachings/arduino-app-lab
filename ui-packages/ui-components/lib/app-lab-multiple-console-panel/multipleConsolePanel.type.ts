@@ -2,6 +2,7 @@ import { ErrorData, MessageData } from '@cloud-editor-mono/infrastructure';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 import { Board } from '../app-lab-setup';
+import { SerialMonitorLogic } from '../serial-monitor';
 
 export interface ConsoleLogValue {
   value: string;
@@ -17,29 +18,36 @@ export interface ConsoleSource {
   subject: BehaviorSubject<ConsoleLogValue>;
 }
 export interface ConsoleSources {
-  // key is startup, serial-monitor, main, ...bricksID
-  [key: string]: ConsoleSource;
+  [key: ConsoleSourceKey | string]: ConsoleSource;
 }
 
 export type MultipleConsolePanelLogic = () => {
   showLogs: boolean;
-  consoleTabs: string[];
+  consoleTabs: ConsoleSourceKey[];
   consoleSources: ConsoleSources;
-  activeTab?: string;
-  setActiveTab: React.Dispatch<React.SetStateAction<string | undefined>>;
+  activeTab?: ConsoleSourceKey;
+  setActiveTab: React.Dispatch<
+    React.SetStateAction<ConsoleSourceKey | undefined>
+  >;
   resetSource: Subject<void>;
-  onMessageSend: (message: string) => void;
   selectedBoard?: Board;
+  serialMonitorLogic: SerialMonitorLogic;
 };
 
 export interface ConsolePanelProps {
   multipleConsolePanelLogic: MultipleConsolePanelLogic;
 }
 
-export const AL_STARTUP_KEY = 'startup';
-export const AL_STOP_KEY = 'stop';
-export const AL_SERIAL_MONITOR_KEY = 'serial-monitor';
-export const AL_PYTHON_KEY = 'main';
+export const CONSOLE_SOURCE_KEYS = {
+  STARTUP: 'startup',
+  SERIAL_MONITOR: 'serial-monitor',
+  PYTHON: 'main',
+} as const;
+
+export type ConsoleSourceKey =
+  | typeof CONSOLE_SOURCE_KEYS[keyof typeof CONSOLE_SOURCE_KEYS]
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {}); // to allow dynamic keys like brick IDs
 
 export type AppendDataToSource = (
   key: keyof ConsoleSources,
@@ -61,9 +69,11 @@ export type UseConsoleSources = () => {
   consoleSourcesOwner?: string;
   consoleSources: ConsoleSources;
   consoleSourcesResetSubject: Subject<void>;
-  consoleTabs: string[];
-  activeConsoleTab?: string;
-  setActiveConsoleTab: React.Dispatch<React.SetStateAction<string | undefined>>;
+  consoleTabs: ConsoleSourceKey[];
+  activeConsoleTab?: ConsoleSourceKey;
+  setActiveConsoleTab: React.Dispatch<
+    React.SetStateAction<ConsoleSourceKey | undefined>
+  >;
   addConsoleSource: AddConsoleSource;
   appendDataToSource: AppendDataToSource;
   reset: (keysToRetain: string[]) => void;

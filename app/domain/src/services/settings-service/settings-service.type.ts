@@ -11,5 +11,6 @@ export interface SettingsService {
   getEthernetStatus(): Promise<EthernetConnectionStatus>;
   getInternetStatus(): Promise<boolean>;
   connectToWiFi(ssid: string, password: string): Promise<void | 'timeout'>;
+  disconnectWiFi(): Promise<void>;
   getConnectionName(): Promise<string | null>;
 }

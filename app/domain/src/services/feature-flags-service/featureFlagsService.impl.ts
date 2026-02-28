@@ -7,16 +7,19 @@ export let getFeatureFlags: FeatureFlagService['getFeatureFlags'] =
 
 const flags: string[] = [];
 
-export const setFeatureFlagService = (
+export const setFeatureFlagService = async (
   service: Omit<FeatureFlagService, 'getFeatureFlagsSync' | 'isFFEnabled'>,
-): void => {
+): Promise<void> => {
   getFeatureFlags = service.getFeatureFlags;
-  // init();
-  getFeatureFlags().then((fetchedFlags) => {
+
+  try {
+    const fetchedFlags = await getFeatureFlags();
     fetchedFlags.forEach((flag) => {
       flags.push(flag);
     });
-  });
+  } catch (error) {
+    console.error('Error fetching feature flags:', error);
+  }
 };
 
 export const getFeatureFlagsSync: FeatureFlagService['getFeatureFlagsSync'] =

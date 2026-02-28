@@ -1,8 +1,10 @@
 import {
   setAppUIService,
   setArduinoAppFilesService,
+  setArduinoAuthService,
   setBoardService,
   setBrowserService,
+  setEdgeImpulseService,
   setFeatureFlagService,
   setFileOpenerService,
   setFlasherService,
@@ -15,8 +17,10 @@ import {
 
 import * as StandaloneAppUIService from './services/appUIService.impl.standalone';
 import * as StandaloneArduinoAppFilesService from './services/arduinoAppFilesService.impl.standalone';
+import * as StandaloneAuthService from './services/authService.impl.standalone';
 import * as StandaloneBoardService from './services/boardService.impl.standalone';
 import * as StandaloneBrowserService from './services/browserService.impl.standalone';
+import * as StandaloneEdgeImpulseService from './services/edgeImpulseService.impl.standalone';
 import * as FeatureFlagService from './services/featureFlagsService.impl.standalone';
 import * as StandaloneFileOpenerService from './services/fileOpenerService.impl.standalone';
 import * as StandaloneFlasherService from './services/flasherService.impl.standalone';
@@ -39,4 +43,6 @@ export const injectDependencies = (): void => {
   setSettingsService(StandaloneSettingsService);
   setUpdaterService(StandaloneUpdaterService);
   setWailsService(StandaloneWailsService);
+  setEdgeImpulseService(StandaloneEdgeImpulseService);
+  setArduinoAuthService(StandaloneAuthService);
 };

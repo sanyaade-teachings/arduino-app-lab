@@ -1,0 +1,194 @@
+@use "../../../../../images/public/css-images.module.scss";
+
+.root {
+  width: 100%;
+  height: 100%;
+  border-radius: unset;
+  background: #090f11;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  max-width: unset;
+  max-height: unset;
+
+  .body {
+    border: unset;
+    width: 100%;
+    height: 100%;
+    padding: unset !important;
+    display: flex;
+
+    &-header {
+      display: flex;
+      padding: 16px 16px 8px 16px;
+      align-items: center;
+      align-self: stretch;
+
+      .exit-button {
+        svg {
+          width: 16px;
+          height: 16px;
+
+          path {
+            fill: #ffffff;
+          }
+        }
+      }
+    }
+
+    &-content {
+      height: 100%;
+      border-top: 1px solid #434f54;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 270px;
+
+      .panel {
+        height: fit-content;
+        max-height: 500px;
+        white-space: nowrap;
+        display: flex;
+        padding: 32px 64px;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border-inverted, #232b2e);
+        background: var(--surface-bg-below-1, #171e21);
+
+        &.is-welcome {
+          flex-direction: column;
+
+          .details {
+            gap: 16px;
+
+            .items-list {
+              list-style: inside;
+              gap: unset;
+
+              .item {
+                display: list-item;
+              }
+            }
+          }
+        }
+
+        .details {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 40px;
+
+          .title {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+
+            .text {
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+
+              .subtitle {
+                color: #c9d2d2;
+              }
+            }
+          }
+
+          .items-list {
+            padding: 0;
+            margin: 0;
+            counter-reset: counter;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            color: #c9d2d2;
+
+            .item {
+              counter-increment: counter;
+              display: grid;
+              grid-auto-flow: column;
+              gap: 12px;
+              align-items: center;
+              justify-content: start;
+            }
+
+            &.steps {
+              .item::before {
+                content: counter(counter);
+                display: flex;
+                width: 20px;
+                height: 20px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                border-radius: 30px;
+                outline: 2px solid #434f54;
+              }
+
+              .item {
+                &.selected {
+                  color: #ffffff;
+                  font-weight: 700;
+
+                  &::before {
+                    outline: 2px solid #005c5f;
+                  }
+                }
+
+                &.completed {
+                  color: #ffffff;
+                  font-weight: 700;
+
+                  &::before {
+                    content: url(css-images.$check);
+                    background: #25c2c7;
+                    outline: none;
+                    width: 22px;
+                    height: 22px;
+                  }
+                }
+              }
+            }
+          }
+
+          .icon {
+            display: flex;
+            width: 20px;
+            height: 20px;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            gap: 10px;
+            border-radius: 8px;
+            background: var(--component-bg-flexible, rgba(174, 184, 184, 0.15));
+          }
+
+          .button {
+            padding: 7px 12px;
+            height: 36px;
+
+            svg {
+              width: 16px;
+              height: 16px;
+
+              path {
+                fill: #171e21;
+              }
+            }
+          }
+        }
+
+        .footer {
+          display: flex;
+          gap: 16px;
+          margin-left: auto;
+        }
+      }
+    }
+  }
+}

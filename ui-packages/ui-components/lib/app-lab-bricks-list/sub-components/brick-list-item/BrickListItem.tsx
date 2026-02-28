@@ -1,5 +1,6 @@
 import { Bricks as BricksIcon } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
+import { forwardRef } from 'react';
 
 import { AppLabAiBadge } from '../../../app-lab-brick-detail/sub-components/ai-badge/AiBadge';
 import BrickIcon from '../../../app-lab-brick-icon/BrickIcon';
@@ -8,9 +9,10 @@ import { XSmall, XXSmall } from '../../../typography';
 import styles from './brick-list-item.module.scss';
 import { AppLabBricksListItemProps } from './BrickListItem.type';
 
-export const AppLabBrickListItem: React.FC<AppLabBricksListItemProps> = (
-  props: AppLabBricksListItemProps,
-) => {
+export const AppLabBrickListItem = forwardRef<
+  HTMLButtonElement,
+  AppLabBricksListItemProps
+>((props: AppLabBricksListItemProps, ref) => {
   const {
     brick,
     disabledBricks = [],
@@ -24,6 +26,7 @@ export const AppLabBrickListItem: React.FC<AppLabBricksListItemProps> = (
 
   return (
     <button
+      ref={ref}
       className={clsx(styles['brick-item'], classes?.item, {
         [styles['disabled']]: disabledBricks.some(
           (disabledBrick) => disabledBrick.id === brick?.id,
@@ -79,4 +82,6 @@ export const AppLabBrickListItem: React.FC<AppLabBricksListItemProps> = (
       </div>
     </button>
   );
-};
+});
+
+AppLabBrickListItem.displayName = 'AppLabBrickListItem';

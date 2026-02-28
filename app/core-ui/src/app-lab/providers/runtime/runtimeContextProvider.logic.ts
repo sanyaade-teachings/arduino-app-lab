@@ -1,5 +1,6 @@
 import {
-  findUIPort,
+  findUIPorts,
+  forwardNonUIPort,
   openUIWhenReady,
   startApp,
   stopApp,
@@ -10,18 +11,19 @@ import {
   MessageData,
 } from '@cloud-editor-mono/infrastructure';
 import {
-  AL_STARTUP_KEY,
   AppLabAction,
   AppLabActionStatus,
-  UseRuntimeLogic,
+  CONSOLE_SOURCE_KEYS,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { useAppSSE } from '../../features/app-detail/hooks/useAppSSE';
-import { useConsoleSources } from '../../features/app-detail/hooks/useConsoleSources';
-import { useCurrentAction } from '../../features/app-detail/hooks/useCurrentAction';
+import { useAppSSE } from '../../features/app/app-detail/hooks/useAppSSE';
+import { useConsoleSources } from '../../features/app/app-detail/hooks/useConsoleSources';
+import { useCurrentAction } from '../../features/app/app-detail/hooks/useCurrentAction';
+import { useBoardLifecycleStore } from '../../store/boards/boards';
 import useAppsStatus from './hooks/useAppsStatus';
 import { RuntimeContextValue } from './runtimeContext';
+import { UseRuntimeLogic } from './runtimeContextProvider.type';
 
 export const useRuntimeLogic: UseRuntimeLogic =
   function (): RuntimeContextValue {
@@ -47,12 +49,11 @@ export const useRuntimeLogic: UseRuntimeLogic =
       reset: resetConsoleSources,
     } = useConsoleSources();
 
-    const { defaultApp, runningApp, failedApp, getAppStatusById } =
-      useAppsStatus();
+    const { defaultApp, runningApp, failedApp } = useAppsStatus();
 
     //On startup success if called after start/stop actions succeeded.
     const onStartupSuccess = useCallback(async (): Promise<void> => {
-      appendData(AL_STARTUP_KEY, undefined, undefined, {
+      appendData(CONSOLE_SOURCE_KEYS.STARTUP, undefined, undefined, {
         className: 'success',
         isGlobalStyle: true,
       });
@@ -64,7 +65,7 @@ export const useRuntimeLogic: UseRuntimeLogic =
     //On startup success if called after start/stop actions fail.
     const onStartupError = useCallback(
       (data?: ErrorData): void => {
-        appendData(AL_STARTUP_KEY, data, undefined, {
+        appendData(CONSOLE_SOURCE_KEYS.STARTUP, data, undefined, {
           className: 'error',
         });
         sendCurrentAction({
@@ -76,9 +77,63 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
     const startAppOnMessage = useCallback(
       (message: MessageData): void => {
-        appendData(AL_STARTUP_KEY, message, true);
+        appendData(CONSOLE_SOURCE_KEYS.STARTUP, message, true);
       },
       [appendData],
+    );
+
+    const { selectedConnectedBoard: selectedBoard } = useBoardLifecycleStore();
+    const openUIIfAvailable = useCallback(
+      async (app: AppDetailedInfo): Promise<void> => {
+        // Temp. work-around for video streaming in examples via port `4912`,
+        // the port is not currently exposed in app data by orchestrator
+        const requiresVideoStreamPortForward =
+          selectedBoard?.connectionType === 'USB' &&
+          app.bricks?.some((b) => b.id === 'arduino:video_object_detection');
+
+        if (requiresVideoStreamPortForward) {
+          const port = 4912;
+
+          try {
+            await forwardNonUIPort(port);
+          } catch {
+            console.warn(`Could not forward port ${port}`);
+          }
+        }
+
+        try {
+          const allPorts = await findUIPorts(app.id);
+
+          const defaultPort = 7000;
+          const defaultPortFound = allPorts.includes(defaultPort);
+
+          if (defaultPortFound) {
+            try {
+              await openUIWhenReady(defaultPort, 45);
+              return;
+            } catch (error) {
+              console.error(
+                `Failed to open UI for app ${app.id} on default port (${defaultPort}): `,
+                error,
+              );
+            }
+          }
+
+          if (allPorts.length === 0) {
+            console.error(`No alternative ports found for app ${app.id}`);
+            return;
+          }
+
+          await Promise.any(allPorts.map((p) => openUIWhenReady(p, 300)));
+        } catch (error) {
+          if (error instanceof AggregateError) {
+            console.error('All ports failed:', error.errors);
+          } else {
+            console.error('An unexpected error occurred:', error);
+          }
+        }
+      },
+      [selectedBoard?.connectionType],
     );
 
     const {
@@ -103,6 +158,7 @@ export const useRuntimeLogic: UseRuntimeLogic =
           },
         });
         startAppStream(activeApp.id);
+        openUIIfAvailable(activeApp);
       } else {
         onStartupSuccess();
       }
@@ -113,13 +169,14 @@ export const useRuntimeLogic: UseRuntimeLogic =
       activeApp,
       isSwapping,
       onStartupSuccess,
+      openUIIfAvailable,
       sendCurrentAction,
       startAppStream,
     ]);
 
     const stopAppOnMessage = useCallback(
       (message: MessageData): void => {
-        appendData(AL_STARTUP_KEY, message, true);
+        appendData(CONSOLE_SOURCE_KEYS.STARTUP, message, true);
       },
       [appendData],
     );
@@ -165,8 +222,10 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
         //Run action start
         setActiveApp(app);
-        addConsoleSource(AL_STARTUP_KEY, { sourcesOwnerAppId: app.id });
-        setActiveConsoleTab(AL_STARTUP_KEY);
+        addConsoleSource(CONSOLE_SOURCE_KEYS.STARTUP, {
+          sourcesOwnerAppId: app.id,
+        });
+        setActiveConsoleTab(CONSOLE_SOURCE_KEYS.STARTUP);
         startAppStream(app.id);
 
         sendCurrentAction({
@@ -176,16 +235,12 @@ export const useRuntimeLogic: UseRuntimeLogic =
           },
         });
 
-        try {
-          const uiPort = await findUIPort(app.id);
-          await openUIWhenReady(uiPort);
-        } catch (error) {
-          console.error(`Failed to open UI for app ${app.id}:`, error);
-        }
+        openUIIfAvailable(app);
       },
       [
         addConsoleSource,
         cleanUp,
+        openUIIfAvailable,
         runningApp,
         sendCurrentAction,
         setActiveConsoleTab,
@@ -195,8 +250,10 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
     const stopAction = useCallback(
       async (app: AppDetailedInfo) => {
-        addConsoleSource(AL_STARTUP_KEY, { sourcesOwnerAppId: app.id });
-        setActiveConsoleTab(AL_STARTUP_KEY);
+        addConsoleSource(CONSOLE_SOURCE_KEYS.STARTUP, {
+          sourcesOwnerAppId: app.id,
+        });
+        setActiveConsoleTab(CONSOLE_SOURCE_KEYS.STARTUP);
 
         if (!activeApp?.id) {
           setActiveApp(app);
@@ -242,8 +299,10 @@ export const useRuntimeLogic: UseRuntimeLogic =
         if (!runningApp?.id || !app.id) return;
         resetConsoleSources([]);
 
-        addConsoleSource(AL_STARTUP_KEY, { sourcesOwnerAppId: app.id });
-        setActiveConsoleTab(AL_STARTUP_KEY);
+        addConsoleSource(CONSOLE_SOURCE_KEYS.STARTUP, {
+          sourcesOwnerAppId: app.id,
+        });
+        setActiveConsoleTab(CONSOLE_SOURCE_KEYS.STARTUP);
 
         setActiveApp(app);
         sendCurrentAction({
@@ -270,27 +329,66 @@ export const useRuntimeLogic: UseRuntimeLogic =
       sendCurrentAction({ type: 'RESET' });
     }, [sendCurrentAction]);
 
+    const appsStatus = useMemo(
+      () => ({
+        defaultApp,
+        runningApp,
+        activeApp,
+        failedApp,
+      }),
+      [activeApp, defaultApp, failedApp, runningApp],
+    );
+
+    const runtimeActions = useMemo(
+      () => ({
+        runAction,
+        stopAction,
+        swapAction,
+        resetCurrentAction,
+        currentAction,
+        currentActionStatus,
+        progress: stopAppProgress || startAppProgress,
+      }),
+      [
+        currentAction,
+        currentActionStatus,
+        resetCurrentAction,
+        runAction,
+        startAppProgress,
+        stopAction,
+        stopAppProgress,
+        swapAction,
+      ],
+    );
+
+    const consoleLogic = useMemo(
+      () => ({
+        consoleSourcesResetSubject,
+        consoleSources,
+        consoleTabs,
+        activeConsoleTab,
+        setActiveConsoleTab,
+        appendData,
+        addConsoleSource,
+        consoleSourcesOwner,
+        resetConsoleSources,
+      }),
+      [
+        activeConsoleTab,
+        addConsoleSource,
+        appendData,
+        consoleSources,
+        consoleSourcesOwner,
+        consoleSourcesResetSubject,
+        consoleTabs,
+        resetConsoleSources,
+        setActiveConsoleTab,
+      ],
+    );
+
     return {
-      defaultApp,
-      runningApp,
-      activeApp,
-      failedApp,
-      getAppStatusById,
-      runAction,
-      stopAction,
-      swapAction,
-      consoleSourcesResetSubject,
-      resetCurrentAction,
-      resetConsoleSources,
-      currentAction,
-      currentActionStatus,
-      consoleSources,
-      progress: stopAppProgress || startAppProgress,
-      consoleTabs,
-      activeConsoleTab,
-      setActiveConsoleTab,
-      appendData,
-      addConsoleSource,
-      consoleSourcesOwner,
+      appsStatus,
+      runtimeActions,
+      consoleLogic,
     };
   };

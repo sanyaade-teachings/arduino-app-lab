@@ -6,7 +6,7 @@ $tabsBarPaddingLeft: calc(
 );
 
 .markdown-container {
-    padding: 0 16px 16px 16px;
+    padding: 0 16px 16px $tabsBarPaddingLeft;
     background-color: shared.theme-var(--editor-background);
     overflow: auto;
     width: 100%;

@@ -1,14 +1,24 @@
+import { OpenInNewTab } from '@cloud-editor-mono/images/assets/icons';
 import {
+  AIModelItem,
   BrickConfigVariable,
   BrickCreateUpdateRequest,
   BrickDetails,
   BrickInstance,
 } from '@cloud-editor-mono/infrastructure';
 import { capitalize } from 'lodash';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { AppLabAiModel } from '../../../app-lab-brick-detail/sub-components/ai-model/AiModel';
-import { Button, ButtonType } from '../../../components-by-app/app-lab';
+import {
+  BoardResourcesValue,
+  Button,
+  ButtonSize,
+  ButtonType,
+  TrainNewModelDialog,
+  UseArduinoAccountLogic,
+  UseEdgeImpulseAccountLogic,
+} from '../../../components-by-app/app-lab';
 import { Input } from '../../../essential/input';
 import { InputStyle } from '../../../essential/input/input.type';
 import { useI18n } from '../../../i18n/useI18n';
@@ -21,11 +31,16 @@ export type ConfigureAppBrickDialogLogic = () => {
   brick: BrickDetails;
   open: boolean;
   loadBrickInstance: (id: string) => Promise<BrickInstance>;
+  getInstalledModel?: (id: string) => AIModelItem | undefined;
   confirmAction: (
     brickId: string,
     params: BrickCreateUpdateRequest,
   ) => Promise<boolean>;
   onOpenChange: (open: boolean) => void;
+  arduinoAuthAccountLogic: UseArduinoAccountLogic;
+  edgeImpulseAuthAccountLogic: UseEdgeImpulseAccountLogic;
+  openAndAssociateToDevice?: () => void;
+  boardResourcesLogic: () => BoardResourcesValue;
 };
 
 type ConfigureAppBrickDialogProps = { logic: ConfigureAppBrickDialogLogic };
@@ -37,12 +52,27 @@ interface BrickVariable extends Omit<BrickConfigVariable, 'value'> {
 export const ConfigureAppBrickDialog: React.FC<
   ConfigureAppBrickDialogProps
 > = ({ logic }: ConfigureAppBrickDialogProps) => {
-  const { brick, open, loadBrickInstance, confirmAction, onOpenChange } =
-    logic();
+  const {
+    brick,
+    open,
+    loadBrickInstance,
+    confirmAction,
+    onOpenChange,
+    getInstalledModel,
+    arduinoAuthAccountLogic,
+    edgeImpulseAuthAccountLogic,
+    openAndAssociateToDevice,
+    boardResourcesLogic,
+  } = logic();
   const [loading, setLoading] = useState(false);
   const [instance, setInstance] = useState<BrickInstance>();
   const [variables, setVariables] = useState<BrickVariable[]>([]);
   const [modelId, setModelId] = useState<string>();
+  const [showTrainModel, setShowTrainModel] = useState(false);
+
+  const { user: arduinoUser } = arduinoAuthAccountLogic();
+
+  const { user: edgeImpulseUser } = edgeImpulseAuthAccountLogic();
 
   const { formatMessage } = useI18n();
 
@@ -74,6 +104,7 @@ export const ConfigureAppBrickDialog: React.FC<
   const handleConfirm = async (): Promise<void> => {
     if (!brick.id) return;
     setLoading(true);
+
     const success = await confirmAction(brick.id, {
       model: modelId,
       variables: variables.reduce(
@@ -89,6 +120,10 @@ export const ConfigureAppBrickDialog: React.FC<
       onOpenChange(false);
     }
   };
+
+  const onOpenTrainNewModelDialogChange = useCallback((value: boolean) => {
+    setShowTrainModel(value);
+  }, []);
 
   return (
     <AppLabDialog
@@ -132,12 +167,22 @@ export const ConfigureAppBrickDialog: React.FC<
       }}
     >
       <div className={styles['container']}>
+        <TrainNewModelDialog
+          arduinoAuthAccountLogic={arduinoAuthAccountLogic}
+          edgeImpulseAuthAccountLogic={edgeImpulseAuthAccountLogic}
+          open={showTrainModel}
+          onOpenChange={onOpenTrainNewModelDialogChange}
+          openAndAssociateToDevice={openAndAssociateToDevice}
+        />
         {variables.map((variable) => (
           <div key={variable.name} className={styles['param-row']}>
             <Input
               inputStyle={InputStyle.AppLab}
               type="text"
               value={variable.value}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck="false"
               onChange={(value: string): void =>
                 setVariables((prev) =>
                   prev.map((v) =>
@@ -159,18 +204,42 @@ export const ConfigureAppBrickDialog: React.FC<
             {formatMessage(messages.dialogBodyDescription)}
           </XXXSmall>
         )}
-        {(brick.compatible_models ?? []).length > 0 && (
+        {brick.compatible_models && brick.compatible_models.length > 0 && (
           <>
             <XSmall className={styles['brick-subtitle']}>
               {formatMessage(messages.dialogBodySubtitle)}
+              <Button
+                type={ButtonType.Tertiary}
+                size={ButtonSize.XSmall}
+                onClick={(): void => {
+                  if (
+                    !!edgeImpulseUser &&
+                    !!arduinoUser &&
+                    openAndAssociateToDevice
+                  ) {
+                    openAndAssociateToDevice();
+                    return;
+                  }
+
+                  setShowTrainModel(true);
+                }}
+                Icon={OpenInNewTab}
+                classes={{
+                  button: styles['train-new-model-button'],
+                }}
+              >
+                {formatMessage(messages.trainNewModelButton)}
+              </Button>
             </XSmall>
-            {brick?.compatible_models?.map((model) => (
+            {brick.compatible_models.map((model) => (
               <AppLabAiModel
                 key={model.id}
                 inUseModelId={instance?.model}
                 model={model}
                 selectedModelId={modelId}
                 onClick={setModelId}
+                getInstalledModel={getInstalledModel}
+                boardResourcesLogic={boardResourcesLogic}
               />
             ))}
           </>

@@ -1,6 +1,6 @@
 import { Config } from '@cloud-editor-mono/common';
 
-import { httpPost } from '../fetch/fetch';
+import { httpPost } from '../fetch';
 import { createUUID } from '../utils';
 import { Body_Events } from './eventsApi.type';
 
@@ -41,14 +41,12 @@ export async function sendEvent(
   if ('sendBeacon' in navigator) {
     navigator.sendBeacon(`${Config.EVENTS_API_URL}${endpoint}`, beaconData);
   } else {
-    await httpPost(
-      Config.EVENTS_API_URL,
-      undefined,
+    await httpPost({
+      url: Config.EVENTS_API_URL,
       endpoint,
-      beaconData,
+      body: beaconData,
       token,
-      undefined,
-      { 'Content-Type': 'text/plain;charset=UTF-8' },
-    );
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    });
   }
 }

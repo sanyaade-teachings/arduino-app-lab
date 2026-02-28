@@ -1,7 +1,8 @@
 import { ArduinoLogo } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
 
-import BoardSection from '../app-lab-footer-bar/sub-components/board-section/BoardSection';
+import { BoardSection } from '../app-lab-board-section';
+import { ArduinoLoader } from '../essential/loader';
 import { useI18n } from '../i18n/useI18n';
 import { Large, XSmall } from '../typography';
 import { setupMessages, welcomeMessages } from './messages';
@@ -26,8 +27,11 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
     currentStep,
     stepIsSkippable,
     boards,
+    selectedBoard,
     selectBoard,
+    autoSelectBoard,
     isBoard,
+    showLoader,
     showBoardSelectionPage,
     showPostSelectionSetup,
     showBoardConnPswPrompt,
@@ -45,7 +49,9 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
 
   const { formatMessage } = useI18n();
 
-  return showBoardSelectionPage ? (
+  return showLoader ? (
+    <ArduinoLoader />
+  ) : showBoardSelectionPage ? (
     <Welcome
       isLoading={isBoard === undefined}
       boards={boards}
@@ -82,10 +88,13 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
             )}
           </ol>
         </div>
-        <div className={styles['footer-board-section']}>
+        <div className={styles['board-section']}>
           <BoardSection
             boardItem={boardItem}
             isBoard={isBoard}
+            boards={boards}
+            selectedBoard={selectedBoard}
+            autoSelectBoard={autoSelectBoard}
             onOpenTerminal={onOpenTerminal}
             terminalError={terminalError}
           />

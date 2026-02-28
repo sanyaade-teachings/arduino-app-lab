@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as SettingsImport } from './routes/settings'
 import { Route as ModelsImport } from './routes/models'
 import { Route as BricksImport } from './routes/bricks'
+import { Route as AccountImport } from './routes/account'
 import { Route as IndexImport } from './routes/index'
 import { Route as MyAppsIndexImport } from './routes/my-apps/index'
 import { Route as LearnIndexImport } from './routes/learn/index'
@@ -39,6 +40,12 @@ const ModelsRoute = ModelsImport.update({
 const BricksRoute = BricksImport.update({
   id: '/bricks',
   path: '/bricks',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountRoute = AccountImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -93,6 +100,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountImport
       parentRoute: typeof rootRoute
     }
     '/bricks': {
@@ -165,6 +179,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/bricks': typeof BricksRoute
   '/models': typeof ModelsRoute
   '/settings': typeof SettingsRoute
@@ -178,6 +193,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/bricks': typeof BricksRoute
   '/models': typeof ModelsRoute
   '/settings': typeof SettingsRoute
@@ -192,6 +208,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/bricks': typeof BricksRoute
   '/models': typeof ModelsRoute
   '/settings': typeof SettingsRoute
@@ -207,6 +224,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/bricks'
     | '/models'
     | '/settings'
@@ -219,6 +237,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/bricks'
     | '/models'
     | '/settings'
@@ -231,6 +250,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/bricks'
     | '/models'
     | '/settings'
@@ -245,6 +265,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   BricksRoute: typeof BricksRoute
   ModelsRoute: typeof ModelsRoute
   SettingsRoute: typeof SettingsRoute
@@ -258,6 +279,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   BricksRoute: BricksRoute,
   ModelsRoute: ModelsRoute,
   SettingsRoute: SettingsRoute,
@@ -280,6 +302,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/account",
         "/bricks",
         "/models",
         "/settings",
@@ -293,6 +316,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/account": {
+      "filePath": "account.tsx"
     },
     "/bricks": {
       "filePath": "bricks.tsx"

@@ -124,7 +124,10 @@ export async function downloadDefaultTools(): Promise<DaemonDownloadQuota> {
 export async function V2IsSupported(): Promise<boolean> {
   const agentUrl = getAgentUrl();
 
-  const response = await httpHeadRaw(agentUrl, Config.AGENT_INSTALLED_ENDPOINT);
+  const response = await httpHeadRaw({
+    url: agentUrl,
+    endpoint: Config.AGENT_INSTALLED_ENDPOINT,
+  });
 
   if (response?.status !== 200) {
     return false;
@@ -138,15 +141,18 @@ export function downloadToolV2(
 ): ReturnType<typeof httpPostRaw> {
   const agentUrl = getAgentUrl();
 
-  return httpPostRaw(
-    agentUrl,
-    Config.AGENT_INSTALLED_ENDPOINT,
-    JSON.stringify(payload),
-  );
+  return httpPostRaw({
+    url: agentUrl,
+    endpoint: Config.AGENT_INSTALLED_ENDPOINT,
+    body: JSON.stringify(payload),
+  });
 }
 
 export function getInstalledToolsV2(): ReturnType<typeof httpGetRaw> {
   const agentUrl = getAgentUrl();
 
-  return httpGetRaw(agentUrl, Config.AGENT_INSTALLED_ENDPOINT);
+  return httpGetRaw({
+    url: agentUrl,
+    endpoint: Config.AGENT_INSTALLED_ENDPOINT,
+  });
 }

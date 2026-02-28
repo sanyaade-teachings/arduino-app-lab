@@ -11,14 +11,13 @@ import { EventSourceMessage } from '@microsoft/fetch-event-source';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
-import { useAppSSE } from '../../../features/app-detail/hooks/useAppSSE';
+import { useAppSSE } from '../../../features/app/app-detail/hooks/useAppSSE';
 import { useBoardLifecycleStore } from '../../../store/boards/boards';
 
 type UseAppsStatus = () => {
   defaultApp?: AppDetailedInfo;
   failedApp?: AppDetailedInfo;
   runningApp?: AppDetailedInfo;
-  getAppStatusById: (appId: string) => AppDetailedInfo['status'];
 };
 
 const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
@@ -32,7 +31,6 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
     },
     {
       enabled: boardIsReachable,
-      refetchOnWindowFocus: false,
     },
   );
 
@@ -43,7 +41,6 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
     },
     {
       enabled: boardIsReachable,
-      refetchOnWindowFocus: false,
     },
   );
 
@@ -58,13 +55,6 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
   const failedApp = useMemo(() => {
     return apps?.find((app) => app.status === 'failed') as AppDetailedInfo;
   }, [apps]);
-
-  const getAppStatusById = useCallback(
-    (id: string): AppDetailedInfo['status'] => {
-      return apps?.find((app) => app.id === id)?.status || 'stopped';
-    },
-    [apps],
-  );
 
   const handleOnStatusMessage = useCallback(
     (message: EventSourceMessage): void => {
@@ -116,7 +106,7 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
     };
   }, [getAppStatusAbort]);
 
-  return { defaultApp, failedApp, runningApp, getAppStatusById };
+  return { defaultApp, failedApp, runningApp };
 };
 
 export default useAppsStatus;

@@ -53,10 +53,12 @@ const sidePanelItemsDictionary: SidePanelItemRecord = {
     sectionId: 'bottom',
     enabled: false,
   },
-  [SidePanelItemId.Login]: {
+  [SidePanelItemId.Account]: {
     Icon: Login,
-    label: messages.loginLabel,
-    id: SidePanelItemId.Login,
+    label: messages.accountLabel,
+    id: SidePanelItemId.Account,
+    sectionId: 'bottom',
+    enabled: true,
   },
 };
 

@@ -1,7 +1,5 @@
-import {
-  AppLabBoardPreparation,
-  AppLabInfo,
-} from '@cloud-editor-mono/images/assets/icons';
+import { AppLabInfo } from '@cloud-editor-mono/images/assets/icons';
+import { appLabBoardPreparation } from '@cloud-editor-mono/images/assets/images';
 import {
   useI18n,
   useTooltip,
@@ -23,39 +21,43 @@ export const FlasherPreparation: React.FC = () => {
   return (
     <div className={styles['step-container']}>
       <div className={styles['step-card']}>
-        <AppLabBoardPreparation />
-        <XSmall>{formatMessage(messages.preparationStepDescription)}</XSmall>
-        <ol className={stepStyles['instruction-list']}>
-          <li className={stepStyles['instruction-list-item']}>
-            <XSmall>
-              {formatMessage(messages.preparationStepInstruction1, {
-                bold: (text: string) => <b>{text}</b>,
-              })}
-            </XSmall>
-          </li>
-          <li className={stepStyles['instruction-list-item']}>
-            <div className={stepStyles['instruction-list-item-with-tooltip']}>
+        <div>
+          <div className={stepStyles['instruction-image']}>
+            {appLabBoardPreparation}
+          </div>
+          <XSmall>{formatMessage(messages.preparationStepDescription)}</XSmall>
+          <ol className={stepStyles['instruction-list']}>
+            <li className={stepStyles['instruction-list-item']}>
               <XSmall>
-                {formatMessage(messages.preparationStepInstruction2, {
+                {formatMessage(messages.preparationStepInstruction1, {
                   bold: (text: string) => <b>{text}</b>,
                 })}
               </XSmall>
-              <div {...tooltipProps}>
-                <div className={stepStyles['info-icon']}>
-                  <AppLabInfo />
+            </li>
+            <li className={stepStyles['instruction-list-item']}>
+              <div className={stepStyles['instruction-list-item-with-tooltip']}>
+                <XSmall>
+                  {formatMessage(messages.preparationStepInstruction2, {
+                    bold: (text: string) => <b>{text}</b>,
+                  })}
+                </XSmall>
+                <div {...tooltipProps}>
+                  <div className={stepStyles['info-icon']}>
+                    <AppLabInfo />
+                  </div>
+                  {renderTooltip(stepStyles['tooltip-content'])}
                 </div>
-                {renderTooltip(stepStyles['tooltip-content'])}
               </div>
-            </div>
-          </li>
-          <li className={stepStyles['instruction-list-item']}>
-            <XSmall>
-              {formatMessage(messages.preparationStepInstruction3, {
-                bold: (text: string) => <b>{text}</b>,
-              })}
-            </XSmall>
-          </li>
-        </ol>
+            </li>
+            <li className={stepStyles['instruction-list-item']}>
+              <XSmall>
+                {formatMessage(messages.preparationStepInstruction3, {
+                  bold: (text: string) => <b>{text}</b>,
+                })}
+              </XSmall>
+            </li>
+          </ol>
+        </div>
       </div>
       <div className={stepStyles['step-footer']}>
         <XSmall className={stepStyles['waiting-label']}>

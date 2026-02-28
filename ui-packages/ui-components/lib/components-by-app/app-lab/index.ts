@@ -1,5 +1,7 @@
 export * from '../../app-item';
+export * from '../../app-lab-account';
 export * from '../../app-lab-app-title';
+export * from '../../app-lab-board-section';
 export * from '../../app-lab-brick-detail';
 export * from '../../app-lab-brick-icon';
 export * from '../../app-lab-brick-item';
@@ -34,6 +36,7 @@ export * from '../../essential/checkbox';
 export * from '../../essential/dropdown-menu';
 export * from '../../essential/icon-button';
 export * from '../../essential/input';
+export * from '../../essential/progress-bar';
 export * from '../../file-tree';
 export { type FormatMessage, useI18n } from '../../i18n/useI18n';
 export * from '../../serial-monitor';

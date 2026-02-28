@@ -23,6 +23,7 @@ $skeleton-opacity: 0.1 !default;
     position: relative;
     overflow: hidden;
     border-radius: 8px;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
 
     &-bg {
         height: 100%;
@@ -38,7 +39,7 @@ $skeleton-opacity: 0.1 !default;
         top: 0;
         right: 0;
         text-transform: uppercase;
-        background-color: #AEB8B826;
+        background-color: #aeb8b826;
         color: var(--text-default, #ffffff);
         height: 25px;
         display: flex;

@@ -30,7 +30,6 @@ export const useRetrieveSketches: UseRetrieveSketches = function (
     [SketchDataBaseQueryKey.GET_SKETCHES_QUERY_KEY, queryKey],
     () => retrieveSketches(search),
     {
-      refetchOnWindowFocus: false,
       enabled,
       cacheTime,
     },

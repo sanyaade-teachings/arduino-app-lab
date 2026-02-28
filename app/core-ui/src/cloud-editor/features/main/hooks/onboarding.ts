@@ -29,7 +29,6 @@ export const useOnboardingFlag: UseOnboardingFlag =
         const data = await get(ONBOARDING_KEY);
         return data ?? null;
       },
-      { refetchOnWindowFocus: false },
     );
 
     return {

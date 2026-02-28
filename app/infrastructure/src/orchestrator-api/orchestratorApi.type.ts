@@ -21,6 +21,7 @@ export type BrickCreateUpdateRequest =
 export type BrickConfigVariable = components['schemas']['BrickConfigVariable'];
 export type BrickVariable = components['schemas']['BrickVariable'];
 export type BrickModel = components['schemas']['AIModel'];
+export type AIModelItem = components['schemas']['AIModelItem'];
 
 export type AppPort = components['schemas']['Port'];
 
@@ -48,6 +49,8 @@ export type UpdateCheckResult = components['schemas']['UpdateCheckResult'];
 
 export type ListLibrariesParams = operations['listLibraries']['parameters'];
 export type LibraryListResponse = components['schemas']['LibraryListResponse'];
+
+export type AIModelsListResult = components['schemas']['AIModelsListResult'];
 
 // others
 export interface AppConfig {
@@ -104,3 +107,11 @@ export interface BoardUpdateLog {
 export interface Version {
   version: string;
 }
+
+// TODO check this type when orchestrator-api is updated
+export type AIModel = components['schemas']['AIModel'] & {
+  category?: string;
+  impulses?: Array<{ id: string; name: string }>;
+  created?: string;
+  target?: string;
+};

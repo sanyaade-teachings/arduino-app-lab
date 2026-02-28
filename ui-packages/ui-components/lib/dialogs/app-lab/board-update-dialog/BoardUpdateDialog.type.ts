@@ -18,17 +18,17 @@ export type BoardUpdateDialogLogic = () => {
   status: UpdaterStatus;
   title?: string;
   newAppVersion?: string;
+  releaseNotes?: { content: string; image: string };
   boardUpdateSucceeded?: boolean;
   appUpdateSucceeded?: boolean;
   boardUpdates?: Array<{ name: string; toVersion: string }> | null;
   boardLogs?: string[];
-  boardLogErrors?: Array<{ code: string; message: string }>;
-  logStatus?: 'failed' | 'success' | 'pending';
   startUpdate: () => void;
   reloadApp: () => void;
   openFlasherTool: () => Promise<void>;
   openArduinoSupport: () => Promise<void>;
   skipUpdate: () => void;
+  changeNetwork: () => void;
   bypassSkipUpdate: boolean;
 };
 

@@ -67,7 +67,7 @@ function createAgentInfoFetch(
   endpoint: string,
 ): AgentInfoFetch {
   return async (): ReturnType<typeof httpGetRaw> => {
-    const response = await httpGetRaw(`${host}:${port}`, endpoint);
+    const response = await httpGetRaw({ url: `${host}:${port}`, endpoint });
     if (!response) {
       return Promise.reject();
     }

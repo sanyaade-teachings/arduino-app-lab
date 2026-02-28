@@ -1,5 +1,5 @@
 import { Locales, LocaleType } from '@cloud-editor-mono/common';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IntlProvider } from 'react-intl';
 
 import { I18nContext } from './i18nContext';
@@ -13,11 +13,17 @@ const DEFAULT_LOCALE = Locales.ENGLISH;
 export const I18nProvider: React.FC<I18nProviderProps> = ({
   children,
 }: I18nProviderProps) => {
-  const [currentLocale, setCurrentLocale] =
-    useState<LocaleType>(DEFAULT_LOCALE);
+  const [currentLocale, setCurrentLocale] = useState<LocaleType>(
+    () => DEFAULT_LOCALE,
+  );
+
+  const contextValue = useMemo(
+    () => ({ currentLocale, setCurrentLocale }),
+    [currentLocale, setCurrentLocale],
+  );
 
   return (
-    <I18nContext.Provider value={{ currentLocale, setCurrentLocale }}>
+    <I18nContext.Provider value={contextValue}>
       <IntlProvider locale={currentLocale} defaultLocale={DEFAULT_LOCALE}>
         {children}
       </IntlProvider>
