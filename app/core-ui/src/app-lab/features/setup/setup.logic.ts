@@ -8,7 +8,7 @@ import {
   UseNetworkLogic,
   UseSetupLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { useBoardItem } from '../../hooks/useBoardItem';
 import { UseBoards } from '../../hooks/useBoards';
@@ -37,7 +37,24 @@ const createUseBoardConfigurationLogic =
 
 const createUseLinuxCredentialsLogic = function (): UseLinuxCredentialsLogic {
   return function UseLinuxCredentialsLogic(): ReturnType<UseLinuxCredentialsLogic> {
-    return useContext(LinuxCredentialsContext);
+    const [password, setPassword] = useState('');
+    const { setUserPassword, ...context } = useContext(LinuxCredentialsContext);
+
+    // enable network mode by default if setup password is shown, means it's first usage (new board or after flash)
+    useEffect(() => {
+      if (context.setUserPasswordIsSuccess) {
+        setNetworkMode(true, password);
+        setPassword('');
+      }
+    }, [context.setUserPasswordIsSuccess, password]);
+
+    return {
+      ...context,
+      setUserPassword: (password, passwordConfirmation): void => {
+        setPassword(password);
+        setUserPassword(password, passwordConfirmation);
+      },
+    };
   };
 };
 
@@ -77,7 +94,7 @@ export type SetupSteps =
 export const createUseSetupLogic = function (
   boardsProps: ReturnType<UseBoards>,
 ): UseSetupLogic {
-  return function useSetupLogic(): ReturnType<UseSetupLogic> {
+  return function (): ReturnType<UseSetupLogic> {
     const {
       networkStepSkipped,
       setNetworkStepSkipped,
@@ -97,6 +114,8 @@ export const createUseSetupLogic = function (
     const {
       boards,
       selectedBoard,
+      selectingBoard,
+      boardSelectionStatus,
       selectBoard,
       autoSelectBoard,
       isAutoSelectingBoard,
@@ -107,6 +126,7 @@ export const createUseSetupLogic = function (
       connToBoardError,
       connToBoardCompleted,
       setSelectedBoardCheckingStatus,
+      couldNotAutoSelectBoard,
     } = boardsProps;
 
     const {
@@ -301,8 +321,14 @@ export const createUseSetupLogic = function (
           !networkConnected:
           stepTransition(SetupItemId.NetworkSetup);
           break;
-        case systemProps && !systemProps[SystemPropKey.SetupCredentials]:
+        case systemProps &&
+          systemProps[SystemPropKey.SetupBoardName] &&
+          systemProps[SystemPropKey.SetupKeyboard] &&
+          !systemProps[SystemPropKey.SetupCredentials]:
           stepTransition(SetupItemId.LinuxCredentials);
+          break;
+        case !systemProps:
+          stepTransition(SetupItemId.BoardConfiguration);
           break;
         case setupPropsAreComplete:
           setSetupCompleted(true);
@@ -354,23 +380,39 @@ export const createUseSetupLogic = function (
       currentStep === SetupItemId.NetworkSetup ||
       currentStep === SetupItemId.ArduinoAccount;
 
+    const [autoSelectionIsOngoing, setAutoSelectionIsOngoing] =
+      useState(isAutoSelectingBoard);
+
+    useEffect(() => {
+      if (isAutoSelectingBoard) {
+        setAutoSelectionIsOngoing(true);
+      } else if (
+        !showBoardSelectionPage ||
+        connToBoardError ||
+        boards.length === 0 // ? could be unnecessary as `couldNotAutoSelectBoard` should become `true` in this case
+      ) {
+        setAutoSelectionIsOngoing(false);
+      }
+    }, [
+      isAutoSelectingBoard,
+      showBoardSelectionPage,
+      connToBoardError,
+      boards.length,
+    ]);
+
     const showLoader =
-      isAutoSelectingBoard &&
       showBoardSelectionPage &&
       !showBoardConnPswPrompt &&
-      !connToBoardError;
-
-    // enable network mode by default if setup is shown, means it's first usage (new board or after flash)
-    useEffect(() => {
-      if (showPostSelectionSetup) {
-        setNetworkMode(true);
-      }
-    }, [showPostSelectionSetup]);
+      !connToBoardError &&
+      !couldNotAutoSelectBoard &&
+      autoSelectionIsOngoing;
 
     return {
       isBoard,
       boards,
       selectedBoard,
+      selectingBoard,
+      boardSelectionStatus,
       selectBoard,
       autoSelectBoard,
       isAutoSelectingBoard,

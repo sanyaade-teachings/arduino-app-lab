@@ -70,6 +70,12 @@
   }
 }
 
+.device-serial-number {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .device-storage {
   $default: var(--feedback-success-default, #16a588);
   $warning: var(--feedback-warning-default, #c1ab15);
@@ -189,6 +195,11 @@
     font-size: 12px;
     font-style: normal;
     font-weight: 600;
+
+    &.dropdown-menu-button-open,
+    &:hover {
+      background: linear-gradient(0deg, var(--component-bg-flexible, rgba(174, 184, 184, 0.15)) 0%, var(--component-bg-flexible, rgba(174, 184, 184, 0.15)) 100%), var(--component-bg-above, #374146);
+    }
   }
 }
 
@@ -219,4 +230,11 @@
 
 .toggle {
   cursor: pointer;
+}
+
+.copyright {
+  margin-top: 82px;
+  margin-bottom: 4px;
+  color: var(--text-inverted-subtle, #5d6a6b);
+  text-align: center;
 }

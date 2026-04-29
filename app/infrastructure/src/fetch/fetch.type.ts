@@ -42,6 +42,10 @@ type HttpAbort = {
   abortController?: AbortController;
 };
 
+type HttpError = {
+  errorType?: 'json' | 'text';
+};
+
 type HttpExtendedOptions = HttpBaseOptions & HttpWretch & HttpHeaders;
 
 export type BaseRequest<T> = AbortWretch &
@@ -59,7 +63,8 @@ export type CreateRequestOptions = HttpUrl &
   HttpToken &
   HttpWretch &
   HttpAbort &
-  HttpHeaders;
+  HttpHeaders &
+  HttpError;
 
 export type QueryRequestOptions<T> = {
   baseRequest: BaseRequest<T>;
@@ -69,7 +74,11 @@ export type HttpGetOptions = HttpExtendedOptions & HttpParams;
 
 export type HttpPutOptions = HttpExtendedOptions & HttpBody & HttpParams;
 
-export type HttpPostOptions = HttpExtendedOptions & HttpBody & HttpAbort;
+export type HttpPostOptions = HttpExtendedOptions &
+  HttpBody &
+  HttpParams &
+  HttpAbort &
+  HttpError;
 
 export type HttpDeleteOptions = HttpExtendedOptions & HttpParams;
 

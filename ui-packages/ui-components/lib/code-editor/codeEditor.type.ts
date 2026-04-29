@@ -31,6 +31,7 @@ export type CodeEditorLogic = () => {
   showReadOnlyBanner?: boolean;
   hasHeader?: boolean;
   hasTabs?: boolean;
+  useScrollPastEnd?: boolean;
 };
 
 export type SelectedStrings = {

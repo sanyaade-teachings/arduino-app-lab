@@ -1,5 +1,6 @@
 import { BrickDetails, BrickInstance } from '@cloud-editor-mono/infrastructure';
 import {
+  Board,
   ConfigureAppBrickDialogLogic,
   TrainNewModelDialogLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
@@ -29,7 +30,9 @@ export type BrickDetailLogic = (
   brickId: string,
   appId?: string,
 ) => {
+  board?: Board;
   brick?: BrickDetails;
+  isCustomBrick?: boolean;
   brickInstance?: BrickInstance;
   readme?: string | null;
   apiDocs?: string | null;

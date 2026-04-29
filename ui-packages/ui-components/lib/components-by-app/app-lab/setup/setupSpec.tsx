@@ -19,7 +19,7 @@ export const setupItems: SetupItem[] = [
   },
   {
     id: SetupItemId.ArduinoAccount,
-    enabled: true,
+    enabled: false,
   },
 ];
 

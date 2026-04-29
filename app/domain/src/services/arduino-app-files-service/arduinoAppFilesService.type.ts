@@ -17,6 +17,7 @@ export interface ArduinoAppFilesService {
     newName: string,
     nodeType?: 'file' | 'folder',
   ) => Promise<void>;
+  moveAppFile: (fromPath: string, toPath: string) => Promise<void>;
   removeAppFile: (path: string) => Promise<void>;
   createAppFolder: (path: string) => Promise<void>;
 

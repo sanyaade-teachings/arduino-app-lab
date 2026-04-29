@@ -12,13 +12,15 @@ import {
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
+  ButtonAppearance,
+  ButtonSize,
   ChangePasswordDialog,
   DropdownMenuButton,
   NetworkSettingsDialog,
   XXSmall,
+  XXXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
-import { ButtonSize, ButtonVariant } from '../../../essential/app-lab-button';
 import { useI18n } from '../../../i18n/useI18n';
 import { SettingsSection } from '../settings-section';
 import {
@@ -26,11 +28,13 @@ import {
   deviceMessages,
   networkMessages,
   osMessages,
+  settingsMessages,
   systemMessages,
 } from './messages';
 import styles from './settings.module.scss';
 import { SettingsProps } from './settings.type';
 import { DeviceHeader } from './subcomponents/DeviceHeader';
+import { DeviceSerialNumber } from './subcomponents/DeviceSerialNumber';
 import { DeviceStorage } from './subcomponents/DeviceStorage';
 import { NetworkMode } from './subcomponents/NetworkMode';
 
@@ -41,6 +45,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
   const {
     boardSettingsLogic,
+    networkModeLogic,
     networkSettingsLogic,
     systemSettingsLogic,
     passwordSettingsLogic,
@@ -54,16 +59,12 @@ export const Settings: React.FC<SettingsProps> = ({
     isBoard,
     board,
     boardName,
-    fqbn,
     boardResources,
     bytesToGiB,
     setBoardName,
     keyboardLayout,
     keyboardLayouts,
     setKeyboardLayout,
-    isNetworkModeEnabled,
-    setNetworkMode,
-    isSettingNetworkMode,
   } = boardSettingsLogic();
 
   const {
@@ -143,16 +144,15 @@ export const Settings: React.FC<SettingsProps> = ({
           <DeviceHeader
             board={board}
             boardName={boardName}
-            fqbn={fqbn}
             onChange={setBoardName}
           />
           <SettingsSection.Row label={formatMessage(deviceMessages.fqbn)}>
-            {fqbn || 'unknown'}
+            {board?.fqbn || 'unknown'}
           </SettingsSection.Row>
           <SettingsSection.Row
             label={formatMessage(deviceMessages.serialNumber)}
           >
-            {board?.serial}
+            <DeviceSerialNumber serial={board?.serial} />
           </SettingsSection.Row>
           <SettingsSection.Row
             label={formatMessage(deviceMessages.diskStorage)}
@@ -198,7 +198,7 @@ export const Settings: React.FC<SettingsProps> = ({
             label={formatMessage(systemMessages.releaseNotes)}
           >
             <SettingsSection.ExternalLink
-              href="https://github.com/arduino/arduino-app-lab/releases"
+              href="https://docs.arduino.cc/software/app-lab/tutorials/release-notes/"
               onOpenExternal={onOpenExternal}
               label={formatMessage(systemMessages.viewReleaseNotes)}
             />
@@ -227,6 +227,7 @@ export const Settings: React.FC<SettingsProps> = ({
               classes={{
                 dropdownMenu: styles['dropdown-menu'],
                 dropdownMenuButton: styles['dropdown-menu-button'],
+                dropdownMenuButtonOpen: styles['dropdown-menu-button-open'],
                 dropdownMenuButtonWrapper:
                   styles['dropdown-menu-button-wrapper'],
                 dropdownMenuPopover: styles['dropdown-menu-popover'],
@@ -236,7 +237,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <SettingsSection.Row label={formatMessage(systemMessages.osPassword)}>
             <Button
               size={ButtonSize.XXSmall}
-              variant={ButtonVariant.LowContrast}
+              appearance={ButtonAppearance.LowContrast}
               onClick={openChangePasswordDialog}
               Icon={Pencil}
             >
@@ -251,9 +252,7 @@ export const Settings: React.FC<SettingsProps> = ({
           >
             <NetworkMode
               disabled={board?.connectionType !== 'USB'}
-              isNetworkModeEnabled={isNetworkModeEnabled}
-              isSettingNetworkMode={isSettingNetworkMode}
-              setNetworkMode={setNetworkMode}
+              logic={networkModeLogic}
             />
           </SettingsSection.Row>
         </SettingsSection.Card>
@@ -311,7 +310,7 @@ export const Settings: React.FC<SettingsProps> = ({
               >
                 <Button
                   Icon={Reload}
-                  variant={ButtonVariant.LowContrast}
+                  appearance={ButtonAppearance.LowContrast}
                   iconPosition="right"
                   size={ButtonSize.XXSmall}
                   onClick={openFlasher}
@@ -323,7 +322,7 @@ export const Settings: React.FC<SettingsProps> = ({
           )}
         </SettingsSection.Card>
       </section>
-      <section>
+      <section id="network">
         <SettingsSection.Title
           title={formatMessage(networkMessages.title)}
           variant="secondary"
@@ -351,7 +350,7 @@ export const Settings: React.FC<SettingsProps> = ({
             {selectedConnectedNetwork}
             <Button
               size={ButtonSize.XXSmall}
-              variant={ButtonVariant.LowContrast}
+              appearance={ButtonAppearance.LowContrast}
               onClick={openNetworkSettingsDialog}
               Icon={OperationSort}
             >
@@ -362,6 +361,9 @@ export const Settings: React.FC<SettingsProps> = ({
             {selectedConnectedIPAddress}
           </SettingsSection.Row>
         </SettingsSection.Card>
+      </section>
+      <section className={styles['copyright']}>
+        <XXXSmall>{formatMessage(settingsMessages.copyright)}</XXXSmall>
       </section>
     </>
   );

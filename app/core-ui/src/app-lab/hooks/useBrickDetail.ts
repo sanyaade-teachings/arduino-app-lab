@@ -29,11 +29,19 @@ import { AuthContext } from '../providers/auth/authContext';
 import { BoardResourcesContext } from '../providers/board-resources/boardResourcesContext';
 import { EdgeImpulseContext } from '../providers/edge-impulse/edgeImpulseContext';
 import { EdgeImpulseModelsContext } from '../providers/edge-impulse-models/edgeImpulseModelsContext';
+import { useBoardLifecycleStore } from '../store/boardLifecycle';
 
 export const makeAppBrickDetailLogic = (appId?: string) => {
   return (brickId: string): ReturnType<BrickDetailLogic> =>
     useBrickDetailLogic(brickId, appId);
 };
+
+const eiNotCompatibleBricks = [
+  'arduino:llm',
+  'arduino:vlm',
+  'arduino:asr',
+  'arduino:tts',
+];
 
 export const useBrickDetailLogic: BrickDetailLogic = (
   brickId: string,
@@ -85,7 +93,8 @@ export const useBrickDetailLogic: BrickDetailLogic = (
     queryFn: () => (appId ? getAppDetail(appId) : undefined),
     enabled: !!appId,
   });
-  const hideEdgeImpulse = appDetail?.example === true;
+  const hideEdgeImpulse =
+    appDetail?.example === true || eiNotCompatibleBricks.includes(brickId);
   const readOnly = !appId;
 
   const { data: brick } = useQuery({
@@ -100,8 +109,13 @@ export const useBrickDetailLogic: BrickDetailLogic = (
   });
 
   const readme = useMemo(
-    () => (brick?.readme?.trim().length ? brick.readme : null),
-    [brick],
+    () =>
+      brickInstance?.readme?.trim()
+        ? brickInstance.readme
+        : brick?.readme?.trim()
+        ? brick.readme
+        : null,
+    [brick, brickInstance],
   );
 
   const { data: apiDocs } = useQuery({
@@ -443,9 +457,15 @@ export const useBrickDetailLogic: BrickDetailLogic = (
     setTrainNewModelDialogOpen(true);
   }, [isEdgeImpulseConnected, openAndAssociateToDevice]);
 
+  const selectedBoard = useBoardLifecycleStore(
+    (state) => state.selectedConnectedBoard,
+  );
+
   return {
+    board: selectedBoard,
     brick,
     brickInstance,
+    isCustomBrick: brick?.author !== 'Arduino',
     readOnly,
     readme,
     apiDocs,
@@ -469,30 +489,30 @@ export const useBrickDetailLogic: BrickDetailLogic = (
 export const useConfigureAppBrickDialog: ConfigureAppBrickDialogLogic = (
   params,
 ) => {
-  const { appId, brick, open } = params;
+  const { appId, brickId, open } = params;
 
   const queryClient = useQueryClient();
 
   const confirmAction = useCallback(
     async (req: BrickCreateUpdateRequest): Promise<boolean> => {
-      if (!brick.id) {
+      if (!brickId) {
         console.error('Brick ID is required to update brick');
         return false;
       }
-      const success = await updateAppBrick(appId, brick.id, req);
+      const success = await updateAppBrick(appId, brickId, req);
       if (success) {
-        queryClient.invalidateQueries(['get-brick-instance', brick.id, appId]);
+        queryClient.invalidateQueries(['get-brick-instance', brickId, appId]);
         queryClient.invalidateQueries(['app-bricks', appId]);
       }
       return success;
     },
-    [appId, brick.id, queryClient],
+    [appId, brickId, queryClient],
   );
 
   const { data: brickInstance } = useQuery({
-    queryKey: ['get-brick-instance', brick.id, appId],
-    queryFn: () => getAppBrickInstance(appId ?? '', brick.id!),
-    enabled: !!appId && !!brick.id && open,
+    queryKey: ['get-brick-instance', brickId, appId],
+    queryFn: () => getAppBrickInstance(appId ?? '', brickId!),
+    enabled: !!appId && !!brickId && open,
   });
 
   return {

@@ -5,8 +5,8 @@ import {
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
+  ButtonAppearance,
   ButtonSize,
-  ButtonType,
   ButtonVariant,
   MarkdownReader,
   Medium,
@@ -36,6 +36,7 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
   const [autoScroll, setAutoScroll] = useState(true);
 
   const {
+    board,
     open,
     status,
     newAppVersion,
@@ -99,7 +100,7 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
             </XXSmall>
             {!bypassSkipUpdate && status === UpdaterStatus.UpdateAvailable && (
               <Button
-                type={ButtonType.Tertiary}
+                variant={ButtonVariant.Tertiary}
                 size={ButtonSize.XSmall}
                 onClick={skipUpdate}
               >
@@ -151,9 +152,9 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
                     })}
                   >
                     <Button
-                      type={ButtonType.Tertiary}
+                      variant={ButtonVariant.Tertiary}
                       size={ButtonSize.XSmall}
-                      variant={ButtonVariant.LowContrast}
+                      appearance={ButtonAppearance.LowContrast}
                       onClick={(): void => setShowDetails((prev) => !prev)}
                     >
                       {formatMessage(
@@ -174,7 +175,9 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
                           <span
                             className={styles['update-available-header--title']}
                           >
-                            {formatMessage(messages.unoQSoftwareUpdate)}
+                            {formatMessage(messages.softwareUpdate, {
+                              boardModel: board?.type.toUpperCase(),
+                            })}
                           </span>
                           {status === UpdaterStatus.UpdatingBoard && (
                             <div
@@ -295,14 +298,14 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
                   </div>
                   <div className={styles['checking-failed-actions']}>
                     <Button
-                      type={ButtonType.Secondary}
+                      variant={ButtonVariant.Secondary}
                       size={ButtonSize.XSmall}
                       onClick={changeNetwork}
                     >
                       {formatMessage(messages.changeNetwork)}
                     </Button>
                     <Button
-                      type={ButtonType.Primary}
+                      variant={ButtonVariant.Primary}
                       size={ButtonSize.XSmall}
                       onClick={skipUpdate}
                     >
@@ -314,7 +317,7 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
 
               {status === UpdaterStatus.UpdateAvailable && (
                 <Button
-                  type={ButtonType.Primary}
+                  variant={ButtonVariant.Primary}
                   size={ButtonSize.XSmall}
                   onClick={startUpdate}
                 >
@@ -348,7 +351,7 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
                     </XXXSmall>
                   </div>
                   <Button
-                    type={ButtonType.Primary}
+                    variant={ButtonVariant.Primary}
                     size={ButtonSize.XSmall}
                     onClick={reloadApp}
                   >
@@ -364,7 +367,7 @@ export const BoardUpdateDialog: React.FC<BoardUpdateDialogProps> = ({
                     <XXXSmall>{formatMessage(messages.updateFailed)}</XXXSmall>
                   </div>
                   <Button
-                    type={ButtonType.Primary}
+                    variant={ButtonVariant.Primary}
                     size={ButtonSize.XSmall}
                     onClick={startUpdate}
                   >

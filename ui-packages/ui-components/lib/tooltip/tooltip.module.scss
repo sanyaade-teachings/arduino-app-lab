@@ -5,14 +5,13 @@
     position: absolute;
     max-width: 210px;
     width: max-content;
-    top: 40px;
-    right: 8px;
     padding: 12px 16px;
     background: #fff;
     box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
     border-radius: 4px;
-    white-space: wrap;
+    white-space: pre-wrap;
     z-index: 99999;
+    box-sizing: border-box;
 
     &--title {
         padding: 2.5px 7px;
@@ -20,7 +19,7 @@
         top: unset;
         right: unset;
 
-        border: 1px solid shared.theme-var(--editor-lines-background-selected);
+        border: 1px solid shared.theme-var(--tooltip-border);
         background: shared.theme-var(--tooltip-background);
         color: shared.theme-var(--tooltip-foreground);
 
@@ -33,25 +32,6 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-.tooltip-up {
-    top: auto;
-    bottom: 40px;
-}
-
-.tooltip-up-right {
-    width: 240px;
-    max-width: 240px;
-    padding: 16px 24px;
-    background-color: #374146 !important;
-    border-radius: 3px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    color: #ffffff;
 }
 
 .tooltip-title {

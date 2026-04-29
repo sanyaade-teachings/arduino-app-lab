@@ -1,7 +1,7 @@
 .root {
   &.large {
     width: 80%;
-    height: 80%;
+    height: calc(80% - 76px);
   }
 
   .body,
@@ -69,4 +69,56 @@
   font-size: 20px;
   font-weight: 400;
   color: var(--text-default, #fff);
+}
+
+.custom-brick-banner {
+  display: flex;
+  flex-direction: row;
+  height: 68px;
+  padding: 6px 12px 6px 20px;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-radius: 16px;
+  background-color: var(--component-bg-baseline, #232b2e);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.25);
+  width: 100%;
+  border: unset;
+  color: var(--text-default, #fff);
+
+  &:hover {
+    background-color: #2a3438;
+  }
+
+  &-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &-icon {
+    div {
+      width: 32px;
+      height: 32px;
+      background: var(--surface-bg-above, #374146);
+
+      svg {
+        path {
+          fill: var(--text-default, #fff);
+        }
+      }
+    }
+  }
+
+  &-texts {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    .custom-brick-banner-subtitle {
+      color: var(--text-subtle, #c9d2d2);
+    }
+  }
 }

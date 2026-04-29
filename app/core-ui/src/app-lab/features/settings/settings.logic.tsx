@@ -9,7 +9,10 @@ import {
   setNetworkMode,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
+  snackbar,
   UseBoardSettingsLogic,
+  useI18n,
+  UseNetworkModeLogic,
   UseNetworkSettingsLogic,
   UsePasswordSettingsLogic,
   UseSettingsLogic,
@@ -27,8 +30,9 @@ import { LinuxCredentialsContext } from '../../providers/linux-credentials/linux
 import { NetworkContext } from '../../providers/network/networkContext';
 import { UpdaterContext } from '../../providers/updater/updaterContext';
 import { useBoardLifecycleStore } from '../../store/boardLifecycle';
+import { systemMessages } from './messages';
 
-export const createUseSettingsLogic = function (): UseSettingsLogic {
+export const createUseSettingsLogic = function(): UseSettingsLogic {
   return function useSettingsLogic(): ReturnType<UseSettingsLogic> {
     const queryClient = useQueryClient();
     const { data: isBoard } = useIsBoard();
@@ -83,6 +87,26 @@ export const createUseSettingsLogic = function (): UseSettingsLogic {
         setKeyboardLayout,
       } = useContext(BoardConfigurationContext);
 
+      return {
+        isBoard: !!isBoard,
+        board: selectedConnectedBoard,
+        boardName,
+        boardResources: resources,
+        keyboardLayout: keyboardLayouts.find(
+          (layout) => layout.id === keyboardLayout,
+        ),
+        keyboardLayouts,
+        bytesToGiB,
+        setBoardName,
+        setKeyboardLayout,
+      };
+    };
+
+    const useNetworkModeLogic = (): ReturnType<UseNetworkModeLogic> => {
+      const { formatMessage } = useI18n();
+
+      const [open, setOpen] = useState(false);
+
       const { data: networkModeEnabled } = useQuery(
         ['network-mode-enabled'],
         async () => isNetworkModeEnabled(),
@@ -92,12 +116,22 @@ export const createUseSettingsLogic = function (): UseSettingsLogic {
       );
 
       const {
+        error: networkModeError,
+        isError: isNetworkModeError,
         isLoading: isSettingNetworkMode,
+        isSuccess: isSettingNetworkModeSuccess,
         mutateAsync: updateNetworkMode,
       } = useMutation({
-        mutationFn: setNetworkMode,
-        onSuccess: (enabled) => {
+        mutationFn: (prop: { enabled: boolean; password: string }) =>
+          setNetworkMode(prop.enabled, prop.password),
+        onSuccess: (enabled: boolean) => {
           queryClient.setQueryData(['network-mode-enabled'], enabled);
+          snackbar({
+            message: formatMessage(systemMessages.remoteAccessToggle, {
+              enabled: enabled ? 'enabled' : 'disabled',
+            }),
+            variant: 'success',
+          });
         },
         onSettled: () => {
           queryClient.invalidateQueries(['network-mode-enabled']);
@@ -105,22 +139,21 @@ export const createUseSettingsLogic = function (): UseSettingsLogic {
       });
 
       return {
-        isBoard: !!isBoard,
-        board: selectedConnectedBoard,
-        boardName,
-        // TODO: fetch fqbn from somewhere
-        fqbn: 'arduino:zephyr:unoq',
-        boardResources: resources,
-        keyboardLayout: keyboardLayouts.find(
-          (layout) => layout.id === keyboardLayout,
-        ),
-        keyboardLayouts,
+        open,
+        onOpenChange: setOpen,
         isNetworkModeEnabled: networkModeEnabled,
-        setNetworkMode: updateNetworkMode,
-        isSettingNetworkMode,
-        bytesToGiB,
-        setBoardName,
-        setKeyboardLayout,
+        onConfirm: (password: string) =>
+          updateNetworkMode({ enabled: !networkModeEnabled, password }),
+        isLoading: isSettingNetworkMode,
+        isSuccess: isSettingNetworkModeSuccess,
+        error: isNetworkModeError
+          ? (Array.isArray(networkModeError)
+            ? networkModeError
+            : [String(networkModeError)]
+          ).some((error) => error.includes('password'))
+            ? 'password'
+            : 'generic'
+          : undefined,
       };
     };
 
@@ -238,6 +271,7 @@ export const createUseSettingsLogic = function (): UseSettingsLogic {
 
     return {
       boardSettingsLogic: useBoardSettingsLogic,
+      networkModeLogic: useNetworkModeLogic,
       networkSettingsLogic: useNetworkSettingsLogic,
       systemSettingsLogic: useSystemSettingsLogic,
       passwordSettingsLogic: usePasswordSettingsLogic,

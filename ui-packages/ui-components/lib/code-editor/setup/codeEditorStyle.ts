@@ -1,79 +1,78 @@
-import { Config } from '@cloud-editor-mono/common';
-
 import styles from '../../../public/shared.module.scss';
 import typographyStyles from '../../typography/typography.module.scss';
 import styleVars from '../code-editor-variables.module.scss';
 
-const lightEditorViewStyle = {
-  '& .cm-scroller': {
+export const editorViewStyle = {
+  '.cm-scroller': {
+    overflowX: 'hidden',
     fontFamily: typographyStyles.robotoMonoFontFamily,
     fontSize: `calc(${styleVars.editorFontSizeVar} * 1px)`,
-    lineHeight: `calc(5px + ${styleVars.editorFontSizeVar} * 1px)`,
+    lineHeight: '1.4',
     letterSpacing: '0.02em',
   },
-  '.cm-gutters': {
-    borderRight: `1px`,
-    backgroundColor: styles.editorLinesBackground,
-    color: '#000',
-  },
-  '.cm-lineNumbers .cm-gutterElement': {
-    paddingLeft: '4px',
-  },
-  '.cm-foldGutter': {
-    width: `calc((${styleVars.defaultFoldGutterWidth} + ${styleVars.editorFontSizeVar} - ${styleVars.defaultFontSize}) * 1px)`,
-  },
-  '.cm-foldGutter span': {
-    padding: '0 !important',
-  },
-  '.cm-foldGutter .cm-gutterElement': {
-    display: 'none',
-  },
-  '.cm-gutters:hover .cm-foldGutter .cm-gutterElement': {
-    display: 'flex',
-  },
-  '.cm-foldPlaceholder': {
-    backgroundColor: '#F1C40F !important',
-    color: '#374146 !important',
+  '.cm-content': {
+    width: 'calc(100% - 45px)',
+    padding: '8px 16px',
+    paddingBottom: `calc(${styleVars.editorPaddingBottomVar} * 1px)`,
   },
   '.cm-line': {
     whiteSpace: 'break-spaces',
     wordBreak: 'break-word',
     padding: '0px',
   },
-  '.cm-content': {
-    width: 'calc(100% - 45px)',
-    padding: '12px 28px 8px 28px',
+  '.cm-line.cm-activeLine': {
+    background: `${styles.editorActiveLineBackground}`,
   },
-  '.cm-scroller': {
-    overflowX: 'hidden',
+  '.cm-line .cm-selectionMatch': {
+    background: `${styles.editorSearchMatchBackground} !important`,
   },
-};
-
-const darkEditorViewStyle = {
-  ...lightEditorViewStyle,
+  '.cm-line .cm-foldPlaceholder': {
+    backgroundColor: '#7ECBCD !important',
+    color: '#374146 !important',
+    border: '1px solid #708385 !important',
+    padding: '0 2px 0 1px',
+  },
+  '.cm-line .cm-searchMatch': {
+    backgroundColor: styles.editorSearchMatchBackground,
+  },
+  '.cm-line .cm-searchMatch.cm-searchMatch-selected': {
+    backgroundColor: styles.editorSearchMatchBackgroundActive,
+  },
+  '.cm-cursorLayer .cm-cursor': {
+    borderLeft: `2px solid ${styles.editorCursorColor}`,
+    borderColor: styles.editorCursorColor,
+  },
+  '.cm-selectionLayer .cm-selectionBackground': {
+    background: `${styles.editorBackgroundSelection} !important`,
+  },
+  '&.cm-focused .cm-selectionLayer .cm-selectionBackground': {
+    opacity: '1',
+  },
+  '&:not(.cm-focused) .cm-selectionLayer .cm-selectionBackground': {
+    opacity: '0.5',
+  },
   '.cm-gutters': {
-    borderRight: `1px`,
-    backgroundColor: styles.editorLinesBackground,
-    color: styles.editorLinesForeground,
+    backgroundColor: 'unset',
+    borderRight: 'none',
+    minWidth: '48px',
   },
-  '.cm-activeLineGutter': {
-    backgroundColor: styles.editorLinesBackgroundSelected,
+  '.cm-gutters .cm-lineNumbers': {
+    flexGrow: 1,
   },
-  '.cm-cursor': {
-    borderLeft: '1.2px solid #dae3e3 !important',
+  '.cm-gutters .cm-lineNumbers .cm-gutterElement': {
+    padding: '0 8px',
   },
-  '.cm-selectionBackground': {
-    backgroundColor: '#525D66 !important',
+  '.cm-gutters .cm-activeLineGutter': {
+    background: 'none',
+    color: styles.editorLinesForegroundActive,
   },
-  '.cm-selectionMatch': {
-    backgroundColor: '#485942',
+  '.cm-gutters .cm-foldGutter .cm-gutterElement': {
+    opacity: 0,
   },
-};
-
-export const editorViewStyle = {
-  ...(Config.APP_NAME === 'App Lab' // Temporary work-around for app lab (runtime switch to be impl.)
-    ? darkEditorViewStyle
-    : lightEditorViewStyle),
+  '.cm-gutters:hover .cm-foldGutter .cm-gutterElement': {
+    color: styles.editorLinesForegroundActive,
+    opacity: 0.8,
+  },
 };
 
 export const foldGutterStyle = {

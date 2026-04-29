@@ -40,6 +40,7 @@ export type UseUpdater = () => {
   setBoardLogs: (logs: string[]) => void;
 };
 
+const UPDATE_IN_PROGRESS = 'OPERATION_IN_PROGRESS';
 export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
   const [status, _setStatus] = useState<UpdaterStatus>(UpdaterStatus.None);
   const [bypassSkipUpdate, setBypassSkipUpdate] = useState<boolean>(false);
@@ -119,7 +120,10 @@ export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
       staleTime: Infinity,
       cacheTime: Infinity,
       // linear retry for 2 minutes, 2 seconds delay
-      retry: Math.floor((120 * 1000) / 2000),
+      retry: (counter, error) =>
+        (error as Error | undefined)?.message.includes(UPDATE_IN_PROGRESS)
+          ? false
+          : counter < 60,
       retryDelay: 2000,
     },
   );
@@ -362,12 +366,19 @@ export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
       ]);
 
       if (boardResult.error || (appResult && appResult.error)) {
+        const boardErrorMessage = (boardResult.error as Error | undefined)
+          ?.message;
+
+        if (boardErrorMessage?.includes(UPDATE_IN_PROGRESS)) {
+          _setStatus(UpdaterStatus.UpdatingBoard);
+          listenBoardUpdateLogs();
+          return;
+        }
+
         if (silent) return;
 
         _setStatus(UpdaterStatus.CheckingFailed);
 
-        const boardErrorMessage = (boardResult.error as Error | undefined)
-          ?.message;
         const boardErrorDetail =
           !!boardResult.error &&
           `Board update error${
@@ -409,6 +420,7 @@ export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
       checkBoardUpdateQuery,
       checkMandatoryUpdates,
       isBoard,
+      listenBoardUpdateLogs,
       pushBoardLog,
       status,
     ],

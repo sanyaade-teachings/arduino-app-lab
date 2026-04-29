@@ -24,11 +24,11 @@
 
 	&-name {
 		color: var(--text-subtle, #c9d2d2);
-		flex: 1;
 		text-align: left;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		font-size: 12px;
 	}
 
 	&-selected {
@@ -36,6 +36,18 @@
 		.brick-item-name {
 			color: var(--text-default, #fff);
 		}
+	}
+
+	&.missing-config {
+		.brick-item-name {
+			color: var(--feedback-error-default, #ff8878);
+		}
+	}
+
+	&-tooltip {
+		border-radius: 3px;
+		background: var(--feedback-neutral-default, #aeb8b8);
+		padding: 2px 8px;
 	}
 }
 
@@ -46,15 +58,21 @@
 	padding: 4px;
 	z-index: shared.$zIndex5 !important;
 
-	&-delete-item {
+	div[role="separator"] {
+		background-color: var(--grayscale-smoke, #C9D2D2);
+		height: 1px;
+		opacity: 0.1;
+	}
+
+	&-item {
 		border: none;
 		border-radius: 4px;
-		color: var(--feedback-error-default, #ff8878);
 		padding: 4px 8px;
 		display: flex;
 		align-items: center;
 		gap: 8px;
 		cursor: pointer;
+		color: var(--text-default, #fff);
 
 		svg {
 			height: 12px;
@@ -63,6 +81,10 @@
 
 		&:hover {
 			background: var(--component-bg-flexible, #aeb8b826);
+		}
+
+		&.is-delete {
+			color: var(--feedback-error-default, #ff8878);
 		}
 	}
 }

@@ -12,14 +12,12 @@ import styles from '../settings.module.scss';
 export interface DeviceHeaderProps {
   board?: Board;
   boardName?: string;
-  fqbn?: string;
   onChange: (name: string) => void;
 }
 
 export const DeviceHeader = ({
   board,
   boardName,
-  fqbn,
   onChange,
 }: DeviceHeaderProps): JSX.Element => {
   const [name, setName] = useState(boardName ?? '');
@@ -81,7 +79,7 @@ export const DeviceHeader = ({
         wrapper: styles['device-header'],
       }}
     >
-      <DeviceImage deviceImageKey={fqbn || 'unknown'} />
+      <DeviceImage deviceImageKey={board?.fqbn || 'unknown'} />
     </Row>
   );
 };

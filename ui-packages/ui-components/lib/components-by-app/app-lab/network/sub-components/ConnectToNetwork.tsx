@@ -1,5 +1,4 @@
 import {
-  CaretDown,
   Error,
   Success,
   TriangleSharp,
@@ -7,12 +6,12 @@ import {
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
+  Select,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import clsx from 'clsx';
-import { Key, useCallback, useRef, useState } from 'react';
+import { Key, useCallback, useRef } from 'react';
 
-import { DropdownMenuButton } from '../../../../essential/dropdown-menu';
 import { Input, InputStyle } from '../../../../essential/input';
 import { useI18n, XXSmall } from '../../../shared';
 import setupStyles from '../../setup/setup.module.scss';
@@ -53,7 +52,6 @@ const ConnectToNetwork: React.FC<ConnectToNetworkProps> = (
 
   const { formatMessage } = useI18n();
   const passwordInputRef = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(false);
 
   const handleNetworkNameEnter = useCallback((): void => {
     passwordInputRef.current?.focus();
@@ -81,54 +79,24 @@ const ConnectToNetwork: React.FC<ConnectToNetworkProps> = (
       </div>
       {manualNetworkSetup ? (
         <div className={clsx(setupStyles['input-container'])}>
-          <div
-            className={clsx(styles['manual-network-setup'])}
-            role="button"
-            tabIndex={0}
-            onClick={(): void => setOpen((prev) => !prev)}
-            onKeyUp={(): void => setOpen((prev) => !prev)}
-          >
-            <Input
-              inputStyle={InputStyle.AppLab}
-              id="network-security"
-              type="text"
-              readOnly
-              name={formatMessage(networkMessages.networkSecurity)}
-              value={networkCredentials.security}
-              disabled={isConnecting}
-              onClick={(): void => setOpen((prev) => !prev)}
-              onChange={(key: Key): void =>
-                onChangeCredentials({
-                  ...networkCredentials,
-                  security: key as SecurityProtocols,
-                })
-              }
-              label={formatMessage(networkMessages.networkSecurity)}
-              classes={{
-                input: styles['input'],
-              }}
-            />
-            {!isConnecting ? (
-              <DropdownMenuButton
-                isOpen={open}
-                sections={securityProtocols}
-                classes={{
-                  dropdownMenuButtonWrapper:
-                    styles['dropdown-menu-button-wrapper'],
-                  dropdownMenu: styles['dropdown-menu'],
-                }}
-                onAction={(key: Key): void =>
-                  onChangeCredentials({
-                    ...networkCredentials,
-                    security: key as SecurityProtocols,
-                  })
-                }
-                buttonChildren={
-                  <CaretDown onClick={(): void => setOpen((prev) => !prev)} />
-                }
-              />
-            ) : null}
-          </div>
+          <Select
+            id="network-security"
+            name={formatMessage(networkMessages.networkSecurity)}
+            label={formatMessage(networkMessages.networkSecurity)}
+            value={networkCredentials.security}
+            disabled={isConnecting}
+            sections={securityProtocols}
+            onChange={(key: Key): void =>
+              onChangeCredentials({
+                ...networkCredentials,
+                security: key as SecurityProtocols,
+              })
+            }
+            classes={{
+              container: styles['select-container'],
+              open: styles['select-container--open'],
+            }}
+          />
         </div>
       ) : null}
       <div className={setupStyles['input-container']}>
@@ -184,7 +152,7 @@ const ConnectToNetwork: React.FC<ConnectToNetworkProps> = (
       </div>
       <div className={styles['buttons-container']}>
         <Button
-          type={ButtonType.Tertiary}
+          variant={ButtonVariant.Tertiary}
           size={ButtonSize.XSmall}
           onClick={onChangeNetwork}
           uppercase={true}

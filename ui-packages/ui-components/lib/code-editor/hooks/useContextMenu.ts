@@ -1,3 +1,7 @@
+import {
+  readText,
+  writeText,
+} from '@bcmi-labs/cloud-editor-domain/src/services/services-by-app/app-lab';
 import { Config } from '@cloud-editor-mono/common';
 import {
   indentLess,
@@ -55,6 +59,8 @@ export const useContextMenu: UseContextMenu = function (
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const internalClipboard = useRef<string | null>(null);
+
   const state = useMenuTriggerState({});
 
   const { menuProps } = useMenuTrigger<ContextMenuItemType>(
@@ -73,11 +79,22 @@ export const useContextMenu: UseContextMenu = function (
       const selectedText = currentSelectedStrings
         ?.map((el) => el.label)
         .join('\n');
-      selectedText && (await navigator.clipboard.writeText(selectedText));
+      if (selectedText) {
+        await writeText(selectedText);
+        internalClipboard.current = selectedText;
+      }
     },
     [ContextMenuItemIds.Paste]: async (): Promise<void> => {
       const selection = viewInstance?.state.selection.ranges;
-      const clipboardValue = await navigator.clipboard.readText();
+
+      // In App Lab, use the internal clipboard to avoid navigator.clipboard.readText()
+      // which triggers an OS-level permission prompt.
+      const clipboardValue =
+        Config.APP_NAME === 'App Lab'
+          ? internalClipboard.current
+          : await readText();
+
+      if (!clipboardValue) return;
 
       if ((code || code === '') && selection) {
         const editorValue = viewInstance.state.doc.toString();
@@ -98,13 +115,16 @@ export const useContextMenu: UseContextMenu = function (
         setCode(viewInstance.state.doc);
       }
     },
-    [ContextMenuItemIds.Cut]: (): void => {
+    [ContextMenuItemIds.Cut]: async (): Promise<void> => {
       if (!viewInstance) return;
 
       const selectedText = currentSelectedStrings
         ?.map((el) => el.label)
         .join('\n');
-      selectedText && navigator.clipboard.writeText(selectedText);
+      if (selectedText) {
+        await writeText(selectedText);
+        internalClipboard.current = selectedText;
+      }
 
       if (code && currentSelectedStrings) {
         currentSelectedStrings.map((el) => {
@@ -180,9 +200,27 @@ export const useContextMenu: UseContextMenu = function (
     },
   };
 
-  /*
-    Set the disabled keys for the context menu
-  */
+  useEffect(() => {
+    if (Config.APP_NAME !== 'App Lab') return;
+
+    const handleNativeCopy = (): void => {
+      const selected = window.getSelection()?.toString();
+      if (selected) internalClipboard.current = selected;
+    };
+
+    const handleNativeCut = (): void => {
+      const selected = window.getSelection()?.toString();
+      if (selected) internalClipboard.current = selected;
+    };
+
+    document.addEventListener('copy', handleNativeCopy);
+    document.addEventListener('cut', handleNativeCut);
+
+    return () => {
+      document.removeEventListener('copy', handleNativeCopy);
+      document.removeEventListener('cut', handleNativeCut);
+    };
+  }, []);
 
   useEffect(() => {
     async function setKeys(): Promise<void> {
@@ -192,11 +230,27 @@ export const useContextMenu: UseContextMenu = function (
 
       const keys: ContextMenuItemIds[] = [];
       if (Config.APP_NAME === 'App Lab') {
-        // ! temporarily avoid `navigator.clipboard.readText()` in App Lab, to avoid unwanted native menu on item selection
-        keys.push(ContextMenuItemIds.Paste);
+        // Sync internalClipboard from system clipboard when menu opens.
+        // This ensures that if the user copied from another app, the internal clipboard
+        // is updated before they paste. The clipboard service uses Wails native API
+        // in desktop environment without triggering permission prompts.
+        try {
+          const systemClipboard = await readText();
+          if (systemClipboard) {
+            internalClipboard.current = systemClipboard;
+          }
+        } catch (error) {
+          if (Config.MODE === 'development') {
+            console.error('Failed to read system clipboard:', error);
+          }
+        }
+
+        if (!internalClipboard.current) {
+          keys.push(ContextMenuItemIds.Paste);
+        }
       } else {
         try {
-          const clipboardValue = await navigator.clipboard.readText();
+          const clipboardValue = await readText();
           if (!clipboardValue) keys.push(ContextMenuItemIds.Paste);
         } catch {
           keys.push(ContextMenuItemIds.Paste);
@@ -204,8 +258,11 @@ export const useContextMenu: UseContextMenu = function (
       }
       setDisabledKeys(keys);
     }
-    setKeys();
-  }, []);
+
+    if (state.isOpen) {
+      setKeys();
+    }
+  }, [state.isOpen]);
 
   const closeContextMenu = useCallback(() => {
     setControlledOpen(false);

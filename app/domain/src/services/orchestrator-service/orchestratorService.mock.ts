@@ -886,6 +886,40 @@ export const MockOrchestratorService: OrchestratorService = {
     return true;
   },
 
+  async addAppCustomBrick(
+    appId: string,
+    body: { name: string; description?: string },
+  ): Promise<{ id: string }> {
+    if (!mockAppBricksByAppId[appId]) mockAppBricksByAppId[appId] = {};
+
+    const brickId = `local-${Date.now()}`;
+
+    mockAppBricksByAppId[appId][brickId] = {
+      id: brickId,
+      name: body.name,
+      category: 'Custom',
+      author: 'Local',
+      status: 'unconfigured',
+      model: undefined,
+      variables: {},
+      config_variables: [],
+    };
+
+    return { id: brickId };
+  },
+
+  async renameAppCustomBrick(
+    appId: string,
+    brickId: string,
+    params: { name: string },
+  ): Promise<boolean> {
+    if (!mockAppBricksByAppId[appId]) return false;
+    const brick = mockAppBricksByAppId[appId][brickId];
+    if (!brick) return false;
+    brick.name = params.name;
+    return true;
+  },
+
   async getBricks(): Promise<BrickListItem[]> {
     return mockBricks;
   },

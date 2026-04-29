@@ -1,47 +1,38 @@
 @use "../../public/shared.module.scss";
-@use "../code-editor/code-editor-variables.module.scss";
 
-$tabsBarPaddingLeft: calc(
-    (#{code-editor-variables.$sharedGutterWidthVar} + #{code-editor-variables.$sharedFoldGutterWidthVar}) * 1px
-);
-
-.markdown-container {
-    padding: 0 16px 16px $tabsBarPaddingLeft;
-    background-color: shared.theme-var(--editor-background);
-    overflow: auto;
-    width: 100%;
-    box-sizing: border-box;
-
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-}
-
-.brick-detail-container {
-    margin-top: 40px;
-    padding: 16px;
-    background-color: shared.theme-var(--editor-background);
-    overflow: auto;
-    width: 100%;
-
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-}
-
-.toolbar-and-content {
+.editor-panel {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-
-    & > :last-child {
-        width: 100%;
-        height: 100%;
-        margin-top: 0px !important;
-    }
+    position: relative;
 }
 
-.editor-toolbar-container {
-    padding-left: $tabsBarPaddingLeft;
+.editor-content {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: shared.theme-var(--editor-background);
+    overflow: hidden;
+}
+
+.brick-container,
+.markdown-container {
+    padding: 16px 4px 16px 16px;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+        height: 12px;
+        background-color: shared.theme-var(--editor-background);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border: 2px solid shared.theme-var(--editor-background);
+        background-clip: padding-box;
+        border-radius: 8px;
+        background-color: transparent;
+        cursor: pointer;
+    }
 }
 
 .editor-toolbar-disabled {

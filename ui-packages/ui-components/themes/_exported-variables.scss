@@ -1,6 +1,8 @@
 @use "../public/functions.scss";
 
 :export {
+  skeletonBaseColor: functions.theme-var(--skeleton-base-color);
+  skeletonHighlightColor: functions.theme-var(--skeleton-highlight-color);
   editorSyntaxHighlightDatatypes: functions.theme-var(--editor-syntax-highlight-datatypes);
   editorSyntaxHighlightFunctions: functions.theme-var(--editor-syntax-highlight-functions);
   editorSyntaxHighlightStructures: functions.theme-var(--editor-syntax-highlight-structures);
@@ -12,12 +14,21 @@
   editorSyntaxHighlightComments: functions.theme-var(--editor-syntax-highlight-comments);
   editorSyntaxHighlightNeutral: functions.theme-var(--editor-syntax-highlight-neutral);
   editorBackgroundSelection: functions.theme-var(--editor-background-selection);
+  editorActiveLineBackground: functions.theme-var(--editor-active-line-background);
+  editorSearchMatchBackground: functions.theme-var(--editor-search-match-background);
+  editorSearchMatchBackgroundActive: functions.theme-var(--editor-search-match-background-active);
   editorBackground: functions.theme-var(--editor-background);
+  editorBorderColor: functions.theme-var(--editor-border-color);
+  editorCursorColor: functions.theme-var(--editor-cursor-color);
   editorLinesForeground: functions.theme-var(--editor-lines-foreground);
-  editorLinesBackgroundSelected: functions.theme-var(--editor-lines-background-selected);
+  editorLinesForegroundActive: functions.theme-var(--editor-lines-foreground-active);
   editorLinesBackground: functions.theme-var(--editor-lines-background);
   editorTabBackground: functions.theme-var(--editor-tab-background);
-  editorTabsForeground: functions.theme-var(--editor-tabs-foreground);
+  editorTabBackgroundActive: functions.theme-var(--editor-tab-background-active);
+  editorTabForeground: functions.theme-var(--editor-tab-foreground);
+  editorTabForegroundActive: functions.theme-var(--editor-tab-foreground-active);
+  editorTabUnsavedIconColor: functions.theme-var(--editor-tab-unsaved-icon-color);
+  editorTabUnsaveIconColorActive: functions.theme-var(--editor-tab-unsaved-icon-color-active);
   consoleProgressBarBackground: functions.theme-var(--console-progress-bar-background);
   consoleProgressBarForeground: functions.theme-var(--console-progress-bar-foreground);
   consoleDivider: functions.theme-var(--console-divider);

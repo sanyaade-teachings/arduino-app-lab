@@ -35,9 +35,86 @@ func (c *ExtendedRemoteConn) ReadDir(path string) ([]remote.FileInfo, error) {
 	return fileInfos, nil
 }
 
-// MoveDir moves a directory from oldPath to newPath
+// MoveDir moves a directory from oldPath to newPath with improved remote support
 func (c *ExtendedRemoteConn) MoveDir(oldPath string, newPath string) error {
-	return os.Rename(oldPath, newPath)
+	// Try os.Rename first for local filesystem compatibility only
+	err := os.Rename(oldPath, newPath)
+	if err == nil {
+		return nil
+	}
+	
+	// If os.Rename fails, we're likely dealing with remote filesystem
+	// Use the remote connection methods instead of local filesystem
+	
+	// 1. Create target directory using remote connection
+	err = c.MkDirAll(newPath)
+	if err != nil {
+		return fmt.Errorf("failed to create target directory: %w", err)
+	}
+	
+	// 2. Copy contents using remote connection
+	err = c.copyDirectoryContentsRemote(oldPath, newPath)
+	if err != nil {
+		// Clean up on failure
+		c.Remove(newPath)
+		return fmt.Errorf("failed to copy directory contents: %w", err)
+	}
+	
+	// 3. Remove source directory using remote connection
+	err = c.Remove(oldPath)
+	if err != nil {
+		return fmt.Errorf("failed to remove source directory: %w", err)
+	}
+	
+	return nil
+}
+
+// Helper method to copy directory contents using remote connection
+func (c *ExtendedRemoteConn) copyDirectoryContentsRemote(srcPath string, dstPath string) error {
+	entries, err := c.List(srcPath)
+	if err != nil {
+		return fmt.Errorf("failed to read source directory: %w", err)
+	}
+	
+	for _, entry := range entries {
+		srcEntry := path.Join(srcPath, entry.Name)
+		dstEntry := path.Join(dstPath, entry.Name)
+
+		subEntries, listErr := c.List(srcEntry)
+		if listErr == nil && len(subEntries) > 0 {
+			// directory
+			err = c.MkDirAll(dstEntry)
+			if err != nil {
+				return fmt.Errorf("failed to create subdirectory: %w", err)
+			}
+			err = c.copyDirectoryContentsRemote(srcEntry, dstEntry)
+			if err != nil {
+				return err
+			}
+		} else {
+			// file
+			
+			// Verify file actually exists before copying
+			_, err := c.Stats(srcEntry)
+			if err != nil {
+				// File doesn't exist, skip it (phantom file)
+				continue
+			}
+			
+			sourceFile, err := c.ReadFile(srcEntry)
+			if err != nil {
+				return fmt.Errorf("failed to read source file: %w", err)
+			}
+			defer sourceFile.Close()
+			
+			err = c.WriteFile(sourceFile, dstEntry)
+			if err != nil {
+				return fmt.Errorf("failed to write destination file: %w", err)
+			}
+		}
+	}
+	
+	return nil
 }
 
 // NewExtendedRemoteConn creates an extended connection
@@ -100,14 +177,14 @@ func RenameFolder(conn remote.RemoteConn, oldPath string, newPath string) error 
 	extConn := NewExtendedRemoteConn(conn)
 
 	// Try to use MoveDir first (simpler approach)
-	fmt.Printf("DEBUG: Trying MoveDir approach\n")
 	err := extConn.MoveDir(oldPath, newPath)
 	if err == nil {
 		fmt.Printf("DEBUG: MoveDir succeeded\n")
 		return nil
 	}
 	
-	fmt.Printf("DEBUG: MoveDir failed: %v, falling back to copy/delete approach\n", err)
+	// MoveDir failed, use copy/delete approach
+	fmt.Printf("DEBUG: MoveDir failed, falling back to copy/delete approach\n")
 
 	// Fallback to create/copy/delete approach
 	// 1. Create new directory
@@ -238,4 +315,12 @@ func RemoveFile(conn remote.RemoteConn, path string) error {
 
 func CreateFolder(conn remote.RemoteConn, path string) error {
 	return conn.MkDirAll(path)
+}
+
+func IsDirectory(conn remote.RemoteConn, path string) (bool, error) {
+	info, err := conn.Stats(path)
+	if err != nil {
+		return false, err
+	}
+	return info.IsDir, nil
 }

@@ -21,7 +21,7 @@ export interface BoardSerialTracker {
 }
 
 export const useBoardSerialTracker = (): BoardSerialTracker => {
-  const isBoardNew = async (serial: string): Promise<boolean> => {
+  const isBoardNew = useCallback(async (serial: string): Promise<boolean> => {
     if (!serial) return false;
 
     try {
@@ -32,7 +32,7 @@ export const useBoardSerialTracker = (): BoardSerialTracker => {
       console.error('Error checking if board is new:', error);
       return false;
     }
-  };
+  }, []);
 
   const markBoardAsUsed = async (serial: string): Promise<void> => {
     if (!serial) return;
@@ -107,19 +107,24 @@ export const useBoardSerialTracker = (): BoardSerialTracker => {
     [],
   );
 
-  const getLastConnection = async (serial: string): Promise<string | null> => {
-    if (!serial) return null;
+  const getLastConnection = useCallback(
+    async (serial: string): Promise<string | null> => {
+      if (!serial) return null;
 
-    try {
-      const lastConnections =
-        (await get<BoardConnectionInfo[]>(LAST_CONNECTIONS_KEY)) || [];
-      const connection = lastConnections.find((conn) => conn.serial === serial);
-      return connection ? connection.lastConnection : null;
-    } catch (error) {
-      console.error('Error getting last connection:', error);
-      return null;
-    }
-  };
+      try {
+        const lastConnections =
+          (await get<BoardConnectionInfo[]>(LAST_CONNECTIONS_KEY)) || [];
+        const connection = lastConnections.find(
+          (conn) => conn.serial === serial,
+        );
+        return connection ? connection.lastConnection : null;
+      } catch (error) {
+        console.error('Error getting last connection:', error);
+        return null;
+      }
+    },
+    [],
+  );
 
   const getAllLastConnections = async (): Promise<BoardConnectionInfo[]> => {
     try {

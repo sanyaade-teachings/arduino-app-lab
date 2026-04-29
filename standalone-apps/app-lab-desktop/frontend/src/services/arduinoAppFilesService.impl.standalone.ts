@@ -4,6 +4,7 @@ import {
   CreateFolder,
   GetFileContent,
   GetFileTree,
+  IsDirectory,
   RemoveFile,
   RenameFile,
   RenameFolder,
@@ -51,6 +52,28 @@ export const renameAppFile: ArduinoAppFilesService['renameAppFile'] =
     } else {
       return RenameFile(path, newName);
     }
+  };
+
+const directoryCache = new Map<string, boolean>();
+
+export const moveAppFile: ArduinoAppFilesService['moveAppFile'] =
+  async function (fromPath: string, toPath: string) {
+    // Check cache first
+    let isDirectory = directoryCache.get(fromPath);
+
+    if (isDirectory === undefined) {
+      try {
+        isDirectory = await IsDirectory(fromPath);
+        // Cache the result for future use
+        directoryCache.set(fromPath, isDirectory);
+      } catch (error) {
+        console.error('Error determining file type:', error);
+      }
+    }
+
+    return isDirectory
+      ? RenameFolder(fromPath, toPath)
+      : RenameFile(fromPath, toPath);
   };
 
 export const removeAppFile: ArduinoAppFilesService['removeAppFile'] =

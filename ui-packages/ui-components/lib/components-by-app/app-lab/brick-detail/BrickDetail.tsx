@@ -8,8 +8,8 @@ import {} from '@cloud-editor-mono/images/assets/icons';
 import {
   AiModel,
   Button,
+  ButtonAppearance,
   ButtonSize,
-  ButtonType,
   ButtonVariant,
   ConfigureAppBrickDialog,
   getBackgroundIcon,
@@ -56,8 +56,10 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
   const { formatMessage } = useI18n();
   const [selectedTab, setSelectedTab] = useState('overview');
   const {
+    board,
     brick,
     brickInstance,
+    isCustomBrick,
     readme,
     apiDocs,
     examples,
@@ -80,7 +82,11 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
   return (
     <div className={styles['container']}>
       {configureDialogProps && brick && (
-        <ConfigureAppBrickDialog brick={brick} {...configureDialogProps} />
+        <ConfigureAppBrickDialog
+          brickId={brick?.id}
+          isCustomBrick={isCustomBrick}
+          {...configureDialogProps}
+        />
       )}
       <div className={styles['header']}>
         <BrickIcon category={brick?.category} />
@@ -92,7 +98,7 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
             onClick={(): void => configureDialogProps.setOpen(true)}
             Icon={BrickSettingsIcon}
             size={ButtonSize.Small}
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
           >
             {formatMessage(messages.configureButton)}
           </Button>
@@ -115,8 +121,12 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
         {tabs
           .filter(
             (tab) =>
-              (brick?.compatible_models ?? []).length !== 0 ||
-              tab.id !== 'aiModels',
+              (tab.id !== 'aiModels' ||
+                (brick?.compatible_models ?? []).length !== 0) &&
+              (tab.id !== 'documentation' ||
+                (brick?.api_docs_path ?? '').trim() !== '') &&
+              (tab.id !== 'examples' ||
+                (brick?.code_examples ?? []).length !== 0),
           )
           .map((item) => (
             <Item key={item.id} title={formatMessage(item.label)}>
@@ -146,7 +156,8 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                       <div className={styles['ai-models-info']}>
                         <InfoIconOutline />
                         <p>
-                          {formatMessage(messages.unoQFilter, {
+                          {formatMessage(messages.missingModel, {
+                            boardModel: board?.type.toUpperCase(),
                             bold: (text: string) => <b>{text}</b>,
                           })}
                         </p>
@@ -178,7 +189,7 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                       />
                     ))}
 
-                    {!hideEdgeImpulse && (
+                    {!hideEdgeImpulse ? (
                       <div className={styles['new-models']}>
                         <div className={styles['new-models-icon']}>
                           <EdgeImpulseIcon />
@@ -192,8 +203,8 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                           </XXSmall>
                         </div>
                         <Button
-                          type={ButtonType.Secondary}
-                          variant={ButtonVariant.LowContrast}
+                          variant={ButtonVariant.Secondary}
+                          appearance={ButtonAppearance.LowContrast}
                           size={ButtonSize.XSmall}
                           onClick={onTrainNewModelClick}
                           Icon={OpenInNewTab}
@@ -207,7 +218,7 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                           <TrainNewModelDialog {...trainNewModelDialogProps} />
                         )}
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 )}
                 {item.id === 'overview' &&

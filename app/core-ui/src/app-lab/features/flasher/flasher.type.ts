@@ -8,6 +8,7 @@ export type UseFlasherLogic = (
 ) => {
   loading: boolean;
   succeeded: boolean | null;
+  setFlashing: (value: boolean) => void;
   setSucceeded: (value: boolean | null) => void;
   close: () => void;
   listAvailableImages: () => Promise<OSImageRelease[]>;

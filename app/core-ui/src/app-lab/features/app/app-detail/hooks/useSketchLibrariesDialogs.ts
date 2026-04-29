@@ -1,6 +1,7 @@
 import { AddSketchLibraryDialogLogic } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useCallback, useState } from 'react';
 
+import { useBoardLifecycleStore } from '../../../../store/boardLifecycle';
 import { UseSketchLibraries } from './useSketchLibraries';
 
 interface UseAddSketchLibraryDialogParams {
@@ -36,12 +37,21 @@ export const useAddSketchLibraryDialog: UseAddSketchLibraryDialog = (
   const openDialog = useCallback(() => setOpen(true), []);
   const onOpenChange = (value: boolean): void => setOpen(value);
 
+  const selectedBoard = useBoardLifecycleStore(
+    (state) => state.selectedConnectedBoard,
+  );
+
   const useDialogLogic: AddSketchLibraryDialogLogic = () => ({
     open,
     onOpenChange,
+    board: selectedBoard,
     ...params,
   });
-  const dialogLogic = useCallback(useDialogLogic, [open, params]);
+  const dialogLogic = useCallback(useDialogLogic, [
+    open,
+    params,
+    selectedBoard,
+  ]);
 
   return {
     openDialog,

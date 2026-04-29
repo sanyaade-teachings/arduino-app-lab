@@ -2078,7 +2078,6 @@ __metadata:
   resolution: "@bcmi-labs/cloud-editor-ui-components@workspace:ui-packages/ui-components"
   dependencies:
     "@babel/core": 7.19.3
-    "@dotlottie/react-player": ^1.6.19
     "@storybook/addon-actions": 6.5.12
     "@storybook/addon-essentials": 6.5.12
     "@storybook/addon-interactions": 6.5.12
@@ -13330,6 +13329,7 @@ __metadata:
     "@dnd-kit/core": ^6.2.0
     "@dnd-kit/modifiers": ^9.0.0
     "@dnd-kit/sortable": ^9.0.0
+    "@dotlottie/react-player": ^1.6.19
     "@formatjs/cli": 5.1.12
     "@lezer/highlight": 1.2.1
     "@microsoft/fetch-event-source": 2.0.1
@@ -20744,9 +20744,9 @@ __metadata:
   linkType: hard
 
 "lodash@npm:>=4.17.21":
-  version: 4.17.23
-  resolution: "lodash@npm:4.17.23"
-  checksum: 7daad39758a72872e94651630fbb54ba76868f904211089721a64516ce865506a759d9ad3d8ff22a2a49a50a09db5d27c36f22762d21766e47e3ba918d6d7bab
+  version: 4.18.1
+  resolution: "lodash@npm:4.18.1"
+  checksum: bb5f5b49aad29614e709af02b64c56b0f8b78c6a81434a3c1ae527d2f0f78ca08f9d9fb22aa825a053876c9d2166e9c01f31c356014b5e2bdc0556c057433102
   languageName: node
   linkType: hard
 

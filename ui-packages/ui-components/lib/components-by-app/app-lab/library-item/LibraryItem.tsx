@@ -1,6 +1,11 @@
-import { Bin, Library } from '@cloud-editor-mono/images/assets/icons';
+import {
+  AddLibrary,
+  Bin,
+  Library,
+} from '@cloud-editor-mono/images/assets/icons';
 import { XXSmall } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import * as ContextMenu from '@radix-ui/react-context-menu';
+import clsx from 'clsx';
 
 import styles from './library-item.module.scss';
 
@@ -8,14 +13,16 @@ export interface LibraryItemProps {
   name: string;
   version: string;
   onDelete?: () => void;
+  onAddLibrary?: () => void;
 }
 
 const LibraryItem: React.FC<LibraryItemProps> = (props: LibraryItemProps) => {
-  const { name, version, onDelete } = props;
+  const { name, version, onDelete, onAddLibrary } = props;
 
   return (
     <ContextMenu.Root>
       <ContextMenu.Trigger
+        disabled={!onDelete}
         className={styles['library-item-context-menu-trigger']}
       >
         <div
@@ -26,23 +33,34 @@ const LibraryItem: React.FC<LibraryItemProps> = (props: LibraryItemProps) => {
         >
           <Library className={styles['library-item-icon']} />
           <div className={styles['library-item-text']}>
-            <XXSmall>{name}</XXSmall>
+            <span>{name}</span>
             &nbsp;
-            <XXSmall className={styles['library-item-text-version']}>
+            <span className={styles['library-item-text-version']}>
               {version}
-            </XXSmall>
+            </span>
           </div>
         </div>
       </ContextMenu.Trigger>
-      {onDelete && (
+      {onDelete && onAddLibrary && (
         <ContextMenu.Portal>
           <ContextMenu.Content className={styles['library-item-context-menu']}>
             <ContextMenu.Item
-              className={styles['library-item-context-menu-delete-item']}
+              className={clsx(
+                styles['library-item-context-menu-item'],
+                styles['is-delete'],
+              )}
               onSelect={onDelete}
             >
               <Bin />
               <XXSmall>Remove</XXSmall>
+            </ContextMenu.Item>
+            <ContextMenu.Separator />
+            <ContextMenu.Item
+              className={styles['library-item-context-menu-item']}
+              onSelect={onAddLibrary}
+            >
+              <AddLibrary />
+              <XXSmall>Add Sketch library</XXSmall>
             </ContextMenu.Item>
           </ContextMenu.Content>
         </ContextMenu.Portal>

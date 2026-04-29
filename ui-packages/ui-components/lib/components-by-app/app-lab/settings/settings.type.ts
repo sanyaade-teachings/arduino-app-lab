@@ -5,22 +5,23 @@ import {
   KeyboardLayout,
   NetworkItem,
   NetworkSettingsDialogLogic,
+  PasswordDialogLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 export type UseBoardSettingsLogic = () => {
   isBoard: boolean;
   board?: Board;
   boardName?: string;
-  fqbn?: string;
   boardResources?: BoardResources;
   keyboardLayout: KeyboardLayout | undefined;
   keyboardLayouts: KeyboardLayout[];
-  isNetworkModeEnabled?: boolean;
-  isSettingNetworkMode?: boolean;
-  setNetworkMode: (enabled: boolean) => void;
   bytesToGiB: (bytes: unknown) => string;
   setBoardName: (name: string) => void;
   setKeyboardLayout: (layout: string) => void;
+};
+
+export type UseNetworkModeLogic = () => PasswordDialogLogic & {
+  isNetworkModeEnabled?: boolean;
 };
 
 export type UseNetworkSettingsLogic = () => NetworkSettingsDialogLogic & {
@@ -48,6 +49,7 @@ export type UsePasswordSettingsLogic = () => ChangePasswordDialogLogic & {
 
 export type UseSettingsLogic = () => {
   boardSettingsLogic: UseBoardSettingsLogic;
+  networkModeLogic: UseNetworkModeLogic;
   networkSettingsLogic: UseNetworkSettingsLogic;
   systemSettingsLogic: UseSystemSettingsLogic;
   passwordSettingsLogic: UsePasswordSettingsLogic;

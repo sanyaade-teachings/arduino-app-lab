@@ -1,9 +1,10 @@
 import {
   Button,
+  ButtonSize,
+  ButtonVariant,
   ProgressBar,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
-import { ButtonSize, ButtonType } from '../../../../essential/app-lab-button';
 import { Small, useI18n, XSmall, XXSmall } from '../../../shared';
 import { networkMessages } from '../messages';
 import { NetworkItem } from '../network.type';
@@ -32,7 +33,7 @@ const Scanning: React.FC<ScanningProps> = (props: ScanningProps) => {
           </Small>
         )}
         <Button
-          type={ButtonType.Tertiary}
+          variant={ButtonVariant.Tertiary}
           size={ButtonSize.XSmall}
           onClick={scanNetworkList}
           disabled={isScanning}

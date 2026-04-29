@@ -1,0 +1,6 @@
+dist/
+dist-ssr/
+*.local
+.DS_Store
+standalone-apps/cloud-editor-standalone/dev-dist/
+build/

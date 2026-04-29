@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 
+import { ArcSpinner as Loader } from '../../../../essential/loader';
 import { useI18n } from '../../../../i18n/useI18n';
 import { useTooltip } from '../../../../tooltip';
 import { Small, XSmall, XXSmall } from '../../../../typography';
@@ -10,12 +11,13 @@ const formatLastConnection = (dateString?: string): string => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    const day = date.toLocaleString('en-GB', { day: 'numeric' });
+    const month = date.toLocaleString('en-GB', { month: 'short' });
+    const time = date.toLocaleString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
     });
+    return `${day} ${month} at ${time}`;
   } catch {
     return '';
   }
@@ -32,6 +34,7 @@ interface BoardCardProps {
   isNew?: boolean;
   lastConnection?: string;
   variant?: 'single' | 'multi';
+  isLoading?: boolean;
 }
 
 const BoardCard: React.FC<BoardCardProps> = (props: BoardCardProps) => {
@@ -42,10 +45,11 @@ const BoardCard: React.FC<BoardCardProps> = (props: BoardCardProps) => {
     onClick,
     ChipIcon,
     Icon,
-    disabled,
+    disabled = false,
     isNew,
     lastConnection,
     variant = 'single',
+    isLoading = false,
   } = props;
 
   const { formatMessage } = useI18n();
@@ -72,7 +76,7 @@ const BoardCard: React.FC<BoardCardProps> = (props: BoardCardProps) => {
       disabled={disabled || !onClick}
     >
       <div className={clsx(styles['icon'], isMulti && styles['icon--small'])}>
-        {Icon}
+        {isLoading ? <Loader /> : Icon}
       </div>
 
       <div className={styles['main-content']}>

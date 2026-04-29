@@ -1,9 +1,12 @@
 import { Bin } from '@cloud-editor-mono/images/assets/icons';
 import { useMutation } from '@tanstack/react-query';
 
-import { Button, ButtonType } from '../../../components-by-app/app-lab';
-import { ButtonVariant } from '../../../essential/app-lab-button';
-import { useI18n } from '../../../i18n/useI18n';
+import {
+  Button,
+  ButtonAppearance,
+  ButtonVariant,
+  useI18n,
+} from '../../../components-by-app/app-lab';
 import { Medium, XSmall } from '../../../typography';
 import { AppLabDialog } from '../app-lab-dialog/AppLabDialog';
 import { deleteAppDialogMessages as messages } from '../messages';
@@ -44,7 +47,7 @@ export const DeleteAppDialog: React.FC<DeleteAppDialogProps> = ({
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => onOpenChange(false)}
             classes={{
               button: styles['action-button'],
@@ -54,12 +57,12 @@ export const DeleteAppDialog: React.FC<DeleteAppDialogProps> = ({
             {formatMessage(messages.cancelButton)}
           </Button>
           <Button
-            type={ButtonType.Secondary}
-            variant={ButtonVariant.Destructive}
+            variant={ButtonVariant.Secondary}
+            appearance={ButtonAppearance.Destructive}
             loading={isLoading}
             Icon={Bin}
             iconPosition="right"
-            isSubmit
+            type="submit"
             /* eslint-disable-next-line jsx-a11y/no-autofocus */
             autoFocus
           >

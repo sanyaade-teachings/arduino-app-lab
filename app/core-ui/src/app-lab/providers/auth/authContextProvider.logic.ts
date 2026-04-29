@@ -124,10 +124,13 @@ export function useAuth(): AuthContextValue {
       return _logout();
     },
     onSuccess: async () => {
-      queryClient.resetQueries(['auth-token'], { exact: false });
-      queryClient.resetQueries(['auth-check'], { exact: false });
-      queryClient.resetQueries(['auth-user'], { exact: false });
-      queryClient.resetQueries(['auth-state'], { exact: false });
+      queryClient.setQueryData(
+        ['auth-token', isAuthRoute, authState],
+        NO_AUTH_TOKEN_PLACEHOLDER,
+      );
+      queryClient.setQueryData(['auth-check', isAuthRoute, token], false);
+      queryClient.setQueryData(['auth-user', isAuthRoute, token], null);
+      queryClient.setQueryData(['auth-state', isAuthRoute], null);
 
       if (edgeImpulseUser) {
         await edgeImpulseLogout();

@@ -13,7 +13,7 @@ import React, {
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   useI18n,
 } from '../../../components-by-app/app-lab';
 import { ErrorBanner } from '../../../error-banner/ErrorBanner';
@@ -52,7 +52,7 @@ export const ImportAppDialog: React.FC<ImportAppDialogProps> = ({
     if (status === ImportStatus.UploadFailed) {
       return (
         <Button
-          type={ButtonType.Primary}
+          variant={ButtonVariant.Primary}
           size={ButtonSize.Small}
           onClick={(): void => onOpenChange(false)}
         >
@@ -171,7 +171,7 @@ export const ImportAppDialog: React.FC<ImportAppDialogProps> = ({
                 {formatMessage(messages.or)}
               </span>
               <Button
-                type={ButtonType.Secondary}
+                variant={ButtonVariant.Secondary}
                 size={ButtonSize.Small}
                 onClick={handleButtonClick}
                 Icon={Upload}

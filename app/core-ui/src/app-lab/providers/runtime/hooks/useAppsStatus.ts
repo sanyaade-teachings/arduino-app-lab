@@ -9,6 +9,7 @@ import {
 } from '@cloud-editor-mono/infrastructure';
 import { EventSourceMessage } from '@microsoft/fetch-event-source';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { debounce } from 'lodash';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -16,6 +17,7 @@ import { useAppSSE } from '../../../features/app/app-detail/hooks/useAppSSE';
 import { useBoardLifecycleStore } from '../../../store/boardLifecycle';
 
 type UseAppsStatus = () => {
+  apps?: AppDetailedInfo[];
   defaultApp?: AppDetailedInfo;
   failedApp?: AppDetailedInfo;
   runningApp?: AppDetailedInfo;
@@ -44,7 +46,8 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
   const { data: apps } = useQuery(
     ['list-my-apps'],
     () => {
-      return getApps({});
+      //This query retrieves all the apps (examples/myapps) and sync the status of the apps with the server.
+      return getApps({ query: {} });
     },
     {
       enabled: boardIsReachable,
@@ -63,6 +66,15 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
     return apps?.find((app) => app.status === 'failed') as AppDetailedInfo;
   }, [apps]);
 
+  //Debounce the invalidate of the query to avoid multiple invalidations in a short period of time when multiple events are received from the SSE
+  const debouncedInvalidate = useMemo(
+    () =>
+      debounce(() => {
+        queryClient.invalidateQueries({ queryKey: ['list-my-apps'] });
+      }, 300),
+    [queryClient],
+  );
+
   const handleOnStatusMessage = useCallback(
     (message: EventSourceMessage): void => {
       let normalizedEvent: StreamEvent;
@@ -79,14 +91,14 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
 
       //Save the normalizeEvent app
       if (normalizedEvent.event === StreamEventType.App) {
-        queryClient.invalidateQueries({ queryKey: ['list-my-apps'] });
+        debouncedInvalidate();
 
         if (normalizedEvent.data?.default) {
           queryClient.invalidateQueries({ queryKey: ['get-default-app'] });
         }
       }
     },
-    [queryClient],
+    [debouncedInvalidate, queryClient],
   );
 
   const {
@@ -104,14 +116,11 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
   useEffect(() => {
     if (!isConnected && !isConnecting && !boardIsFlashing && boardIsReachable) {
       connectToAppStatusSSE();
+    } else if (boardIsFlashing && (isConnected || isConnecting)) {
+      getAppStatusAbort();
     }
-  }, [
-    boardIsFlashing,
-    boardIsReachable,
-    connectToAppStatusSSE,
-    isConnected,
-    isConnecting,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardIsFlashing, boardIsReachable, isConnected, isConnecting]);
 
   useEffect(() => {
     return () => {
@@ -119,7 +128,11 @@ const useAppsStatus: UseAppsStatus = function (): ReturnType<UseAppsStatus> {
     };
   }, [getAppStatusAbort]);
 
-  return { defaultApp, failedApp, runningApp };
+  const filteredApps = useMemo(() => {
+    return apps?.filter((app) => app.id) as AppDetailedInfo[];
+  }, [apps]);
+
+  return { apps: filteredApps, defaultApp, failedApp, runningApp };
 };
 
 export default useAppsStatus;

@@ -8,11 +8,6 @@ export const welcomeMessages = defineMessages({
     defaultMessage: 'Welcome to Arduino App Lab',
     description: 'Title for the welcome section of the App Lab setup',
   },
-  description: {
-    id: 'appLabSetup.welcome.description',
-    defaultMessage: 'Connect your Arduino UNO Q to start',
-    description: 'Description for the welcome section of the App Lab setup',
-  },
   descriptionMultipleBoards: {
     id: 'appLabSetup.welcome.descriptionMultipleBoards',
     defaultMessage: 'Multiple boards are connected, please select one to start',
@@ -260,6 +255,7 @@ export const tooltipMessages = defineMessages({
   chipConnectionTooltip: {
     id: 'appLabSetup.chip.connection.tooltip',
     defaultMessage: 'Connected via {chip}',
-    description: 'Tooltip content showing the connection method for the board chip',
+    description:
+      'Tooltip content showing the connection method for the board chip',
   },
 });

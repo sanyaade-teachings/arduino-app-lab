@@ -7,7 +7,6 @@ import {
 } from '@cloud-editor-mono/domain/src/services/services-by-app/shared';
 import {
   Bricks,
-  FileConfig as FileConfigIcon,
   FileFolder as FileFolderIcon,
   FileGeneric as FileGenericIcon,
   FileHeader as FileHeaderIcon,
@@ -20,50 +19,13 @@ import {
   FileTypeIno,
   FileTypeSecrets,
   FileTypeText,
+  FileYaml as FileYamlIcon,
 } from '@cloud-editor-mono/images/assets/icons';
 import { GetFilesList_Response } from '@cloud-editor-mono/infrastructure';
-import { SelectableFileData } from '@cloud-editor-mono/ui-components/lib/components-by-app/shared';
 import { FunctionComponent, SVGProps, useCallback } from 'react';
 
 import { BasicFileData, BasicFilesData } from './hooks/files.type';
 import { useRetrieveSketches } from './hooks/queries/createShared';
-
-interface CreateSelectableFileDataOptions {
-  fileData:
-    | RetrieveFileContentsResult
-    | { name: string; fullName: string; path: string; extension: string };
-  isMetadataReadOnly?: boolean;
-  isFixed?: boolean;
-  tags?: string[];
-  isClassicSketch?: boolean;
-}
-
-export function createSelectableFileData(
-  options: CreateSelectableFileDataOptions,
-): SelectableFileData {
-  const {
-    fileData,
-    isMetadataReadOnly = false,
-    isFixed = false,
-    tags = [],
-    isClassicSketch = true,
-  } = options;
-
-  return {
-    fileId: fileData.path,
-    fileFullName: fileData.fullName,
-    fileName: fileData.name,
-    fileExtension: fileData.extension,
-    Icon: isClassicSketch
-      ? getFileIcon(fileData.extension)
-      : getAppLabFileIcon(
-          fileData.name === 'app.yaml' ? 'config' : fileData.extension,
-        ),
-    tags,
-    isFixed,
-    isMetadataReadOnly,
-  };
-}
 
 export function getMainLibraryFile<
   T extends
@@ -133,8 +95,8 @@ export function getAppLabFileIcon(
       return Bricks;
     case 'folder':
       return FileFolderIcon;
-    case 'config':
-      return FileConfigIcon;
+    case 'yaml':
+      return FileYamlIcon;
     default:
       return FileGenericIcon;
   }

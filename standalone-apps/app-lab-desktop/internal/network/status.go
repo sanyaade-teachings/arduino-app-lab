@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -81,18 +82,50 @@ func GetConnectionName(ctx context.Context, conn remote.RemoteConn) (*string, er
 	return &name, nil
 }
 
-func (nm *Manager) getIPAddress(ctx context.Context, netType string) (*string, error) {
-	out, err := nm.Run(ctx, "-g", "IP4.ADDRESS", "device", "show", netType)
+func (nm *Manager) getIPAddress(ctx context.Context) (*string, error) {
+	out, err := nm.Run(ctx, "-g", "GENERAL.TYPE,IP4.ADDRESS", "device", "show")
 	if err != nil {
 		return nil, fmt.Errorf("failed to query ip address: %w", err)
 	}
 
-	parts := strings.Split(out, "/")
-	if len(parts) == 0 || strings.TrimSpace(parts[0]) == "" {
-		return nil, nil
+	type networkIP struct {
+		Type string
+		IP   string
 	}
-	name := strings.TrimSpace(parts[0])
-	return &name, nil
+	var networksIPs []networkIP
+	for _, group := range strings.Split(out, "\n\n") {
+		parts := strings.Split(group, "\n")
+		if len(parts) < 2 {
+			continue
+		}
+		netType := strings.TrimSpace(parts[0])
+
+		ip := strings.TrimSpace(parts[1])
+		parts = strings.Split(ip, "/")
+		if len(parts) == 0 || strings.TrimSpace(parts[0]) == "" {
+			continue
+		}
+		ip = strings.TrimSpace(parts[0])
+
+		networksIPs = append(networksIPs, networkIP{
+			Type: netType,
+			IP:   ip,
+		})
+	}
+
+	if idx := slices.IndexFunc(networksIPs, func(n networkIP) bool {
+		return n.Type == "ethernet"
+	}); idx != -1 {
+		return &networksIPs[idx].IP, nil
+	}
+
+	if idx := slices.IndexFunc(networksIPs, func(n networkIP) bool {
+		return n.Type == "wifi"
+	}); idx != -1 {
+		return &networksIPs[idx].IP, nil
+	}
+
+	return nil, fmt.Errorf("no IP address found for ethernet or wifi connections")
 }
 
 func GetIPAddress(ctx context.Context, conn remote.RemoteConn) (*string, error) {
@@ -103,9 +136,5 @@ func GetIPAddress(ctx context.Context, conn remote.RemoteConn) (*string, error) 
 		Timeout: 5 * time.Second,
 		Conn:    conn,
 	}
-	name, err := nm.getIPAddress(ctx, "eth0")
-	if err != nil {
-		return nm.getIPAddress(ctx, "wlan0")
-	}
-	return name, nil
+	return nm.getIPAddress(ctx)
 }

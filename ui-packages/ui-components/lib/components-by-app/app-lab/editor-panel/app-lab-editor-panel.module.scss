@@ -1,0 +1,44 @@
+@use "@cloud-editor-mono/ui-components/public/shared.module.scss";
+
+.editor-read-only-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: linear-gradient(
+            0deg,
+            var(--component-bg-flexible, rgba(174, 184, 184, 0.15)) 0%,
+            var(--component-bg-flexible, rgba(174, 184, 184, 0.15)) 100%
+        )
+        #ecf1f1a0;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.25);
+
+    color: var(--text-inverted, #171e21);
+    font-weight: 600;
+
+    svg {
+        width: 12px;
+        height: 12px;
+    }
+}
+
+.editor-empty-state {
+    height: 100%;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 128px;
+        height: 128px;
+
+        path {
+            fill: #aeb8b826;
+        }
+    }
+}

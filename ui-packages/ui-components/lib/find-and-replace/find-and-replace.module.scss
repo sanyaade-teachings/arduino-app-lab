@@ -6,14 +6,14 @@
 
 .container {
     position: fixed;
-    top: 120px;
+    top: 130px;
     right: 64px;
     display: flex;
     gap: 5px;
     z-index: shared.$zIndex1;
     padding: 6px 8px;
     border-radius: 3px;
-    border: 1px solid shared.theme-var(--console-content-foreground);
+    border: 1px solid shared.theme-var(--editor-border-color);
     background: shared.theme-var(--console-bar-background);
     box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.13);
     font-size: 12px;
@@ -143,7 +143,7 @@
         height: 16px;
 
         path {
-            fill: shared.theme-var(--editor-tabs-foreground);
+            fill: shared.theme-var(--editor-tab-foreground);
         }
     }
 }
@@ -166,7 +166,7 @@
         width: 78px;
         padding: 5px 0px;
         border-radius: 2px;
-        border: 1px solid shared.theme-var(--editor-lines-background-selected);
+        border: 1px solid shared.theme-var(--editor-border-color);
         text-align: center;
         width: 78px;
     }
@@ -175,7 +175,7 @@
 .button {
     padding: 5px 2px;
     border-radius: 2px;
-    border: 1px solid shared.theme-var(--editor-lines-background-selected);
+    border: 1px solid shared.theme-var(--editor-border-color);
     color: shared.theme-var(--icon-button-tertiary-label-active);
     background: shared.theme-var(--icon-button-tertiary-background-active);
     text-align: center;

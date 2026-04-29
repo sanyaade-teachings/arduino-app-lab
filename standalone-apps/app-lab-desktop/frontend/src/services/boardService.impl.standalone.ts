@@ -156,14 +156,10 @@ export const isNetworkModeEnabled: BoardService['isNetworkModeEnabled'] =
 
 export const setNetworkMode: BoardService['setNetworkMode'] = async function (
   enabled: boolean,
+  password: string,
 ) {
-  try {
-    await (enabled ? EnableNetworkMode() : DisableNetworkMode());
-    return enabled;
-  } catch {
-    console.error('Error setting network mode:', enabled);
-  }
-  return false;
+  await (enabled ? EnableNetworkMode(password) : DisableNetworkMode(password));
+  return enabled;
 };
 
 export const getKernelVersion: BoardService['getKernelVersion'] =

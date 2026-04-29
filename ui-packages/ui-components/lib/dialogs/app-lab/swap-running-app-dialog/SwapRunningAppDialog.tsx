@@ -3,7 +3,7 @@ import { TriangleSharp } from '@cloud-editor-mono/images/assets/icons';
 import {
   AppLabDialog,
   Button,
-  ButtonType,
+  ButtonVariant,
 } from '../../../components-by-app/app-lab';
 import { useI18n } from '../../../i18n/useI18n';
 import { Medium, XXSmall } from '../../../typography';
@@ -32,12 +32,12 @@ export const SwapRunningAppDialog: React.FC<SwapRunningAppDialogProps> = ({
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => setOpen(false)}
           >
             {formatMessage(messages.cancelButton)}
           </Button>
-          <Button type={ButtonType.Primary} onClick={handleSwap}>
+          <Button variant={ButtonVariant.Primary} onClick={handleSwap}>
             {formatMessage(messages.confirmButton)}
           </Button>
         </>

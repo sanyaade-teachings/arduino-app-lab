@@ -3,7 +3,7 @@ import { Wifi } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 import { useI18n, XSmall } from '../../../shared';
@@ -30,7 +30,7 @@ const NetworksList: React.FC<NetworksListProps> = (
       <WifiWarning />
       <XSmall>{formatMessage(networkMessages.noNetworksWarning)}</XSmall>
       <Button
-        type={ButtonType.Tertiary}
+        variant={ButtonVariant.Tertiary}
         size={ButtonSize.XSmall}
         onClick={onManualNetworkSetup}
       >
@@ -55,7 +55,7 @@ const NetworksList: React.FC<NetworksListProps> = (
         ))}
       </ul>
       <Button
-        type={ButtonType.Tertiary}
+        variant={ButtonVariant.Tertiary}
         size={ButtonSize.XSmall}
         uppercase={true}
         onClick={onManualNetworkSetup}

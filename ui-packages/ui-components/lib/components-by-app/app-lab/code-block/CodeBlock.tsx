@@ -1,8 +1,7 @@
 import { CloseX, OpenInNewTab } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
-  ButtonType,
-  IconButton,
+  ButtonVariant,
   MarkdownReader,
   TreeNode,
   XSmall,
@@ -10,6 +9,7 @@ import {
 import clsx from 'clsx';
 
 import CodeBlockElement from '../../../code-block/CodeBlockElement';
+import { IconButton } from '../../../essential/icon-button';
 import styles from './code-block.module.scss';
 
 interface CodeBlockProps {
@@ -37,7 +37,7 @@ const CodeBlock: React.FC<CodeBlockProps> = (props: CodeBlockProps) => {
         <XSmall className={styles['title']}>{file.name}</XSmall>
         {onOpenExternal ? (
           <Button
-            type={ButtonType.Tertiary}
+            variant={ButtonVariant.Tertiary}
             Icon={OpenInNewTab}
             iconPosition="right"
             onClick={onOpenExternal}

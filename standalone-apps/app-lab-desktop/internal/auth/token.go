@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/zalando/go-keyring"
@@ -17,9 +18,23 @@ func SetRefreshToken(user string, token string) error {
 }
 
 func GetRefreshToken(user string) (string, error) {
-	return keyring.Get(service, user)
+	token, err := keyring.Get(service, user)
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			return "", nil
+		}
+		return "", fmt.Errorf("failed to get refresh token: %w", err)
+	}
+	return token, nil
 }
 
 func DeleteRefreshToken(user string) error {
-	return keyring.Delete(service, user)
+	err := keyring.Delete(service, user)
+	if err != nil {
+		if errors.Is(err, keyring.ErrNotFound) {
+			return nil
+		}
+		return fmt.Errorf("failed to delete refresh token: %w", err)
+	}
+	return nil
 }

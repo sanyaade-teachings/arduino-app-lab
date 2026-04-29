@@ -1,7 +1,7 @@
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   MarkdownReader,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import clsx from 'clsx';
@@ -54,7 +54,7 @@ export const WhatsNewAdHoc: React.FC<WhatsNewAdHocProps> = ({
           {formatMessage(messages.title)}
         </XXSmall>
         <Button
-          type={ButtonType.Tertiary}
+          variant={ButtonVariant.Tertiary}
           size={ButtonSize.XSmall}
           onClick={onClose}
         >

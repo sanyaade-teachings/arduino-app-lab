@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { memo } from 'react';
 
 import { CodeEditor } from '../code-editor';
@@ -19,7 +20,7 @@ interface EditorPanelProps {
   readOnlyBanner?: JSX.Element;
   onCopyCode?: () => void;
   classes?: {
-    container: string;
+    container?: string;
     tabsBar?: string;
     selectedTab?: string;
     tab?: string;
@@ -90,7 +91,7 @@ const EditorPanel: React.FC<EditorPanelProps> = (props: EditorPanelProps) => {
 
     if (selectedFile && selectedFile.ext === 'brick' && brickDetailLogic) {
       return (
-        <div className={styles['brick-detail-container']}>
+        <div className={styles['brick-container']}>
           <BrickDetail
             brickId={selectedFile.id}
             brickDetailLogic={brickDetailLogic}
@@ -111,10 +112,10 @@ const EditorPanel: React.FC<EditorPanelProps> = (props: EditorPanelProps) => {
 
   return (
     <EditorStatus
-      className={classes?.container}
+      className={clsx(styles['editor-panel'], classes?.container)}
       editorStatus={isConcurrent ? editorsNotification : undefined}
     >
-      {!hideTabs ? (
+      {!hideTabs && (
         <EditorTabsBar
           tabsBarLogic={tabsBarLogic}
           classes={{
@@ -123,11 +124,9 @@ const EditorPanel: React.FC<EditorPanelProps> = (props: EditorPanelProps) => {
             tab: classes?.tab,
           }}
         />
-      ) : null}
-      {selectedFile?.ext === 'md' &&
-      markdownCanBeRendered &&
-      setShouldRenderMarkdown ? (
-        <div className={styles['toolbar-and-content']}>
+      )}
+      <div className={styles['editor-content']}>
+        {selectedFile?.ext === 'md' && markdownCanBeRendered && (
           <EditorToolbar
             type="markdown"
             isRendered={!!shouldRenderMarkdown}
@@ -142,18 +141,16 @@ const EditorPanel: React.FC<EditorPanelProps> = (props: EditorPanelProps) => {
               canSwitchMarkdownMode ? setShouldRenderMarkdown : undefined
             }
           />
-          {renderContent()}
-        </div>
-      ) : (
-        renderContent()
-      )}
-      {!rest.hideControls ? (
-        <EditorControls
-          handlers={rest.editorControlsHandlers}
-          isFullscreen={isFullscreen}
-          indenting={codeIsFormatting}
-        />
-      ) : null}
+        )}
+        {renderContent()}
+        {!rest.hideControls && (
+          <EditorControls
+            handlers={rest.editorControlsHandlers}
+            isFullscreen={isFullscreen}
+            indenting={codeIsFormatting}
+          />
+        )}
+      </div>
     </EditorStatus>
   );
 };

@@ -103,6 +103,7 @@
     margin: 16px 0;
     padding: 8px 16px;
     background: var(--surface-bg-below-1, #171e21);
+    border: 1px solid var(--border-inverted, #232B2E);
 
     .copy-container {
       display: flex;

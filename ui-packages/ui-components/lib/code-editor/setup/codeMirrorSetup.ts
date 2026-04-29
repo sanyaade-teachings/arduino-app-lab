@@ -13,31 +13,20 @@ import {
   drawSelection,
   dropCursor,
   EditorView,
+  highlightActiveLine,
   highlightActiveLineGutter,
   keymap,
+  lineNumbers,
   rectangularSelection,
 } from '@codemirror/view';
 
-import { GutterDataWithFontSize } from '../../code-mirror/codeMirror.type';
-import { createCustomLineNumberGutter } from './codeEditorGutterExtension';
 import { tabKeyBinding } from './codeEditorKeyBindings';
 import { editorViewStyle, foldGutterStyle } from './codeEditorStyle';
-
-export function createGutterExtensions(
-  gutter?: GutterDataWithFontSize,
-): Extension {
-  return [
-    createCustomLineNumberGutter(
-      gutter?.lineNumberStartOffset,
-      gutter?.fontSize,
-    ),
-    foldGutter(foldGutterStyle),
-  ];
-}
 
 export const setup: Extension = [
   closeBrackets(),
   highlightActiveLineGutter(),
+  highlightActiveLine(),
   history(),
   EditorView.baseTheme(editorViewStyle),
   drawSelection(),
@@ -48,6 +37,8 @@ export const setup: Extension = [
   rectangularSelection(),
   crosshairCursor(),
   highlightSelectionMatches(),
+  lineNumbers(),
+  foldGutter(foldGutterStyle),
   keymap.of([...defaultKeymap, ...historyKeymap, ...foldKeymap, tabKeyBinding]),
   EditorView.contentAttributes.of({ tabindex: '0' }),
 ];

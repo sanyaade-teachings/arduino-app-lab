@@ -4,8 +4,8 @@ import { useCallback, useState } from 'react';
 
 import {
   Button,
+  ButtonAppearance,
   ButtonSize,
-  ButtonType,
   ButtonVariant,
   useI18n,
 } from '../../../components-by-app/app-lab';
@@ -72,9 +72,9 @@ export const TrainNewModelDialog: React.FC<TrainNewModelDialogProps> = (
       onOpenChange={onOpenChange}
       title={
         <Button
-          type={ButtonType.Secondary}
+          variant={ButtonVariant.Secondary}
           size={ButtonSize.XSmall}
-          variant={ButtonVariant.LowContrast}
+          appearance={ButtonAppearance.LowContrast}
           onClick={(): void => onOpenChange(false)}
           Icon={ExitButton}
           classes={{ button: styles['exit-button'] }}

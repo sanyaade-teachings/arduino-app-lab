@@ -11,18 +11,36 @@ import { del, get, set } from 'idb-keyval';
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
+import {
+  AUTO_SELECT_BOARD_ID,
+  AUTO_SELECT_BOARD_SERIAL,
+  BOARD_APP_MAPPING,
+  PREVIOUS_BOARD_IDS,
+  PREVIOUS_BOARD_SERIALS,
+} from '../constants';
 import { useBoardLifecycleStore } from '../store/boardLifecycle';
 import { useIsBoard } from './useIsBoard';
 
 const CONNECT_TIMEOUT_MS = 15_000;
-const AUTO_SELECT_BOARD_ID = 'arduino:auto-select-board-id';
+
+export type BoardAppInfo = {
+  appId: string;
+  section: string;
+};
 
 export type UseBoards = () => {
   boards: Board[];
   selectedBoard?: Board;
+  selectingBoard?: Board;
+  boardSelectionStatus?:
+    | 'selection-started'
+    | 'conn-started'
+    | 'conn-error'
+    | 'conn-and-selection-done';
   selectBoard: (board: Board) => Promise<void>;
-  autoSelectBoard: (boardId: string) => Promise<void>;
+  autoSelectBoard: (boardSerial: string) => Promise<void>;
   isAutoSelectingBoard: boolean;
+  couldNotAutoSelectBoard: boolean;
   showBoardConnPswPrompt: boolean;
   onConnPswCancel: () => void;
   onConnPswSubmit: (password: string) => Promise<void>;
@@ -30,6 +48,9 @@ export type UseBoards = () => {
   connToBoardError?: string;
   connToBoardCompleted: boolean;
   setSelectedBoardCheckingStatus: () => void;
+  lastAppInfo?: BoardAppInfo;
+  saveAppId: (appId: string, section: string) => Promise<void>;
+  resetAppId: () => Promise<void>;
 };
 
 type BoardsState = {
@@ -76,7 +97,7 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
         ...state,
         boards: state.boards.map((b) => ({
           ...b,
-          isSelecting: b.id === action.payload.board.id,
+          isSelecting: b.serial === action.payload.board.serial,
         })),
         selected: {
           board: action.payload.board,
@@ -138,7 +159,7 @@ function boardsReducer(state: BoardsState, action: BoardsAction): BoardsState {
         ...state,
         boards: state.boards.map((b) => ({
           ...b,
-          checkingStatus: b.id === state.selected.board?.id,
+          checkingStatus: b.serial === state.selected.board?.serial,
         })),
       };
 
@@ -201,8 +222,9 @@ export const useBoards: UseBoards = () => {
   ] = useReducer(boardsReducer, boardsInitialState);
 
   const [isAutoSelectingBoard, setIsAutoSelectingBoard] = useState(true);
+  const [couldNotAutoSelectBoard, setCouldNotAutoSelectBoard] = useState(false);
 
-  useQuery(['boards'], getBoards, {
+  const { isLoading: isLoadingBoards } = useQuery(['boards'], getBoards, {
     refetchInterval: isBoard ? undefined : 3000,
     enabled: !boardIsFlashing,
     onSuccess: (data) => {
@@ -220,6 +242,7 @@ export const useBoards: UseBoards = () => {
       !boards.map((b) => b.serial).includes(selectedBoard.serial)
     ) {
       timeout = setTimeout(() => {
+        del(AUTO_SELECT_BOARD_SERIAL);
         reloadApp();
       }, 5000);
     }
@@ -243,13 +266,22 @@ export const useBoards: UseBoards = () => {
 
       try {
         await withTimeout(
-          apiSelectBoard(board.id, password),
+          apiSelectBoard(board.serial, password),
           CONNECT_TIMEOUT_MS,
         );
 
         dispatch({ type: 'COMPLETE_BOARD_CONN_AND_SELECTION' });
         setBoardIsReachable(true);
         setSelectedConnectedBoard(board);
+        setIsAutoSelectingBoard(false);
+        if (board.connectionType !== 'Network') {
+          set(AUTO_SELECT_BOARD_SERIAL, board.serial);
+        } else {
+          del(AUTO_SELECT_BOARD_ID);
+          del(PREVIOUS_BOARD_IDS);
+          del(AUTO_SELECT_BOARD_SERIAL);
+          del(PREVIOUS_BOARD_SERIALS);
+        }
       } catch (err) {
         const msg = isAuthFailed(err)
           ? 'Password is not correct. Please try again.'
@@ -259,6 +291,9 @@ export const useBoards: UseBoards = () => {
         dispatch({ type: 'BOARD_CONN_ERROR', payload: msg });
 
         console.error('Failed to select board', err);
+        // Reset auto-selection state on connection error to prevent infinite loader
+        setIsAutoSelectingBoard(false);
+
         throw err;
       }
     },
@@ -266,20 +301,47 @@ export const useBoards: UseBoards = () => {
   );
 
   useEffect(() => {
+    // Prevent auto-connection if:
+    // 1. Already connecting/connected to a board
+    // 2. There's a board connection error
+    // 3. Already have a selected connected board
+    if (boardStatus || selectedConnectedBoard) {
+      return;
+    }
+
     if (isBoard && boards.length !== 0) {
       connectToBoard(boards[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boards, isBoard]);
+  }, [boards, isBoard, boardStatus, selectedConnectedBoard]);
 
   const handleSelectBoard = useCallback(
     async (board: Board) => {
+      setIsAutoSelectingBoard(false);
+
       dispatch({
         type: 'START_BOARD_SELECTION',
         payload: { board },
       });
 
-      del(AUTO_SELECT_BOARD_ID);
+      // save serial board to re-select if it is still connected
+      if (board.connectionType !== 'Network') {
+        set(AUTO_SELECT_BOARD_SERIAL, board.serial);
+      } else {
+        del(AUTO_SELECT_BOARD_ID);
+        del(PREVIOUS_BOARD_IDS);
+        del(AUTO_SELECT_BOARD_SERIAL);
+        del(PREVIOUS_BOARD_SERIALS);
+      }
+
+      // Save current board list as reference for future auto-selection
+      // Get fresh boards array to avoid closure issues
+      const currentBoards = await getBoards();
+      const boardSerialsToSave = currentBoards.map((b) => b.serial);
+
+      if (board.connectionType !== 'Network') {
+        await set(PREVIOUS_BOARD_SERIALS, boardSerialsToSave);
+      }
 
       if (board.connectionType !== 'Network') {
         try {
@@ -327,50 +389,185 @@ export const useBoards: UseBoards = () => {
     dispatch({ type: 'SET_SELECTED_BOARD_CHECKING_STATUS' });
   }, []);
 
-  // save boardId on idb to auto-select it on app reload
-  const autoSelectBoard = useCallback(async (boardId: string) => {
-    await set(AUTO_SELECT_BOARD_ID, boardId);
-    reloadApp();
-  }, []);
+  // save boardSerial on idb to auto-select it on app reload
+  const autoSelectBoard = useCallback(
+    async (boardSerial: string) => {
+      const board = boards.find((b) => b.serial === boardSerial);
+      if (board && board.connectionType === 'Network') {
+        del(AUTO_SELECT_BOARD_ID);
+        del(PREVIOUS_BOARD_IDS);
+        del(AUTO_SELECT_BOARD_SERIAL);
+        del(PREVIOUS_BOARD_SERIALS);
+        return;
+      }
+      await set(AUTO_SELECT_BOARD_SERIAL, boardSerial);
+      reloadApp();
+    },
+    [boards],
+  );
+
+  // save app ID mapped to current board with section
+  const saveAppId = useCallback(
+    async (appId: string, section: string): Promise<void> => {
+      const boardSerial = selectedConnectedBoard?.serial;
+      if (!boardSerial) return;
+      const mapping = {
+        ...((await get<Record<string, BoardAppInfo>>(BOARD_APP_MAPPING)) || {}),
+      };
+      mapping[boardSerial] = { appId, section };
+      await set(BOARD_APP_MAPPING, mapping);
+    },
+    [selectedConnectedBoard?.serial],
+  );
+
+  // reset app ID for current board
+  const resetAppId = useCallback(async (): Promise<void> => {
+    const boardSerial = selectedConnectedBoard?.serial;
+    if (!boardSerial) return;
+    const mapping = {
+      ...((await get<Record<string, BoardAppInfo>>(BOARD_APP_MAPPING)) || {}),
+    };
+    delete mapping[boardSerial];
+    await set(BOARD_APP_MAPPING, mapping);
+  }, [selectedConnectedBoard?.serial]);
+
+  // load last app info for current board
+  const [lastAppInfo, setLastAppInfo] = useState<BoardAppInfo | undefined>();
+  useEffect(() => {
+    const loadLastAppInfo = async (): Promise<void> => {
+      const boardSerial = selectedConnectedBoard?.serial;
+      if (!boardSerial) {
+        setLastAppInfo(undefined);
+        return;
+      }
+      const mapping = {
+        ...((await get<Record<string, BoardAppInfo>>(BOARD_APP_MAPPING)) || {}),
+      };
+      setLastAppInfo(mapping[boardSerial]);
+    };
+    loadLastAppInfo();
+  }, [selectedConnectedBoard?.serial]);
 
   // retrieve boardId from idb to auto-select board on app reload after it has been switched
   useEffect(() => {
     const autoSelectBoard = async (): Promise<void> => {
-      if (isBoard) {
-        setIsAutoSelectingBoard(false);
+      // not retrigger
+      if (!isAutoSelectingBoard || isBoard) {
         return;
       }
 
-      const boardId = await get<string>(AUTO_SELECT_BOARD_ID);
+      // TODO: old auto selection logic, to be removed in future release
+      const migrate = async (): Promise<void> => {
+        const boardId = await get<string>(AUTO_SELECT_BOARD_ID);
+        if (boardId && boards.length) {
+          const board = boards.find((board) => board.id === boardId);
+          if (board) {
+            await set(AUTO_SELECT_BOARD_SERIAL, board.serial);
+            del(AUTO_SELECT_BOARD_ID);
+          }
+        }
 
-      if (!boardId) {
-        if (!boardStatus || boardStatus === 'conn-error') {
+        const previousBoardIds =
+          (await get<string[]>(PREVIOUS_BOARD_IDS)) || [];
+        if (previousBoardIds.length && boards.length) {
+          const previousBoards = boards.filter((board) =>
+            previousBoardIds.includes(board.id),
+          );
+          if (previousBoards.length) {
+            await set(
+              PREVIOUS_BOARD_SERIALS,
+              previousBoards.map((b) => b.serial),
+            );
+            del(PREVIOUS_BOARD_IDS);
+          }
+        }
+      };
+      await migrate();
+
+      const boardSerial = await get<string>(AUTO_SELECT_BOARD_SERIAL);
+
+      // no boards user can select
+      if (!boardSerial) {
+        // Stop auto-selection if no saved board serial but boards are available
+        // This prevents infinite loader for new/flash boards
+        if (
+          !boardStatus ||
+          boardStatus === 'conn-error' ||
+          (boards.length > 0 && !selectedConnectedBoard)
+        ) {
           setIsAutoSelectingBoard(false);
         }
         return;
       }
 
-      if (!boards.length) return;
+      if (!boards.length) {
+        if (!isLoadingBoards) {
+          setIsAutoSelectingBoard(false);
+          setTimeout(() => {
+            setCouldNotAutoSelectBoard(true);
+          }, 1000);
+        }
+        return;
+      }
 
-      const board = boards.find((board) => board.id === boardId);
+      // Check if board list has changed
+      const previousBoardSerials =
+        (await get<string[]>(PREVIOUS_BOARD_SERIALS)) || [];
 
+      // If we have previous board serials stored, check if board list changed during session
+      if (previousBoardSerials.length > 0) {
+        const currentBoardSerials = boards.map((b) => b.serial);
+        const boardListChanged =
+          previousBoardSerials.length !== currentBoardSerials.length ||
+          !previousBoardSerials.every((serial) =>
+            currentBoardSerials.includes(serial),
+          );
+
+        if (boardListChanged) {
+          // Board list changed - disable auto-selection and clear saved board ID
+          // This forces manual selection but preserves app/workspace mapping
+
+          setIsAutoSelectingBoard(false);
+          del(AUTO_SELECT_BOARD_SERIAL);
+          return;
+        }
+      }
+
+      const board = boards.find((board) => board.serial === boardSerial);
+
+      // user can select the board
       if (!board) {
+        setIsAutoSelectingBoard(false);
+        // Clear the invalid board ID to prevent infinite loop
+        del(AUTO_SELECT_BOARD_SERIAL);
+        setCouldNotAutoSelectBoard(true);
+        return;
+      }
+
+      // no autoselect in network mode
+      if (board.connectionType === 'Network') {
         setIsAutoSelectingBoard(false);
         return;
       }
 
-      await handleSelectBoard(board);
+      handleSelectBoard(board).catch(() => {
+        setIsAutoSelectingBoard(false);
+      });
     };
 
     autoSelectBoard();
-  }, [boardStatus, boards, handleSelectBoard, isBoard]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boards.length, isLoadingBoards, isAutoSelectingBoard]);
 
   return {
     boards,
     selectedBoard: selectedConnectedBoard,
+    selectingBoard: selectedBoard,
+    boardSelectionStatus: boardStatus,
     selectBoard: handleSelectBoard,
     autoSelectBoard,
     isAutoSelectingBoard,
+    couldNotAutoSelectBoard,
     showBoardConnPswPrompt: selectedBoard?.connectionType === 'Network',
     onConnPswCancel,
     onConnPswSubmit: handleBoardConnectionWithPassword,
@@ -378,5 +575,8 @@ export const useBoards: UseBoards = () => {
     connToBoardError: boardStatus === 'conn-error' ? boardError : undefined,
     connToBoardCompleted: boardStatus === 'conn-and-selection-done',
     setSelectedBoardCheckingStatus,
+    lastAppInfo,
+    saveAppId,
+    resetAppId,
   };
 };

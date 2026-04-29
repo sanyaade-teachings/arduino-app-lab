@@ -31,12 +31,12 @@ func GetBoards(ctx context.Context) ([]*Board, error) {
 		return nil, errors.New("detection tools not installed")
 	}
 
-	boards, err := board.FromFQBN(ctx, arduinoQFqbn)
+	boards, err := board.FromFQBN(ctx, supportedBoards)
 	if err != nil {
 		return nil, fmt.Errorf("failing to get board from FQBN: %w", err)
 	}
 	if len(boards) == 0 {
-		return nil, fmt.Errorf("no boards found for FQBN %s", arduinoQFqbn)
+		return nil, fmt.Errorf("no boards found for FQBNs %s", strings.Join(supportedBoards, ", "))
 	}
 
 	var result []*Board

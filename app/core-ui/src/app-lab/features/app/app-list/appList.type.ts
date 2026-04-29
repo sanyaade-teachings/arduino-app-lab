@@ -1,9 +1,21 @@
 import { AppInfo } from '@cloud-editor-mono/infrastructure';
 import {
   CreateAppDialogLogic,
+  DeleteAppDialogLogic,
+  ExportAppDialogLogic,
   ImportAppDialogLogic,
+  RenameAppDialogLogic,
   SnackbarProps,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
+import React from 'react';
+
+export interface AppActions {
+  onRename: (app: AppInfo) => void;
+  onDuplicate: (app: AppInfo) => void;
+  onExport: (app: AppInfo) => void;
+  onSetAsDefault: (app: AppInfo) => void;
+  onDelete: (app: AppInfo) => void;
+}
 
 export interface UseAppListLogic {
   apps: AppInfo[];
@@ -14,4 +26,11 @@ export interface UseAppListLogic {
   importAppDialogLogic: ImportAppDialogLogic;
   importedAppId?: string;
   sendNotification: (props: Omit<SnackbarProps, 'onClose' | 'toastId'>) => void;
+  appActions: AppActions;
+  deleteAppDialogLogic: DeleteAppDialogLogic;
+  duplicateAppDialogLogic: CreateAppDialogLogic;
+  renameAppDialogLogic: RenameAppDialogLogic;
+  exportAppDialogLogic: ExportAppDialogLogic;
+  defaultApp?: AppInfo;
+  handleAppClick: (appId: string, e?: React.MouseEvent) => void;
 }

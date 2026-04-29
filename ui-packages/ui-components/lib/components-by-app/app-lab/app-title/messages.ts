@@ -32,4 +32,21 @@ export const appTitleMessages = defineMessages({
     description:
       'Error message when trying to set an app name that is already used',
   },
+  runAtStartup: {
+    id: 'appTitle.runAtStartup',
+    defaultMessage: 'Run at startup',
+    description: 'Label for the run at startup action',
+  },
+  setAsDefault: {
+    id: 'appTitle.setAsDefault',
+    defaultMessage:
+      'This app is set as the startup app. This means it will automatically run every time you plug your board into <bold>any power source</bold>',
+    description: 'Label for the set as default app',
+  },
+  overrideAsDefault: {
+    id: 'appTitle.overrideAsDefault',
+    defaultMessage:
+      'Only one app can be set to launch at startup. Enabling this feature for the current app will <bold>override the {appName} app</bold>.',
+    description: 'Label for the override default app',
+  },
 });

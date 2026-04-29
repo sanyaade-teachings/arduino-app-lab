@@ -21,11 +21,11 @@ export function CreateFolder(arg1:string):Promise<void>;
 
 export function DeleteRefreshToken(arg1:string):Promise<void>;
 
-export function DisableNetworkMode():Promise<void>;
+export function DisableNetworkMode(arg1:string):Promise<void>;
 
 export function DisconnectWiFi():Promise<void>;
 
-export function EnableNetworkMode():Promise<void>;
+export function EnableNetworkMode(arg1:string):Promise<void>;
 
 export function ExportApp(arg1:string,arg2:string,arg3:boolean):Promise<string>;
 
@@ -96,6 +96,8 @@ export function ImportAppFromPath(arg1:string):Promise<string>;
 export function InferOrchestratorURL():Promise<string>;
 
 export function IsBoard():Promise<boolean>;
+
+export function IsDirectory(arg1:string):Promise<boolean>;
 
 export function IsUserPartitionPreservationSupported(arg1:string,arg2:string):Promise<boolean>;
 

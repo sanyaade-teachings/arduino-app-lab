@@ -2,7 +2,7 @@ import { FlashEvent } from '@cloud-editor-mono/domain/src/services/flasher-servi
 import { Success, TriangleSharp } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
-  ButtonType,
+  ButtonVariant,
   useI18n,
   XSmall,
   XXSmall,
@@ -202,7 +202,7 @@ export const FlasherFlashing: React.FC<FlasherFlashingProps> = ({
       {succeeded !== null && (
         <div className={stepStyles['step-footer']}>
           <Button
-            type={ButtonType.Primary}
+            variant={ButtonVariant.Primary}
             onClick={succeeded ? onConfirm : onRetry}
           >
             {formatMessage(

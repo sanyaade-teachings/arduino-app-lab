@@ -42,16 +42,16 @@ export const NetworkSettingsDialog: React.FC<NetworkSettingsDialogProps> = ({
       title={formatMessage(messages.dialogTitle)}
       onSubmit={(): void => ref.current?.confirm()}
       footer={
-        <Button
-          loading={isLoading}
-          size={ButtonSize.Small}
-          disabled={
-            isLoading || (!logic.selectedNetwork && !logic.manualNetworkSetup)
-          }
-          isSubmit
-        >
-          {formatMessage(messages.confirmButton)}
-        </Button>
+        showFooterConfirmBtn && (
+          <Button
+            loading={isLoading}
+            size={ButtonSize.Small}
+            disabled={isLoading}
+            type="submit"
+          >
+            {formatMessage(messages.confirmButton)}
+          </Button>
+        )
       }
     >
       <Network ref={ref} logic={networkLogic} isSetupFlow={false} />

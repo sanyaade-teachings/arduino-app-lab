@@ -5,7 +5,7 @@ import {
   Wifi,
 } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
-import { Key, useCallback } from 'react';
+import { Key, useCallback, useState } from 'react';
 
 import { DropdownMenuButton } from '../../../../../essential/dropdown-menu';
 import { useI18n } from '../../../../../i18n/useI18n';
@@ -24,6 +24,8 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
 }: BoardSelectionProps) => {
   const { label, state = 'inactive', icon } = boardItem ?? {};
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const { formatMessage } = useI18n();
 
   const { props: tooltipPropsLabel, renderTooltip: renderTooltipLabel } =
@@ -33,12 +35,15 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
       timeout: 0,
     });
 
-  const { props: tooltipPropsDropdown, renderTooltip: renderTooltipDropdown } =
-    useTooltip({
-      content: formatMessage(messages.switchBoardDropdownButton),
-      direction: 'up',
-      timeout: 0,
-    });
+  const {
+    props: tooltipPropsDropdown,
+    renderTooltip: renderTooltipDropdown,
+    setShowTooltip: setShowTooltipDropdown,
+  } = useTooltip({
+    content: formatMessage(messages.switchBoardDropdownButton),
+    direction: 'up',
+    timeout: 0,
+  });
 
   const isSelectedBoard = useCallback(
     (board: Board) => board.id === selectedBoard?.id,
@@ -57,11 +62,11 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
 
   const onDropdownAction = useCallback(
     (key: Key) => {
-      const board = boards.find((board) => board.id === key)!;
-      if (isSelectedBoard(board)) {
+      const board = boards.find((board) => board.serial === key)!;
+      if (!board || isSelectedBoard(board)) {
         return;
       }
-      autoSelectBoard(board.id);
+      autoSelectBoard(board.serial);
     },
     [boards, isSelectedBoard, autoSelectBoard],
   );
@@ -89,39 +94,61 @@ const BoardSelection: React.FC<BoardSelectionProps> = ({
             sections={[
               {
                 name: 'Boards',
-                items: boards.map((board) => ({
-                  id: board.id,
-                  label: `${board.type}`,
-                  labelPrefix: (
-                    <div className={styles['dropdown-menu-item-label-prefix']}>
-                      {getBoardIcon(board)}
-                      <span
-                        className={
-                          styles['dropdown-menu-item-label-prefix-text']
-                        }
-                        title={board.name}
-                      >
-                        {board.name}
-                      </span>
-                    </div>
-                  ),
-                  itemClassName: isSelectedBoard(board)
-                    ? styles['is-selected']
-                    : undefined,
-                })),
+                items: boards.length
+                  ? boards.map((board) => ({
+                      id: board.serial,
+                      label: `${board.type}`,
+                      labelPrefix: (
+                        <div
+                          className={styles['dropdown-menu-item-label-prefix']}
+                        >
+                          {getBoardIcon(board)}
+                          <span
+                            className={
+                              styles['dropdown-menu-item-label-prefix-text']
+                            }
+                            title={board.name}
+                          >
+                            {board.name}
+                          </span>
+                        </div>
+                      ),
+                      itemClassName: isSelectedBoard(board)
+                        ? styles['is-selected']
+                        : undefined,
+                    }))
+                  : [
+                      {
+                        id: 'no-boards',
+                        label: formatMessage(
+                          messages.switchBoardDropdownMenuItemNoBoards,
+                        ),
+                        itemClassName: styles['no-boards'],
+                      },
+                    ],
               },
             ]}
             buttonChildren={<CaretDown />}
             onAction={onDropdownAction}
+            onOpen={(isOpen): void => {
+              setIsDropdownOpen(isOpen);
+              setShowTooltipDropdown(false);
+            }}
             classes={{
               dropdownMenuButtonWrapper: styles['dropdown-menu-button-wrapper'],
               dropdownMenuButton: styles['dropdown-menu-button'],
               dropdownMenuButtonOpen: styles['dropdown-menu-button-open'],
               dropdownMenu: styles['dropdown-menu'],
               dropdownMenuItem: styles['dropdown-menu-item'],
+              dropdownMenuPopover: styles['dropdown-menu-popover'],
             }}
           />
-          {renderTooltipDropdown(styles['tooltip-content--dropdown'])}
+          {renderTooltipDropdown(
+            clsx(
+              styles['tooltip-content--dropdown'],
+              isDropdownOpen && styles['dropdown-open'],
+            ),
+          )}
         </div>
       )}
     </div>

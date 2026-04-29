@@ -5,7 +5,7 @@ import {
 import { Checkmark, Exit } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
-  ButtonType,
+  ButtonAppearance,
   ButtonVariant,
   useI18n,
   XSmall,
@@ -52,6 +52,7 @@ export const Flasher: React.FC<FlasherProps> = ({
   const {
     loading,
     succeeded,
+    setFlashing,
     setSucceeded,
     close,
     listAvailableImages,
@@ -65,6 +66,7 @@ export const Flasher: React.FC<FlasherProps> = ({
 
   const handleFlash = useCallback(
     async (image: OSImageRelease, preserveData: boolean): Promise<void> => {
+      setFlashing(true);
       try {
         await flashBoard(image, preserveData, (event) => {
           setFlashEvent(event);
@@ -84,9 +86,12 @@ export const Flasher: React.FC<FlasherProps> = ({
           progress: 1,
         });
         setSucceeded(false);
+      } finally {
+        setFlashing(false);
       }
     },
     [
+      setFlashing,
       flashBoard,
       setSucceeded,
       clearBoardAsUsed,
@@ -147,8 +152,8 @@ export const Flasher: React.FC<FlasherProps> = ({
     <section className={styles['main']}>
       <div className={styles['header']}>
         <Button
-          type={ButtonType.Secondary}
-          variant={ButtonVariant.LowContrast}
+          variant={ButtonVariant.Secondary}
+          appearance={ButtonAppearance.LowContrast}
           Icon={Exit}
           disabled={disabled}
           onClick={close}

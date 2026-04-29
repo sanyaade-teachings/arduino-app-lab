@@ -1,6 +1,6 @@
 module github.com/bcmi-labs/cloud-editor-mono
 
-go 1.25.6
+go 1.26.1
 
 tool (
 	github.com/go-task/task/v3/cmd/task

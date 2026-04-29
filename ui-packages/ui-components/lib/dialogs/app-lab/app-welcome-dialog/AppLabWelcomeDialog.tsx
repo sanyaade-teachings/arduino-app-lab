@@ -7,7 +7,7 @@ import {
 
 import {
   Button,
-  ButtonType,
+  ButtonVariant,
   Small,
   useI18n,
 } from '../../../components-by-app/app-lab';
@@ -55,7 +55,11 @@ export const AppLabWelcomeDialog = ({
         body: styles['welcome-body-override'],
       }}
       footer={
-        <Button type={ButtonType.Primary} onClick={onConfirm} bold={false}>
+        <Button
+          variant={ButtonVariant.Primary}
+          onClick={onConfirm}
+          bold={false}
+        >
           {formatMessage(messages.confirmButton)}
         </Button>
       }

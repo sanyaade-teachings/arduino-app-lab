@@ -14,7 +14,7 @@ import { useMemo } from 'react';
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   Medium,
   useI18n,
   XSmall,
@@ -150,7 +150,7 @@ const ConnectionPanel: React.FC<ConnectionPanelProps> = (
         )}
 
         <Button
-          type={ButtonType.Primary}
+          variant={ButtonVariant.Primary}
           size={ButtonSize.XSmall}
           onClick={mainButtonConfig.action}
           Icon={mainButtonConfig.icon}

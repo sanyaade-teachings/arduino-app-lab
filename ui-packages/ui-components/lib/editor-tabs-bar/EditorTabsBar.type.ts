@@ -12,9 +12,7 @@ export interface SelectableFileData {
   fileName: string;
   fileExtension: string;
   tags: string[];
-  Icon?: FunctionComponent<
-    SVGProps<SVGSVGElement> & { title?: string | undefined }
-  >;
+  Icon?: React.ReactNode;
   isFixed?: boolean;
   isMetadataReadOnly?: boolean;
 }
@@ -80,6 +78,7 @@ export type TabsBarLogic = () => {
   dispatchNewFileAction?: Key | null;
   setDispatchNewFileAction?: (key: Key | null) => void;
   isRenderedMarkdownFile?: boolean;
+  showFileSearch?: boolean;
 };
 
 export enum FileExtension {

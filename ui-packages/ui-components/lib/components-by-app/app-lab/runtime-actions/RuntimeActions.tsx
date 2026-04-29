@@ -1,9 +1,5 @@
 import {
-  AppLabToggleOff,
-  AppLabToggleOn,
-  CaretDown,
   Play,
-  Power,
   Spinner,
   StatusError,
   StatusSuccess,
@@ -13,35 +9,24 @@ import {
   Action,
   ActionStatus,
   Button,
-  ButtonSize,
-  ButtonType,
+  ButtonAppearance,
   ButtonVariant,
-  DropdownMenuButton,
   RuntimeActionsProps,
-  useI18n,
-  XXSmall,
-  XXXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
-import { messages } from './messages';
 import styles from './runtime-actions.module.scss';
 
 const RuntimeActions = (props: RuntimeActionsProps): React.ReactElement => {
   const { runtimeActionsLogic, runtimeDisable } = props;
-  const [open, setOpen] = useState(false);
-  const { formatMessage } = useI18n();
 
   const {
     appId,
-    appDefault,
     appName,
     appStatus,
     currentAction,
     currentActionStatus,
-    setAsDefaultApp,
-    openApp,
     runApp,
     stopApp,
     isBannerEnabled = true,
@@ -64,13 +49,13 @@ const RuntimeActions = (props: RuntimeActionsProps): React.ReactElement => {
         logs: '',
       },
       [ActionStatus.Succeeded]: {
-        run: `Done ${appName}.yml`,
-        stop: `Stopped ${appName}.yml`,
-        logs: `Done ${appName}.yml`,
+        run: `Done ${appName}`,
+        stop: `Stopped ${appName}`,
+        logs: `Done ${appName}`,
       },
       [ActionStatus.Errored]: {
-        run: `Failed ${appName}.yml`,
-        stop: `Failed ${appName}.yml`,
+        run: `Failed ${appName}`,
+        stop: `Failed ${appName}`,
         logs: '',
       },
     };
@@ -139,130 +124,42 @@ const RuntimeActions = (props: RuntimeActionsProps): React.ReactElement => {
     }
 
     return () => clearTimeout(timeoutRef.current || undefined);
-  }, [currentAction, currentActionStatus, isBannerEnabled]);
-
-  const SwitchIcon =
-    appDefault?.id === appId ? AppLabToggleOn : AppLabToggleOff;
+  }, [appStatus, currentAction, currentActionStatus, isBannerEnabled]);
 
   return (
     <div className={styles['actions']}>
       {showStatusBanner && getStatusBanner(showStatusBanner)}
-      <div
-        className={clsx(styles['button-container'], {
-          [styles['stop']]: stopShown,
-          [styles['run']]: !stopShown,
-        })}
-      >
-        {stopShown && (
-          <Button
-            classes={{
-              button: clsx(
-                { [styles['button']]: setAsDefaultApp },
-                styles['icon-only'],
-              ),
-            }}
-            onClick={(): void => stopApp(appId, appStatus)}
-            type={ButtonType.Secondary}
-            size={ButtonSize.Small}
-            variant={ButtonVariant.Destructive}
-            disabled={stopDisabled || runtimeDisable}
-            Icon={Stop}
-            iconPosition="left"
-          >
-            Stop
-          </Button>
-        )}
-        {!stopShown && (
-          <Button
-            classes={{
-              button: clsx(
-                { [styles['button']]: setAsDefaultApp },
-                styles['icon-only'],
-              ),
-            }}
-            onClick={(): void => runApp(appId)}
-            type={ButtonType.Primary}
-            size={ButtonSize.Small}
-            variant={ButtonVariant.Action}
-            disabled={
-              currentActionStatus === ActionStatus.Pending || runtimeDisable
-            }
-            Icon={Play}
-            iconPosition="left"
-          >
-            Run
-          </Button>
-        )}
-        {setAsDefaultApp && (
-          <DropdownMenuButton
-            sections={[
-              {
-                name: 'Actions',
-                items: [
-                  {
-                    id: 'default',
-                    node: (
-                      <div className={styles['dropdown-menu-item']}>
-                        <div className={styles['dropdown-menu-item-title']}>
-                          <Power />
-                          <XXSmall>
-                            {formatMessage(messages.runAtStartup)}
-                          </XXSmall>
-                          <SwitchIcon
-                            onClick={(): void =>
-                              setAsDefaultApp(appDefault?.id !== appId)
-                            }
-                          />
-                        </div>
-                        <XXXSmall
-                          className={styles['dropdown-menu-item-content']}
-                        >
-                          {appDefault && appDefault.id !== appId
-                            ? formatMessage(messages.overrideAsDefault, {
-                                appName: (
-                                  <span
-                                    role="button"
-                                    tabIndex={0}
-                                    className={styles['app-name']}
-                                    onClick={(): void => openApp?.(appDefault)}
-                                    onKeyUp={(): void => openApp?.(appDefault)}
-                                  >
-                                    {appDefault.name}
-                                  </span>
-                                ),
-                                bold: (text: string) => <b>{text}</b>,
-                              })
-                            : formatMessage(messages.setAsDefault, {
-                                bold: (text: string) => <b>{text}</b>,
-                              })}
-                        </XXXSmall>
-                      </div>
-                    ),
-                    label: formatMessage(messages.runAtStartup),
-                  },
-                ],
-              },
-            ]}
-            buttonChildren={<CaretDown />}
-            useStaticPosition={false}
-            isOpen={open}
-            onOpen={setOpen}
-            classes={{
-              dropdownMenu: styles['dropdown-menu'],
-              dropdownMenuButton: styles['dropdown-menu-button'],
-              dropdownMenuButtonOpen: styles['dropdown-menu-button--open'],
-              dropdownMenuButtonWrapper: clsx(
-                styles['dropdown-menu-button-wrapper'],
-                {
-                  [styles['open']]: open,
-                },
-              ),
-              dropdownMenuItem: styles['dropdown-menu-item-container'],
-              dropdownMenuList: styles['dropdown-menu-list'],
-            }}
-          />
-        )}
-      </div>
+      {stopShown ? (
+        <Button
+          classes={{
+            button: clsx(styles['icon-only']),
+          }}
+          onClick={(): void => stopApp(appId, appStatus)}
+          variant={ButtonVariant.Secondary}
+          appearance={ButtonAppearance.Destructive}
+          disabled={stopDisabled || runtimeDisable}
+          Icon={Stop}
+          iconPosition="left"
+        >
+          Stop
+        </Button>
+      ) : (
+        <Button
+          classes={{
+            button: clsx(styles['icon-only']),
+          }}
+          onClick={(): void => runApp(appId)}
+          variant={ButtonVariant.Primary}
+          appearance={ButtonAppearance.Action}
+          disabled={
+            currentActionStatus === ActionStatus.Pending || runtimeDisable
+          }
+          Icon={Play}
+          iconPosition="left"
+        >
+          Run
+        </Button>
+      )}
     </div>
   );
 };

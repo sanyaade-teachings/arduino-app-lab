@@ -1,4 +1,8 @@
-import { ArrowDown } from '@cloud-editor-mono/images/assets/icons';
+import {
+  AppExamples,
+  ArrowDown,
+  MyApps,
+} from '@cloud-editor-mono/images/assets/icons';
 import { Link } from '@tanstack/react-router';
 import { clsx } from 'clsx';
 import { Fragment } from 'react';
@@ -51,10 +55,26 @@ const TopBar: React.FC<TopBarProps> = (props: TopBarProps) => {
       ? sidePanelItems.find((item) => item.id === pathItems[0])
       : null;
 
+  const getBackIcon = (pathItem: React.ReactNode): JSX.Element | null => {
+    if (typeof pathItem === 'string') {
+      if (pathItem === 'my-apps') {
+        return <MyApps className={styles['back-app-button']} title="My Apps" />;
+      }
+      if (pathItem === 'examples') {
+        return (
+          <AppExamples className={styles['back-app-button']} title="Examples" />
+        );
+      }
+      return <ArrowDown className={styles['back-button']} title="Back" />;
+    }
+    return null;
+  };
+
   return (
     <div className={clsx(styles['top-bar'])}>
       <Breadcrumbs size="md" className={clsx(styles['breadcrumbs'])}>
         {pathItems.map((item, index) => {
+          const BackIcon = getBackIcon(item);
           const isCurrentItem = index === pathItems.length - 1;
           return (
             <Fragment key={index}>
@@ -84,12 +104,10 @@ const TopBar: React.FC<TopBarProps> = (props: TopBarProps) => {
                         .join('/')}`}
                       disabled={isCurrentItem}
                     >
-                      {index === 0 && pathItems.length > 1 && (
-                        <ArrowDown
-                          className={styles['back-button']}
-                          title="Back"
-                        />
-                      )}
+                      {index === 0 &&
+                        pathItems.length > 1 &&
+                        BackIcon &&
+                        BackIcon}
                       {index === 0 && currentItem ? (
                         <XSmall className={styles['item-label']}>
                           {formatMessage(currentItem.label)}

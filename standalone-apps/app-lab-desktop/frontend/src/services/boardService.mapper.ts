@@ -23,6 +23,7 @@ function mapBoard(board: board.Board): Board {
     id: board.id,
     type: board.info.BoardName,
     name: board.info.CustomName,
+    fqbn: board.info.FQBN,
     connectionType: mapProtocol(board.info.Protocol),
     protocol: board.info.Protocol,
     serial: board.info.Serial,

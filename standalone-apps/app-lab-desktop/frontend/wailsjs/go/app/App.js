@@ -26,16 +26,16 @@ export function DeleteRefreshToken(arg1) {
   return window['go']['app']['App']['DeleteRefreshToken'](arg1);
 }
 
-export function DisableNetworkMode() {
-  return window['go']['app']['App']['DisableNetworkMode']();
+export function DisableNetworkMode(arg1) {
+  return window['go']['app']['App']['DisableNetworkMode'](arg1);
 }
 
 export function DisconnectWiFi() {
   return window['go']['app']['App']['DisconnectWiFi']();
 }
 
-export function EnableNetworkMode() {
-  return window['go']['app']['App']['EnableNetworkMode']();
+export function EnableNetworkMode(arg1) {
+  return window['go']['app']['App']['EnableNetworkMode'](arg1);
 }
 
 export function ExportApp(arg1, arg2, arg3) {
@@ -176,6 +176,10 @@ export function InferOrchestratorURL() {
 
 export function IsBoard() {
   return window['go']['app']['App']['IsBoard']();
+}
+
+export function IsDirectory(arg1) {
+  return window['go']['app']['App']['IsDirectory'](arg1);
 }
 
 export function IsUserPartitionPreservationSupported(arg1, arg2) {

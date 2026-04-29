@@ -1,51 +1,6 @@
 import { defineMessages } from 'react-intl';
 
-export const appFilesMessages = defineMessages({
-  bricksLabel: {
-    id: 'app-files-section.bricks-label',
-    defaultMessage: 'Bricks',
-    description: 'Label for the Bricks section in the App Files Section',
-  },
-  sketchLibrariesLabel: {
-    id: 'app-files-section.sketch-libraries-label',
-    defaultMessage: 'Sketch Libraries',
-    description:
-      'Label for the Sketch Libraries section in the App Files Section',
-  },
-  filesLabel: {
-    id: 'app-files-section.files-label',
-    defaultMessage: 'Files',
-    description: 'Label for the Files section in the App Files Section',
-  },
-  addBrickButton: {
-    id: 'app-files-section.add-brick-button',
-    defaultMessage: 'Add Brick',
-    description: 'Button text to add a new brick to the app',
-  },
-  addSketchLibraryButton: {
-    id: 'app-files-section.add-sketch-library-button',
-    defaultMessage: 'Add Sketch Library',
-    description: 'Button text to add a new sketch library to the app',
-  },
-  addFileButton: {
-    id: 'app-files-section.add-file-button',
-    defaultMessage: 'Add File',
-    description: 'Button text to add a new file to the app',
-  },
-  noBricksAddedYet: {
-    id: 'app-files-section.no-bricks-added-yet',
-    defaultMessage: 'No bricks added yet',
-    description: 'Message shown when there are no bricks added to the app',
-  },
-  noSketchLibrariesAddedYet: {
-    id: 'app-files-section.no-sketch-libraries-added-yet',
-    defaultMessage: 'No sketch libraries added yet',
-    description:
-      'Message shown when there are no sketch libraries added to the app',
-  },
-});
-
-export const appDetailMessages = defineMessages({
+export const messages = defineMessages({
   copyAndEditButton: {
     id: 'app-detail.copy-and-edit-button',
     defaultMessage: 'Copy and edit app',
@@ -90,6 +45,31 @@ export const appDetailMessages = defineMessages({
     id: 'app-detail.failed-delete-brick',
     defaultMessage: 'Failed to delete brick',
     description: 'Notification message shown when brick deletion fails',
+  },
+  successfullyAddedCustomBrick: {
+    id: 'app-detail.successfully-added-custom-brick',
+    defaultMessage: 'Brick created. You can now start building with it.',
+    description: 'Notification message shown when a custom brick is created',
+  },
+  failedAddCustomBrick: {
+    id: 'app-detail.failed-add-custom-brick',
+    defaultMessage: 'Failed to create brick',
+    description: 'Notification message shown when brick creation fails',
+  },
+  updateAppLab: {
+    id: 'app-detail.update-app-lab',
+    defaultMessage: 'Update App Lab in Settings to create custom Bricks.',
+    description: 'Button text to update the App Lab version',
+  },
+  successfullyRenamedBrick: {
+    id: 'app-detail.successfully-renamed-brick',
+    defaultMessage: 'Brick renamed successfully',
+    description: 'Notification message shown when a brick is renamed',
+  },
+  failedRenameBrick: {
+    id: 'app-detail.failed-rename-brick',
+    defaultMessage: 'Failed to rename brick',
+    description: 'Notification message shown when brick rename fails',
   },
   successfullyAddedLibrary: {
     id: 'app-detail.successfully-added-library',
@@ -153,6 +133,16 @@ export const appDetailMessages = defineMessages({
     defaultMessage: 'Failed to rename file',
     description: 'Notification message shown when file rename fails',
   },
+  successfullyRenamedFolder: {
+    id: 'app-detail.successfully-renamed-folder',
+    defaultMessage: 'Folder renamed successfully',
+    description: 'Notification message shown when a folder is renamed',
+  },
+  failedRenameFolder: {
+    id: 'app-detail.failed-rename-folder',
+    defaultMessage: 'Failed to rename folder',
+    description: 'Notification message shown when folder rename fails',
+  },
   fileAlreadyExistsRename: {
     id: 'app-detail.file-already-exists-rename',
     defaultMessage: 'A file with this name already exists',
@@ -174,6 +164,16 @@ export const appDetailMessages = defineMessages({
     id: 'app-detail.failed-delete-file',
     defaultMessage: 'Failed to delete file',
     description: 'Notification message shown when file deletion fails',
+  },
+  successfullyDeletedFolder: {
+    id: 'app-detail.successfully-deleted-folder',
+    defaultMessage: 'Folder deleted successfully',
+    description: 'Notification message shown when a folder is deleted',
+  },
+  failedDeleteFolder: {
+    id: 'app-detail.failed-delete-folder',
+    defaultMessage: 'Failed to delete folder',
+    description: 'Notification message shown when folder deletion fails',
   },
   appIsRunning: {
     id: 'app-detail.app-is-running',

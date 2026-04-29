@@ -3,7 +3,7 @@ import {
   Preferences,
   PreferenceValue,
 } from '@cloud-editor-mono/ui-components/lib/sidenav/sections/settings/settings.type';
-import { getMany, set } from 'idb-keyval';
+import { delMany, getMany, set } from 'idb-keyval';
 import { BehaviorSubject } from 'rxjs';
 import { ValueOf } from 'type-fest';
 
@@ -130,4 +130,9 @@ async function getDefaultPreferences(): Promise<PreferencesMap> {
   });
 
   return preferencesSubjects;
+}
+
+export async function clearPreferences(): Promise<void> {
+  resetPreferencesState();
+  return delMany(Object.keys(defaultPreferences) as Preferences[]);
 }

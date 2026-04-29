@@ -2,7 +2,7 @@ import { Tools } from '@cloud-editor-mono/images/assets/icons';
 
 import {
   Button,
-  ButtonType,
+  ButtonVariant,
   Medium,
   useI18n,
   XSmall,
@@ -37,16 +37,16 @@ export const FlashBoardDialog: React.FC<FlashBoardDialogProps> = ({
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => onOpenChange(false)}
             uppercase={false}
           >
             {formatMessage(messages.skipButton)}
           </Button>
           <Button
-            type={ButtonType.Primary}
+            variant={ButtonVariant.Primary}
             uppercase={false}
-            isSubmit
+            type="submit"
             /* eslint-disable-next-line jsx-a11y/no-autofocus */
             autoFocus
           >

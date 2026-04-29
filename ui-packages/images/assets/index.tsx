@@ -4,6 +4,8 @@ import AccountConnectedBoards from './account-connected-boards.svg?react';
 import AccountCustomAiModels from './account-custom-ai-models.svg?react';
 import AccountStarEmpty from './account-star-empty.svg?react';
 import AccountStarFilled from './account-star-filled.svg?react';
+import AccountView from './account-view.svg?react';
+import AccountViewCrossed from './account-view-crossed.svg?react';
 import AccountViewFilled from './account-view-filled.svg?react';
 import AccountViewFilledCrossed from './account-view-filled-crossed.svg?react';
 import AddBrick from './add-brick.svg?react';
@@ -89,7 +91,6 @@ import ExplainError from './explain-error.svg?react';
 import FeedbackThumbsDown from './feedback-thumbs-down.svg?react';
 import FeedbackThumbsUp from './feedback-thumbs-up.svg?react';
 import FileAdd from './file-add.svg?react';
-import FileConfig from './file-config.svg?react';
 import FileCopy from './file-copy.svg?react';
 import FileFolder from './file-folder.svg?react';
 import FileFolderOpen from './file-folder-open.svg?react';
@@ -104,6 +105,7 @@ import FileTypeImage from './file-type-image.svg?react';
 import FileTypeIno from './file-type-ino.svg?react';
 import FileTypeSecrets from './file-type-secrets.svg?react';
 import FileTypeText from './file-type-text.svg?react';
+import FileYaml from './file-yaml.svg?react';
 import FixError from './fix-error.svg?react';
 import Folder from './folder.svg?react';
 import FolderAdd from './folder-add.svg?react';
@@ -135,6 +137,7 @@ import MediaLibraryBooksNormal from './media-library_books-normal.svg?react';
 import Models from './models.svg?react';
 import Monitor from './monitor.svg?react';
 import MyApps from './my-apps.svg?react';
+import NavigationArrow from './navigation-arrow.svg?react';
 import NavigationGroup from './navigation-group.svg?react';
 import NoResults from './no-results.svg?react';
 import NotFoundIconX from './not-found-icon-x.svg?react';
@@ -211,6 +214,8 @@ const Icons = {
   AccountCustomAiModels,
   AccountStarEmpty,
   AccountStarFilled,
+  AccountView,
+  AccountViewCrossed,
   AccountViewFilled,
   AccountViewFilledCrossed,
   AddBrick,
@@ -297,7 +302,7 @@ const Icons = {
   FeedbackThumbsUp,
   FileAdd,
   FileIno,
-  FileConfig,
+  FileYaml,
   FileCopy,
   FileFolder,
   FileFolderOpen,
@@ -339,6 +344,7 @@ const Icons = {
   Models,
   Monitor,
   MyApps,
+  NavigationArrow,
   NavigationGroup,
   NoResults,
   NotFoundIconX,

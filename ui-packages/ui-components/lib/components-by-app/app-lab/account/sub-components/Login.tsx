@@ -7,13 +7,9 @@ import {
 import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
 
 import SkipLoginDialog from '../../../../dialogs/app-lab/skip-login-dialog/SkipLoginDialog';
-import {
-  AppLabButton as Button,
-  ButtonSize,
-  ButtonType,
-} from '../../../../essential/app-lab-button';
 import { useI18n } from '../../../../i18n/useI18n';
 import { Large, XSmall } from '../../../../typography';
+import { Button, ButtonSize, ButtonVariant } from '../../essential/button';
 import styles from '../account.module.scss';
 import { messages } from '../messages';
 
@@ -83,7 +79,7 @@ const Login = forwardRef((props: LoginProps, ref) => {
           </XSmall>
         </div>
         <Button
-          type={ButtonType.Secondary}
+          variant={ButtonVariant.Secondary}
           size={ButtonSize.XSmall}
           onClick={(): void => {
             login({ isFromAccount: true });

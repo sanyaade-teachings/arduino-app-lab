@@ -5,18 +5,20 @@ import {
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   AppItem as Card,
+  AppsSection,
   Button,
-  ButtonType,
+  ButtonVariant,
   CreateAppDialog,
+  DeleteAppDialog,
   DropdownMenuButton,
+  ExportAppDialog,
   ImportAppDialog,
+  RenameAppDialog,
   TopBar,
   useI18n,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { Link } from '@tanstack/react-router';
 import React, { Key } from 'react';
 
-import { AppsSection } from '../app.type';
 import styles from './app-list.module.scss';
 import { useAppListLogic } from './appList.logic';
 import {
@@ -29,10 +31,7 @@ interface AppListProps {
   section: AppsSection;
 }
 
-const AppList: React.FC<AppListProps> = (props: AppListProps) => {
-  const { section } = props as AppListProps & {
-    section: AppsSection;
-  };
+const AppList: React.FC<AppListProps> = ({ section }) => {
   const {
     apps,
     isLoading: appsLoading,
@@ -41,6 +40,13 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
     openCreateAppDialog,
     openImportAppDialog,
     importedAppId,
+    appActions,
+    deleteAppDialogLogic,
+    duplicateAppDialogLogic,
+    renameAppDialogLogic,
+    exportAppDialogLogic,
+    defaultApp,
+    handleAppClick,
   } = useAppListLogic(section);
 
   const { formatMessage } = useI18n();
@@ -48,7 +54,12 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
   return (
     <section className={styles['main']}>
       <CreateAppDialog logic={createAppDialogLogic} />
+      <CreateAppDialog logic={duplicateAppDialogLogic} />
+      <RenameAppDialog logic={renameAppDialogLogic} />
+      <DeleteAppDialog logic={deleteAppDialogLogic} />
+      <ExportAppDialog logic={exportAppDialogLogic} />
       <ImportAppDialog logic={importAppDialogLogic} />
+
       <TopBar pathItems={[section]}>
         <div />
         <div className={styles['actions']}>
@@ -83,11 +94,11 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
                   : openImportAppDialog()
               }
               useStaticPosition
-              buttonChildren={(buttonProps, buttonRef): React.ReactNode => (
+              buttonChildren={(buttonProps, buttonRef) => (
                 <Button
                   {...buttonProps}
                   ref={buttonRef}
-                  type={ButtonType.Primary}
+                  variant={ButtonVariant.Primary}
                   Icon={Plus}
                   iconPosition="right"
                   title={formatMessage(messages.actionCreate)}
@@ -99,7 +110,8 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
           )}
         </div>
       </TopBar>
-      {!appsLoading && apps.length === 0 ? (
+
+      {!appsLoading && apps.length === 0 && (
         <div className={styles['empty-apps']}>
           <div className={styles['empty-apps-icon']}>
             <NavigationGroup />
@@ -107,28 +119,41 @@ const AppList: React.FC<AppListProps> = (props: AppListProps) => {
           <span>{formatMessage(emptyTitleMessages[section])}</span>
           <p>{formatMessage(emptyDescriptionMessages[section])}</p>
         </div>
-      ) : null}
-      {/* My apps grid*/}
+      )}
+
       <div className={styles['my-apps']}>
-        {/* Loading state */}
-        {appsLoading ? <Card variant="skeleton" /> : null}
-        {/* App cards */}
-        {!appsLoading && apps.length > 0
-          ? apps.map((app, i) => (
-              <Link
-                key={i}
-                className={`${styles['app-link']} ${
-                  app.id === importedAppId
-                    ? styles['app-link--highlighted']
-                    : ''
-                }`}
-                to={`/${section}/$appId`}
-                params={{ appId: app.id || '' }}
-              >
-                <Card {...app} />
-              </Link>
-            ))
-          : null}
+        {appsLoading && <Card variant="skeleton" />}
+
+        {!appsLoading &&
+          apps.length > 0 &&
+          apps.map((app, i) => (
+            <div
+              key={i}
+              className={`${styles['app-link']} ${
+                app.id === importedAppId ? styles['app-link--highlighted'] : ''
+              }`}
+              onClick={(e) => handleAppClick(app.id || '', e)}
+              role="button"
+              tabIndex={0}
+              onKeyUp={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleAppClick(app.id || '');
+                }
+              }}
+            >
+              <Card
+                {...app}
+                {...(section === 'my-apps' && {
+                  defaultApp,
+                  onRename: () => appActions.onRename(app),
+                  onDuplicate: () => appActions.onDuplicate(app),
+                  onExport: () => appActions.onExport(app),
+                  onSetAsDefault: () => appActions.onSetAsDefault(app),
+                  onDelete: () => appActions.onDelete(app),
+                })}
+              />
+            </div>
+          ))}
       </div>
     </section>
   );

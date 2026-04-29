@@ -37,6 +37,7 @@ export interface UseCodeEditorParams {
   hasHeader?: boolean;
   readOnly?: boolean;
   gutter?: GutterDataWithFontSize;
+  useScrollPastEnd?: boolean;
 }
 
 export enum CodeMirrorEventAnnotation {

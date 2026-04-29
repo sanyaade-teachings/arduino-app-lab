@@ -1,9 +1,10 @@
 import { OpenInNewTab } from '@cloud-editor-mono/images/assets/icons';
 import { SketchLibrary } from '@cloud-editor-mono/infrastructure';
 import {
+  Board,
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   useI18n,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { clsx } from 'clsx';
@@ -15,6 +16,7 @@ import { sketchLibraryCardMessages } from './messages';
 import styles from './sketch-library-card.module.scss';
 
 interface SketchLibraryCardProps {
+  board?: Board;
   library: SketchLibrary;
   onInstall: (libRef: string) => void;
   isInstalling?: boolean;
@@ -30,6 +32,7 @@ const SketchLibraryCard = (
   props: SketchLibraryCardProps,
 ): React.ReactElement => {
   const {
+    board,
     library,
     onInstall,
     isInstalling,
@@ -58,6 +61,7 @@ const SketchLibraryCard = (
               {formatMessage(sketchLibraryCardMessages.coreLibraryLabel)}
             </XXXSmall>
           ),
+          boardModel: board?.type.toUpperCase(),
         })}
       </XXXSmall>
     ),
@@ -134,10 +138,10 @@ const SketchLibraryCard = (
             </select>
             <Button
               onClick={onClick}
-              type={
+              variant={
                 installedPackage && selectedVersion === installedPackage
-                  ? ButtonType.Secondary
-                  : ButtonType.Primary
+                  ? ButtonVariant.Secondary
+                  : ButtonVariant.Primary
               }
               size={ButtonSize.XSmall}
               loading={isInstalling || isDeleting}
@@ -155,7 +159,7 @@ const SketchLibraryCard = (
             onClick={(): void => {
               openExternalLink(library.website || '');
             }}
-            type={ButtonType.Tertiary}
+            variant={ButtonVariant.Tertiary}
             size={ButtonSize.XSmall}
             Icon={OpenInNewTab}
             classes={{

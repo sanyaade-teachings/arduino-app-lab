@@ -5,7 +5,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import { Button, ButtonType } from '../../../components-by-app/app-lab';
+import { Button, ButtonVariant } from '../../../components-by-app/app-lab';
 import { ErrorBanner } from '../../../error-banner/ErrorBanner';
 import { Checkbox } from '../../../essential/checkbox';
 import { useI18n } from '../../../i18n/useI18n';
@@ -71,7 +71,7 @@ export const ExportAppDialog: React.FC<ExportAppDialogProps> = ({
   const footer = useMemo(() => {
     if (exportError) {
       return (
-        <Button type={ButtonType.Primary} onClick={handleClose}>
+        <Button variant={ButtonVariant.Primary} onClick={handleClose}>
           {formatMessage(messages.goBackButton)}
         </Button>
       );
@@ -80,7 +80,7 @@ export const ExportAppDialog: React.FC<ExportAppDialogProps> = ({
     return (
       <>
         <Button
-          type={ButtonType.Secondary}
+          variant={ButtonVariant.Secondary}
           onClick={handleClose}
           classes={{
             button: styles['action-button'],
@@ -88,10 +88,10 @@ export const ExportAppDialog: React.FC<ExportAppDialogProps> = ({
         >
           {formatMessage(messages.cancelButton)}
         </Button>
-        <Button 
-          type={ButtonType.Primary} 
-          loading={isLoading} 
-          isSubmit
+        <Button
+          variant={ButtonVariant.Primary}
+          loading={isLoading}
+          type="submit"
           /* eslint-disable-next-line jsx-a11y/no-autofocus */
           autoFocus
         >
@@ -156,7 +156,7 @@ export const ExportAppDialog: React.FC<ExportAppDialogProps> = ({
                 <InfoIconOutline />
               </div>
             </div>
-            {renderTooltip()}
+            {renderTooltip(styles['tooltip-content'])}
           </div>
         </>
       )}

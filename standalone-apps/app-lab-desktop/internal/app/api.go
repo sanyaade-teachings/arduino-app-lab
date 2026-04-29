@@ -112,8 +112,8 @@ func (a *App) GetBoardList() ([]*board.Board, error) {
 	return a.detectBoards()
 }
 
-func (a *App) SelectBoard(id string, password string) error {
-	return a.selectBoard(id, password)
+func (a *App) SelectBoard(serial string, password string) error {
+	return a.selectBoard(serial, password)
 }
 
 // Board name management
@@ -150,12 +150,12 @@ func (a *App) GetNetworkModeStatus() (bool, error) {
 	return a.selectedBoard.GetNetworkModeStatus(a.ctx())
 }
 
-func (a *App) EnableNetworkMode() error {
-	return a.selectedBoard.EnableNetworkMode(a.ctx())
+func (a *App) EnableNetworkMode(password string) error {
+	return a.selectedBoard.EnableNetworkMode(a.ctx(), password)
 }
 
-func (a *App) DisableNetworkMode() error {
-	return a.selectedBoard.DisableNetworkMode(a.ctx())
+func (a *App) DisableNetworkMode(password string) error {
+	return a.selectedBoard.DisableNetworkMode(a.ctx(), password)
 }
 
 // Board user password management
@@ -198,6 +198,10 @@ func (a *App) RemoveFile(path string) error {
 
 func (a *App) CreateFolder(path string) error {
 	return fs.CreateFolder(a.selectedBoard.Conn, path)
+}
+
+func (a *App) IsDirectory(path string) (bool, error) {
+	return fs.IsDirectory(a.selectedBoard.Conn, path)
 }
 
 // Apps UI management

@@ -1,6 +1,7 @@
 import {
   boardNeedsImageUpdate,
   boardNeedsOSUpdate,
+  getApps,
   openLinkExternal,
   reloadApp,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
@@ -17,7 +18,8 @@ import {
   Themes,
   UpdaterStatus,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useLocation } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation, useParams } from '@tanstack/react-router';
 import {
   useCallback,
   useContext,
@@ -30,7 +32,9 @@ import { useShallow } from 'zustand/react/shallow';
 
 import { ThemeContext } from '../../../common/providers/theme/themeContext';
 import { useBoards } from '../../hooks/useBoards';
+import { useCurrentSection } from '../../hooks/useCurrentSection';
 import { useIsBoard } from '../../hooks/useIsBoard';
+import { useReloadApp } from '../../hooks/useReloadApp';
 import { AuthContext } from '../../providers/auth/authContext';
 import { NetworkContext } from '../../providers/network/networkContext';
 import { SetupContext } from '../../providers/setup/setupContext';
@@ -45,7 +49,7 @@ export type DialogSkippedStore = { [key: string]: boolean };
 const FLASHER_TOOL_URL = 'https://www.arduino.cc/en/software/#flasher-tool';
 const ARDUINO_SUPPORT_URL = 'https://www.arduino.cc/en/contact-us/';
 const FLASHER_TUTORIAL_URL =
-  'https://docs.arduino.cc/tutorials/uno-q/update-image/';
+  'https://docs.arduino.cc/tutorials/BOARD_TYPE/update-image/';
 
 const ROUTES_WITHOUT_SIDE_PANEL = ['/settings'];
 
@@ -112,15 +116,6 @@ export const useMainLogic: UseMainLogic =
         const { setSetupCompleted, setNetworkStepSkipped } =
           useContext(SetupContext);
 
-        const { getPropsError, getPropsSuccess, isSetupDone } =
-          useSystemPropsStore(
-            useShallow((state) => ({
-              getPropsError: state.isError,
-              getPropsSuccess: state.isSuccess,
-              isSetupDone: state.isSetupDone,
-            })),
-          );
-
         const {
           status,
           canStartUpdate,
@@ -176,6 +171,15 @@ export const useMainLogic: UseMainLogic =
 
         const { data: isBoard } = useIsBoard();
 
+        const { getPropsError, getPropsSuccess, isSetupDone } =
+          useSystemPropsStore(
+            useShallow((state) => ({
+              getPropsError: state.isError,
+              getPropsSuccess: state.isSuccess,
+              isSetupDone: state.isSetupDone,
+            })),
+          );
+
         const isCheckUpdateBlocking =
           getPropsError || (getPropsSuccess && !isSetupDone());
 
@@ -190,18 +194,25 @@ export const useMainLogic: UseMainLogic =
           } else {
             setOpen(true);
           }
-        }, [status, isCheckUpdateBlocking]);
+        }, [isCheckUpdateBlocking, status]);
 
-        const { networkStepSkipped } = useContext(SetupContext);
+        const { networkStepSkipped, setupCompleted } = useContext(SetupContext);
         useEffect(() => {
           if (
             canStartUpdate &&
             status === UpdaterStatus.None &&
-            !networkStepSkipped
+            !networkStepSkipped &&
+            setupCompleted
           ) {
             checkForUpdates();
           }
-        }, [canStartUpdate, checkForUpdates, networkStepSkipped, status]);
+        }, [
+          canStartUpdate,
+          checkForUpdates,
+          networkStepSkipped,
+          setupCompleted,
+          status,
+        ]);
 
         const openFlasherTool = async (): Promise<void> => {
           openLinkExternal(FLASHER_TOOL_URL);
@@ -216,7 +227,12 @@ export const useMainLogic: UseMainLogic =
           setOpen(false);
         }, [updaterSkipUpdate]);
 
+        const selectedConnectedBoard = useBoardLifecycleStore(
+          (state) => state.selectedConnectedBoard,
+        );
+
         return {
+          board: selectedConnectedBoard,
           open,
           isBoard,
           status,
@@ -277,7 +293,13 @@ export const useMainLogic: UseMainLogic =
           setBoardIsFlashing(true);
         },
         openFlasherTutorial: (): void => {
-          openLinkExternal(FLASHER_TUTORIAL_URL);
+          openLinkExternal(
+            FLASHER_TUTORIAL_URL.replace(
+              'BOARD_TYPE',
+              selectedConnectedBoard?.type.toLowerCase().replaceAll(' ', '-') ||
+                '',
+            ),
+          );
         },
       };
     };
@@ -318,6 +340,13 @@ export const useMainLogic: UseMainLogic =
 
     const boardsProps = useBoards();
 
+    // get app params to undestand if we are in details or not
+    const params = useParams({ strict: false });
+    const currentAppId = params.appId || params.resourceId;
+
+    // determine section using dedicated hook
+    const currentSection = useCurrentSection();
+
     const { boardIsFlashing, boardIsReachable } = useBoardLifecycleStore(
       useShallow((state) => ({
         boardIsFlashing: state.boardIsFlashing,
@@ -325,9 +354,30 @@ export const useMainLogic: UseMainLogic =
       })),
     );
 
+    const { data: apps } = useQuery(
+      ['check-apps-to-redirect'],
+      () => {
+        return getApps({
+          query: { filter: 'apps' },
+        });
+      },
+      {
+        enabled: boardIsReachable,
+      },
+    );
+
     const { setupCompleted } = useContext(SetupContext);
 
     const showRoutes = setupCompleted && boardIsReachable;
+
+    // Use reload app hook for persistence
+    useReloadApp({
+      boardsProps,
+      showRoutes,
+      currentAppId,
+      apps,
+      currentSection,
+    });
 
     const { setTheme } = useContext(ThemeContext);
     useEffect(() => {

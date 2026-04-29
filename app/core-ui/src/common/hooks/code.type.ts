@@ -65,6 +65,7 @@ export type UseCodeChange = (
   compileErrors?: CompileErrors,
   compileErrorsTimestamp?: React.MutableRefObject<number | undefined>,
   tabs?: SelectableFileData[],
+  autoSave?: boolean,
   exampleInoData?: RetrieveExampleFileContentsResult,
   exampleFilesData?: RetrieveExampleFileContentsResult[],
   customLibraryFiles?: RetrieveFileContentsResult[],

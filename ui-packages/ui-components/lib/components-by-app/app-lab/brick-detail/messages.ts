@@ -46,11 +46,12 @@ export const messages = defineMessages({
     defaultMessage: 'Used in',
     description: 'Title for the section listing apps that use the brick',
   },
-  unoQFilter: {
-    id: 'brickDetail.unoQFilter',
+  missingModel: {
+    id: 'brickDetail.missingModel',
     defaultMessage:
-      "Don't see your model here? You may need to select <bold>UNO Q</bold> as the target in Edge Impulse Studio.",
-    description: 'Alter message for UNO Q filter for custom models',
+      "Don't see your model here? You may need to select <bold>{boardModel}</bold> as the target in Edge Impulse Studio.",
+    description:
+      'Alert message for missing board model filter for custom models',
   },
   trainNewModel: {
     id: 'brickDetail.trainNewModel',

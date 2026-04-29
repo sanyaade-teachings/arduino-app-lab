@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom';
 
 import {
   Button,
-  ButtonType,
+  ButtonVariant,
   EmojiPicker,
   SnackbarProps,
 } from '../../../components-by-app/app-lab';
@@ -62,6 +62,11 @@ export const CreateAppDialog: React.FC<CreateAppDialogProps> = ({
   const { mutateAsync: handleCreateApp, isLoading } = useMutation(
     ['crate-app'],
     async () => {
+      if (name.length === 0) {
+        setHasError(true);
+        return;
+      }
+
       const result = await confirmAction({ icon, name });
       if (result) {
         onOpenChange(false);
@@ -94,16 +99,16 @@ export const CreateAppDialog: React.FC<CreateAppDialogProps> = ({
           footer={
             <>
               <Button
-                type={ButtonType.Secondary}
+                variant={ButtonVariant.Secondary}
                 onClick={(): void => onOpenChange(false)}
               >
                 {formatMessage(messages.cancelButton)}
               </Button>
               <Button
-                type={ButtonType.Primary}
+                variant={ButtonVariant.Primary}
                 loading={isLoading}
                 disabled={name.length === 0}
-                isSubmit
+                type="submit"
               >
                 {formatMessage(messages.confirmButton)}
               </Button>
@@ -128,9 +133,14 @@ export const CreateAppDialog: React.FC<CreateAppDialogProps> = ({
               type="text"
               value={name}
               onChange={onAppNameChange}
+              onEnter={handleCreateApp}
               error={
                 hasError
-                  ? new Error(formatMessage(messages.appNameInUse))
+                  ? new Error(
+                      name.length === 0
+                        ? formatMessage(messages.appNameRequired)
+                        : formatMessage(messages.appNameInUse),
+                    )
                   : undefined
               }
               placeholder={formatMessage(messages.inputPlaceholder)}

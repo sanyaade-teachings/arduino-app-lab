@@ -18,7 +18,7 @@ export interface BoardService {
   boardNeedsImageUpdate(): Promise<boolean>;
   openBoardTerminal(): Promise<void>;
   isNetworkModeEnabled(): Promise<boolean>;
-  setNetworkMode(enabled: boolean): Promise<boolean>;
+  setNetworkMode(enabled: boolean, password: string): Promise<boolean>;
   getKernelVersion(): Promise<string>;
   getLinuxDistribution(): Promise<string>;
 }

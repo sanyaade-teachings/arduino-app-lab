@@ -89,7 +89,7 @@ export const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
           loading={isLoading}
           size={ButtonSize.Small}
           disabled={isLoading || !password || !confirmPassword}
-          isSubmit
+          type="submit"
         >
           {formatMessage(messages.save)}
         </Button>

@@ -5,10 +5,9 @@ import {
   Extension,
   Transaction,
 } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import { EditorView, scrollPastEnd } from '@codemirror/view';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { createGutterExtensions } from '../code-editor/setup/codeMirrorSetup';
 import {
   CodeMirrorEventAnnotation,
   UseCodeEditorParams,
@@ -60,6 +59,7 @@ export function createUseCodeMirrorHook(
     gutter,
     hasHeader = false,
     readOnly = false,
+    useScrollPastEnd = false,
   }: UseCodeEditorParams): React.RefObject<HTMLDivElement> {
     const ref = useRef<HTMLDivElement>(null);
     const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -92,6 +92,10 @@ export function createUseCodeMirrorHook(
     const createState = useCallback((): [EditorState, Extension[]] => {
       const extensions = [setup];
 
+      if (useScrollPastEnd) {
+        extensions.push(scrollPastEnd());
+      }
+
       const compartment = extMetadata[viewInstanceId].readOnly.compartment;
       extMetadata[viewInstanceId].readOnly.dependency = readOnly;
       extensions.push(compartment.of(EditorState.readOnly.of(readOnly)));
@@ -101,15 +105,6 @@ export function createUseCodeMirrorHook(
         const compartment = search.compartment;
         search.dependency = searchDependency;
         extensions.push(compartment.of(createSearchExt(searchDependency)));
-      }
-
-      if (gutter) {
-        const compartment = extMetadata[viewInstanceId].gutter.compartment;
-        extMetadata[viewInstanceId].gutter.dependency = gutter;
-
-        extensions.push(compartment.of(createGutterExtensions(gutter)));
-      } else if (extMetadata[viewInstanceId].gutter.dependency) {
-        extMetadata[viewInstanceId].gutter.reset();
       }
 
       const ext = getExt && getExt();
@@ -179,12 +174,12 @@ export function createUseCodeMirrorHook(
       errorLines,
       getExt,
       getValue,
-      gutter,
       highlightLines,
       keywords,
       keywordsExt,
       onChange,
       readOnly,
+      useScrollPastEnd,
       searchDependency,
       viewInstanceId,
     ]);
@@ -413,15 +408,6 @@ export function createUseCodeMirrorHook(
         }
 
         const effects = [];
-
-        if (gutterChanged) {
-          extMetadata[viewInstanceId].gutter.dependency = gutter;
-          effects.push(
-            extMetadata[viewInstanceId].gutter.compartment.reconfigure(
-              gutter ? createGutterExtensions(gutter) : [],
-            ),
-          );
-        }
 
         if (readOnlyOptionChanged) {
           extMetadata[viewInstanceId].readOnly.dependency = readOnly;

@@ -1,0 +1,56 @@
+.dragPreviewChip {
+  height: 20px;
+  transform: rotate(0deg);
+  opacity: 1;
+  border-radius: 200px;
+  padding: 2px 8px;
+  border: 1px solid #434F54;
+  background: #232B2E;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 1;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.dragPreviewIcon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.dragPreviewCount {
+  height: 16px;
+  transform: rotate(0deg);
+  opacity: 1;
+  border-radius: 200px;
+  border-width: 1px;
+  padding: 2px 4px;
+  background: #232B2E;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  line-height: 1;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  min-width: 16px;
+  text-align: center;
+}
+
+.dropCursor {
+  background: var(--component-bg-flexible, #aeb8b826);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}

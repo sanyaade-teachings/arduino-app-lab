@@ -2,36 +2,14 @@
 @use "./code-editor-variables.module.scss";
 @use "../editor-tabs-bar/editor-tabs-bar-variables.module.scss";
 
-[class~="cm-lineNumbers"] {
-  width: calc(#{code-editor-variables.$sharedGutterWidthVar} * 1px);
-}
-
-$tabsBarPaddingLeft: calc(
-  (#{code-editor-variables.$sharedGutterWidthVar} + #{code-editor-variables.$sharedFoldGutterWidthVar}) * 1px
-);
-
 .code-editor {
   position: relative;
-  display: flex;
+  height: 100%;
   width: 100%;
   overflow-x: hidden;
-  border-bottom-right-radius: 8px;
-
-  [class~="cm-editor"] {
-    [class~="cm-scroller"] {
-      padding-bottom: calc(#{code-editor-variables.$editorPaddingBottomVar} * 1px);
-    }
-  }
 }
 
-.code-editor-with-tabs-bar {
-  margin-top: editor-tabs-bar-variables.$tabHeight * 1px;
-}
-
-.container {
-  position: absolute;
-  flex: 1;
-  background-color: shared.theme-var(--editor-background);
+.code-editor-element {
   width: 100%;
   height: 100%;
 
@@ -45,36 +23,28 @@ $tabsBarPaddingLeft: calc(
   display: flex;
   width: 100%;
   overflow: hidden;
-  z-index: shared.$zIndex1;
   box-sizing: border-box;
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
-  padding: 16px 16px 16px $tabsBarPaddingLeft;
+  padding: 16px;
   gap: 20px;
 
   @for $i from 1 through code-editor-variables.$skeletonChildren {
     & :nth-child(#{$i}) {
+      opacity: 0.2;
       flex: none;
       height: 20px;
-      width: percentage(calc(random(20) / 100));
+      width: percentage(calc(random(40) / 100));
     }
   }
 }
 
-.code-editor-skeleton-with-tabs-bar {
-  margin-top: editor-tabs-bar-variables.$tabHeight * 1px;
-}
 
-.container-without-gutter {
-  margin-left: calc(
-    (#{code-editor-variables.$sharedGutterWidthVar} + #{code-editor-variables.$sharedFoldGutterWidthVar}) * 1px
-  );
-}
-
-.read-only-banner {
+.code-editor-banner {
   position: absolute;
-  width: 100%;
-  bottom: 8px;
+  left: 52px;
+  right: 52px;
+  bottom: 16px;
   z-index: shared.$zIndex2;
 }

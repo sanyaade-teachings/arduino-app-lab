@@ -41,7 +41,11 @@ const EditorToolbar: React.FC<EditorToolbarProps> = (
 
   return (
     <div
-      className={clsx(styles.container, classes?.container, classes?.disabled)}
+      className={clsx(
+        styles['editor-toolbar'],
+        classes?.container,
+        classes?.disabled,
+      )}
     >
       {renderToolbar()}
     </div>

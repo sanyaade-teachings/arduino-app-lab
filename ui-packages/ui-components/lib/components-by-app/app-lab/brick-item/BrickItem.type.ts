@@ -5,4 +5,7 @@ export interface BrickItemProps {
   selected?: boolean;
   onClick?: () => void;
   onDelete?: () => void;
+  onRename?: () => void;
+  onAddBrick?: () => void;
+  missingConfig?: boolean;
 }

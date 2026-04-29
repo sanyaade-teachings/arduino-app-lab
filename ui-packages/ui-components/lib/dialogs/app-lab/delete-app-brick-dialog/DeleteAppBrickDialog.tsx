@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import {
   Button,
-  ButtonType,
+  ButtonAppearance,
   ButtonVariant,
 } from '../../../components-by-app/app-lab';
 import { useI18n } from '../../../i18n/useI18n';
@@ -30,6 +30,8 @@ export const DeleteAppBrickDialog: React.FC<DeleteAppBrickDialogProps> = ({
 
   const { formatMessage } = useI18n();
 
+  const isCustomBrick = brick?.author !== 'Arduino';
+
   const handleDelete = async (): Promise<void> => {
     if (!brick?.id) return;
     setLoading(true);
@@ -49,7 +51,7 @@ export const DeleteAppBrickDialog: React.FC<DeleteAppBrickDialogProps> = ({
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => onOpenChange(false)}
             classes={{
               button: styles['action-button'],
@@ -59,12 +61,12 @@ export const DeleteAppBrickDialog: React.FC<DeleteAppBrickDialogProps> = ({
             {formatMessage(messages.cancelButton)}
           </Button>
           <Button
-            type={ButtonType.Secondary}
-            variant={ButtonVariant.Destructive}
+            variant={ButtonVariant.Secondary}
+            appearance={ButtonAppearance.Destructive}
             loading={loading}
             iconPosition="right"
             Icon={Bin}
-            isSubmit
+            type="submit"
             /* eslint-disable-next-line jsx-a11y/no-autofocus */
             autoFocus
           >
@@ -78,10 +80,18 @@ export const DeleteAppBrickDialog: React.FC<DeleteAppBrickDialogProps> = ({
     >
       <Eraser className={styles['body-icon']} />
       <Medium className={styles['body-title']}>
-        {formatMessage(messages.dialogBodyTitle)}
+        {isCustomBrick
+          ? formatMessage(messages.customBrickBodyTitle, {
+              brickName: brick?.name,
+            })
+          : formatMessage(messages.dialogBodyTitle)}
       </Medium>
       <XSmall className={styles['body-description']}>
-        {formatMessage(messages.dialogBodyDescription)}
+        {isCustomBrick
+          ? formatMessage(messages.customBrickBodyDescription, {
+              brickName: brick?.name,
+            })
+          : formatMessage(messages.dialogBodyDescription)}
       </XSmall>
     </AppLabDialog>
   );

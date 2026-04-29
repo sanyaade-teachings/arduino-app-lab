@@ -17,7 +17,10 @@ import {
   DropdownMenuSectionType,
 } from './dropdownMenu.type';
 
-interface DropdownMenuButtonProps<T, L extends MessageDescriptor | string> {
+export interface DropdownMenuButtonProps<
+  T,
+  L extends MessageDescriptor | string,
+> {
   id?: string;
   title?: string;
   buttonChildren?:
@@ -25,6 +28,7 @@ interface DropdownMenuButtonProps<T, L extends MessageDescriptor | string> {
     | ((
         props: React.ButtonHTMLAttributes<HTMLButtonElement>,
         ref: React.RefObject<HTMLButtonElement | null>,
+        isOpen?: boolean,
       ) => React.ReactNode);
   sections: DropdownMenuSectionType<T, L>[];
   disabledKeys?: Key[];
@@ -104,7 +108,7 @@ export function DropdownMenuButton<T, L extends MessageDescriptor | string>(
     >
       {!isOpened &&
         (typeof buttonChildren === 'function' ? (
-          buttonChildren(buttonProps, buttonRef)
+          buttonChildren(buttonProps, buttonRef, state.isOpen)
         ) : (
           <button
             {...buttonProps}

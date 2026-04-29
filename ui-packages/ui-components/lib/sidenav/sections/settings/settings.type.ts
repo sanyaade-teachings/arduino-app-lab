@@ -45,7 +45,7 @@ export enum ConsoleOutput {
 
 export type PreferenceValue = ValueOf<typeof defaultPreferences>;
 
-const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_FONT_SIZE = 12;
 export const defaultPreferences = {
   [Preferences.Theme]: Themes.LightTheme,
   [Preferences.AutoTheme]: false,
