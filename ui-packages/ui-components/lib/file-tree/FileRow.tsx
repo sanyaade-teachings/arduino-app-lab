@@ -1,5 +1,6 @@
 import * as ContextMenu from '@radix-ui/react-context-menu';
 import clsx from 'clsx';
+import { useCallback } from 'react';
 import { RowRendererProps } from 'react-arborist';
 
 import styles from './file-tree.module.scss';
@@ -9,22 +10,30 @@ import { mustHideContextMenu } from './utils';
 
 type FileRowProps = RowRendererProps<TreeNode> & {
   selectedNode: TreeNode | undefined;
+  selectedFolder: TreeNode | undefined;
+  dragOverZone: 'root' | string | null;
+  onDragOverChange: (zone: 'root' | string | null) => void;
   onSelect: () => void;
   onRename: () => void;
   onDelete: () => void;
   onCreate: (type: TreeNode['type'], path: string) => void;
   isProjectReadOnly: boolean;
   isBricksSelected?: boolean;
+  onDragStart?: () => void;
 };
 
 const FileRow: React.FC<FileRowProps> = ({
   selectedNode,
+  selectedFolder,
+  dragOverZone,
+  onDragOverChange,
   onSelect,
   onRename,
   onDelete,
   isProjectReadOnly,
   onCreate,
   isBricksSelected = false,
+  onDragStart,
   ...rowProps
 }: FileRowProps) => {
   const { node } = rowProps;
@@ -34,8 +43,24 @@ const FileRow: React.FC<FileRowProps> = ({
     onCreate(type, path);
   };
 
+  const handleDragOver = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      onDragOverChange(node.data.path);
+    },
+    [node, onDragOverChange],
+  );
+
   return (
-    <div {...rowProps.attrs} className={styles['tree-row-container']}>
+    <div
+      {...rowProps.attrs}
+      className={clsx(styles['tree-row-container'], {
+        [styles['tree-row-container--drag-over']]:
+          dragOverZone === node.data.path,
+      })}
+      onDragStart={onDragStart}
+      onDragOver={handleDragOver}
+    >
       <ContextMenu.Root>
         <ContextMenu.Trigger
           onContextMenu={(e): false | void =>
@@ -50,10 +75,13 @@ const FileRow: React.FC<FileRowProps> = ({
             tabIndex={0}
             className={clsx(styles['tree-row'], {
               [styles['tree-row-selected']]:
-                // isFileNode(node.data) &&
-                selectedNode &&
-                node.data.path === selectedNode.path &&
-                !isBricksSelected,
+                // Give priority to folder selection over file selection
+                // This ensures only one element appears selected at a time
+                (selectedFolder && node.data.path === selectedFolder.path) ||
+                (selectedNode &&
+                  !selectedFolder &&
+                  node.data.path === selectedNode.path &&
+                  !isBricksSelected),
             })}
             ref={rowProps.innerRef}
             onFocus={(e): void => e.stopPropagation()}

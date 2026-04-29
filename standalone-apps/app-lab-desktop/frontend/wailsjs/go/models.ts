@@ -1,11 +1,12 @@
 export namespace board {
 	
 	export class BoardInfo {
+	    FQBN: string;
+	    BoardName: string;
 	    Protocol: string;
 	    Serial: string;
 	    Address: string;
 	    CustomName: string;
-	    BoardName: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new BoardInfo(source);
@@ -13,11 +14,12 @@ export namespace board {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.FQBN = source["FQBN"];
+	        this.BoardName = source["BoardName"];
 	        this.Protocol = source["Protocol"];
 	        this.Serial = source["Serial"];
 	        this.Address = source["Address"];
 	        this.CustomName = source["CustomName"];
-	        this.BoardName = source["BoardName"];
 	    }
 	}
 	export class Board {

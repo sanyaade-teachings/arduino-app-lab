@@ -6,7 +6,7 @@ import {
 import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 
-import { Button, ButtonType } from '../../../components-by-app/app-lab';
+import { Button, ButtonVariant } from '../../../components-by-app/app-lab';
 import { Input } from '../../../essential/input';
 import { InputStyle } from '../../../essential/input/input.type';
 import { useI18n } from '../../../i18n/useI18n';
@@ -108,7 +108,7 @@ export const ConfigureAppBricksDialog: React.FC<
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => onOpenChange(false)}
             uppercase={false}
             classes={{
@@ -119,7 +119,7 @@ export const ConfigureAppBricksDialog: React.FC<
             {formatMessage(messages.cancelButton)}
           </Button>
           <Button
-            type={ButtonType.Primary}
+            variant={ButtonVariant.Primary}
             uppercase={false}
             loading={loading}
             disabled={params.some(
@@ -130,7 +130,7 @@ export const ConfigureAppBricksDialog: React.FC<
                     variable.required && !variable.value.trim().length,
                 ),
             )}
-            isSubmit
+            type="submit"
             classes={{
               button: styles['action-button'],
               textButtonText: styles['action-button-text'],

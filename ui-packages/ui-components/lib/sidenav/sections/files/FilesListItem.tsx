@@ -115,9 +115,7 @@ const FilesListItem: React.FC<FilesListItemProps> = ({
           selectedFileChange(item.fileId);
         }}
       >
-        <div className={styles['file-icon']}>
-          {item.Icon ? <item.Icon /> : null}
-        </div>
+        <div className={styles['file-icon']}>{item.Icon}</div>
         {isRenaming ? (
           <div className={styles['file-input-wrapper']}>
             <input

@@ -1,24 +1,22 @@
 .network-icon {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
+    padding: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: 8px;
+    cursor: pointer;
 
-    &.connected {
-        cursor: default;
-
-        &:hover {
-            background-color: #25C2C714;
-        }
+    &:hover {
+        background: var(--component-bg-flexible, #aeb8b826);
     }
 }
 
 .tooltip-content {
-    background-color: #AEB8B8;
+    background-color: #aeb8b8;
     border-radius: 3px;
-    color: #171E21;
+    color: #171e21;
     font-size: 12px;
     font-weight: 400;
     padding: 2px 8px;

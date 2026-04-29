@@ -12,11 +12,15 @@ type IconButtonProps = AriaButtonProps & {
   classes?: {
     button?: string;
     icon?: string;
+    tooltip?: string;
   };
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 };
 
+/**
+ *This component if for cloud-editor, use `IconButton` from `components-by-app/app-lab/essential` instead.
+ */
 const IconButton: React.FC<IconButtonProps> = (props: IconButtonProps) => {
   const {
     label,
@@ -54,7 +58,9 @@ const IconButton: React.FC<IconButtonProps> = (props: IconButtonProps) => {
   );
 
   return title ? (
-    <WrapperTitle title={title}>{renderIconButton()}</WrapperTitle>
+    <WrapperTitle title={title} classNames={{ tooltip: classes?.tooltip }}>
+      {renderIconButton()}
+    </WrapperTitle>
   ) : (
     renderIconButton()
   );

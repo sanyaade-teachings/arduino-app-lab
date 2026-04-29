@@ -14,7 +14,12 @@ export enum SerialMonitorStatus {
 }
 
 export type ContentUpdateLogic = (
-  receiveContentUpdate: (content: string, isSentByUser: boolean) => void,
+  receiveContentUpdate: (
+    content: string,
+    isSentByUser: boolean,
+    className?: string,
+    isGlobalStyle?: boolean,
+  ) => void,
   receiveContentReset: () => void,
   resetSource?: Subject<void>, // Optional reset source for resetting content
 ) => void;
@@ -40,7 +45,7 @@ export type SerialMonitorProps = {
   serialMonitorLogic: SerialMonitorLogic;
   classes?: {
     wrapper?: string;
-    contents?: { wrapper?: string };
+    contents?: { wrapper?: string; viewNewDataButton?: string };
     actions?: SerialMonitorActionsProps['classes'];
   };
   logSource?: BehaviorSubject<any> | Subject<any>;
@@ -52,6 +57,10 @@ export type SerialMonitorProps = {
     lineSeparator: string;
     wrapLines: boolean;
   };
+  autoScrollEnabled?: boolean;
+  onAutoScrollChanged?: (enabled: boolean) => void;
+  timestampsActive?: boolean;
+  onTimestampsChanged?: (enabled: boolean) => void;
 };
 
 export type SerialMonitorToolbarProps = Pick<
@@ -75,7 +84,7 @@ export type SerialMonitorContentsProps = Pick<
     ReturnType<UseMonitorCodeMirror>,
     'lastLineIsVisible' | 'scrollToBottom'
   > & {
-    classes?: { wrapper?: string };
+    classes?: { wrapper?: string; viewNewDataButton?: string };
     codeMirrorRef: ReturnType<UseMonitorCodeMirror>['rootRef'];
   };
 
@@ -91,7 +100,7 @@ export type SerialMonitorActionsProps = Pick<
   Pick<ReturnType<UseMonitorCodeMirror>, 'scrollToBottom'> & {
     classes?: {
       wrapper?: string;
-      selector?: { wrapper?: string; menu?: string };
+      selector?: { wrapper?: string; menu?: string; menuPopover?: string };
       input?: { wrapper?: string; input?: string; button?: string };
     };
     placeholder?: string;

@@ -1,4 +1,4 @@
-import { CaretDown, Reload } from '@cloud-editor-mono/images/assets/icons';
+import { Reload } from '@cloud-editor-mono/images/assets/icons';
 import { Error, Success } from '@cloud-editor-mono/images/assets/icons';
 import clsx from 'clsx';
 import {
@@ -11,10 +11,10 @@ import {
   useState,
 } from 'react';
 
-import { DropdownMenuButton } from '../../../../essential/dropdown-menu';
 import { IconButton } from '../../../../essential/icon-button';
 import { Input, InputStyle } from '../../../../essential/input';
 import { useI18n, XXSmall } from '../../../shared';
+import { Select } from '../../essential/select';
 import { boardConfigurationMessages } from '../messages';
 import setupStyles from '../setup.module.scss';
 import { UseBoardConfigurationLogic } from '../setup.type';
@@ -102,45 +102,24 @@ const BoardConfiguration = forwardRef((props: BoardConfigurationProps, ref) => {
   return (
     <form className={styles['container']}>
       <div className={setupStyles['input-container']}>
-        <div className={clsx(styles['keyboard-layout'])}>
-          <Input
-            inputStyle={InputStyle.AppLab}
-            id="network-security"
-            type="text"
-            readOnly
-            name={formatMessage(boardConfigurationMessages.keyboardLabel)}
-            value={
-              keyboardLayouts.find((it) => it.id === inputKeyboardLayout)
-                ?.label ?? ''
-            }
-            disabled={setBoardConfigurationIsLoading}
-            onChange={(key: Key): void => setInputKeyboardLayout(key as string)}
-            onEnter={handleKeyboardLayoutEnter}
-            label={formatMessage(boardConfigurationMessages.keyboardLabel)}
-            classes={{
-              input: styles['input'],
-            }}
-          />
-          {!setBoardConfigurationIsLoading ? (
-            <DropdownMenuButton
-              sections={[
-                {
-                  name: 'Keyboard Layout',
-                  items: keyboardLayouts,
-                },
-              ]}
-              classes={{
-                dropdownMenuButtonWrapper:
-                  styles['dropdown-menu-button-wrapper'],
-                dropdownMenu: styles['dropdown-menu'],
-              }}
-              onAction={(key: Key): void =>
-                setInputKeyboardLayout(key as string)
-              }
-              buttonChildren={<CaretDown />}
-            />
-          ) : null}
-        </div>
+        <Select
+          id="keyboard-layout"
+          name="keyboard-layout"
+          value={
+            keyboardLayouts.find((it) => it.id === inputKeyboardLayout)
+              ?.label ?? ''
+          }
+          label={formatMessage(boardConfigurationMessages.keyboardLabel)}
+          disabled={setBoardConfigurationIsLoading}
+          sections={[
+            {
+              name: 'Keyboard Layout',
+              items: keyboardLayouts,
+            },
+          ]}
+          onChange={(key: Key): void => setInputKeyboardLayout(key as string)}
+          onEnter={handleKeyboardLayoutEnter}
+        />
         {setKeyboardLayoutIsError && (
           <XXSmall
             bold

@@ -373,11 +373,14 @@ export interface components {
       };
     };
     BrickInstance: {
+      api_docs_path?: string;
       author?: string;
       category?: string;
+      code_examples?: components['schemas']['CodeExample'][] | null;
       compatible_models?: components['schemas']['AIModel'][] | null;
       config_variables?: components['schemas']['BrickConfigVariable'][];
       id?: string;
+      readme?: string;
       model?: string;
       name?: string;
       require_model?: boolean;

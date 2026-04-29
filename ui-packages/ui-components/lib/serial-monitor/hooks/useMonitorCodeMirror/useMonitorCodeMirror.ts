@@ -20,7 +20,7 @@ import {
 } from './extensions/search';
 import { addSentContentEffect } from './extensions/sentContents';
 import { addStyledContentEffect } from './extensions/styleContents';
-import { toggleTimestamps } from './extensions/timestamps';
+import { areTimestampsActive, toggleTimestamps } from './extensions/timestamps';
 import { trackedData } from './extensions/trackData';
 import { serialMonitorSetup } from './setup';
 
@@ -34,11 +34,17 @@ export type UseMonitorCodeMirror = (
     lineSeparator: string;
     wrapLines: boolean;
   },
+  controlledAutoScrollEnabled?: boolean,
+  onAutoScrollChanged?: (enabled: boolean) => void,
+  controlledTimestampsActive?: boolean,
+  onTimestampsChanged?: (enabled: boolean) => void,
 ) => {
   rootRef: React.RefObject<HTMLDivElement>;
   searchBtnRef: RefObject<ShowTooltipHandle>;
   lastLineIsVisible: boolean | null;
   timestampsActive: boolean;
+  isAutoScrollEnabled: boolean;
+  toggleAutoScroll: () => void;
   appendContent: (content: string, sentByUser?: boolean) => void;
   resetContent: () => void;
   scrollToBottom: () => void;
@@ -50,11 +56,34 @@ export type UseMonitorCodeMirror = (
 function useAutoScroll(
   setLastLineIsVisible: (value: boolean) => void,
   view: EditorView | null,
+  controlledAutoScrollEnabled?: boolean,
+  onAutoScrollChanged?: (enabled: boolean) => void,
 ): {
-  autoScrollEnabled: React.MutableRefObject<boolean>;
+  autoScrollEnabledRef: React.MutableRefObject<boolean>;
+  isAutoScrollEnabled: boolean;
+  setIsAutoScrollEnabled: (enabled: boolean) => void;
   notifyCodeMirrorIsScrollingToBottom: () => void;
 } {
-  const autoScrollEnabled = useRef<boolean>(true);
+  const autoScrollEnabledRef = useRef<boolean>(
+    controlledAutoScrollEnabled ?? true,
+  );
+  const [internalAutoScrollEnabled, setInternalAutoScrollEnabled] =
+    useState<boolean>(controlledAutoScrollEnabled ?? true);
+
+  const isAutoScrollEnabled =
+    controlledAutoScrollEnabled ?? internalAutoScrollEnabled;
+
+  const setIsAutoScrollEnabled = useCallback(
+    (enabled: boolean) => {
+      autoScrollEnabledRef.current = enabled;
+      setInternalAutoScrollEnabled(enabled);
+      if (onAutoScrollChanged) {
+        onAutoScrollChanged(enabled);
+      }
+    },
+    [onAutoScrollChanged],
+  );
+
   const lastScrollTop = useRef<number>(0);
   const codeMirrorIsScrollingToBottom = useRef<boolean>(false);
 
@@ -83,9 +112,14 @@ function useAutoScroll(
       if (!view) return;
 
       const scrollTop = view.scrollDOM.scrollTop;
+      const isAtBottom =
+        Math.abs(
+          view.scrollDOM.scrollHeight - view.scrollDOM.clientHeight - scrollTop,
+        ) < 2;
+
       // Up scroll
-      if (scrollTop < lastScrollTop.current) {
-        autoScrollEnabled.current = false;
+      if (scrollTop < lastScrollTop.current && !isAtBottom) {
+        setIsAutoScrollEnabled(false);
         checkLastLineIsVisible();
       }
       lastScrollTop.current = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
@@ -107,14 +141,16 @@ function useAutoScroll(
       view.scrollDOM.removeEventListener('scroll', shouldDisableAutoScroll);
       view.scrollDOM.removeEventListener('scroll', debouncedHandleScroll);
     };
-  }, [setLastLineIsVisible, view]);
+  }, [setLastLineIsVisible, view, setIsAutoScrollEnabled]);
 
   const notifyCodeMirrorIsScrollingToBottom = useCallback(() => {
     codeMirrorIsScrollingToBottom.current = true;
   }, []);
 
   return {
-    autoScrollEnabled,
+    autoScrollEnabledRef,
+    isAutoScrollEnabled,
+    setIsAutoScrollEnabled,
     notifyCodeMirrorIsScrollingToBottom,
   };
 }
@@ -162,6 +198,10 @@ function useSearch(
 export const useMonitorCodeMirror: UseMonitorCodeMirror = (
   status,
   codeMirrorParams,
+  controlledAutoScrollEnabled,
+  onAutoScrollChanged,
+  controlledTimestampsActive,
+  onTimestampsChanged,
 ) => {
   const [lastLineIsVisible, setLastLineIsVisible] = useState<boolean | null>(
     null,
@@ -171,6 +211,18 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
   const rootRef = useRef<HTMLDivElement>(null);
   const viewInstanceRef = useRef<EditorView | null>(null);
 
+  const onTimestampsChangedRef = useRef(onTimestampsChanged);
+  useEffect(() => {
+    onTimestampsChangedRef.current = onTimestampsChanged;
+  }, [onTimestampsChanged]);
+
+  const handleTimestampsInternalChange = useCallback((active: boolean) => {
+    setTimestampsActive(active);
+    if (onTimestampsChangedRef.current) {
+      onTimestampsChangedRef.current(active);
+    }
+  }, []);
+
   useEffect(() => {
     if (viewInstanceRef.current) {
       return;
@@ -179,7 +231,7 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
     const startState = EditorState.create({
       doc: '',
       extensions: serialMonitorSetup(
-        setTimestampsActive,
+        handleTimestampsInternalChange,
         codeMirrorParams.lineSeparator,
         codeMirrorParams.wrapLines,
       ),
@@ -202,8 +254,17 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
     };
   }, []);
 
-  const { autoScrollEnabled, notifyCodeMirrorIsScrollingToBottom } =
-    useAutoScroll(setLastLineIsVisible, viewInstanceRef.current);
+  const {
+    autoScrollEnabledRef,
+    isAutoScrollEnabled,
+    setIsAutoScrollEnabled,
+    notifyCodeMirrorIsScrollingToBottom,
+  } = useAutoScroll(
+    setLastLineIsVisible,
+    viewInstanceRef.current,
+    controlledAutoScrollEnabled,
+    onAutoScrollChanged,
+  );
 
   const { searchBtnRef, handleToggleSearchPanel } = useSearch(
     status,
@@ -238,7 +299,7 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
         }
       }
 
-      if (autoScrollEnabled.current) {
+      if (autoScrollEnabledRef.current) {
         const normalizedContent = content.replace(
           new RegExp(LINE_SEPARATOR, 'g'),
           '',
@@ -257,7 +318,7 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
 
       view.dispatch(tr);
     },
-    [autoScrollEnabled, notifyCodeMirrorIsScrollingToBottom],
+    [autoScrollEnabledRef, notifyCodeMirrorIsScrollingToBottom],
   );
 
   const resetContent = useCallback(() => {
@@ -276,7 +337,7 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    autoScrollEnabled.current = true;
+    setIsAutoScrollEnabled(true);
 
     const view = viewInstanceRef.current;
     if (!view) return;
@@ -291,7 +352,45 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
     });
 
     setLastLineIsVisible(true);
-  }, [autoScrollEnabled]);
+  }, [setIsAutoScrollEnabled]);
+
+  const prevControlledAutoScroll = useRef<boolean | undefined>(
+    controlledAutoScrollEnabled,
+  );
+
+  useEffect(() => {
+    if (
+      controlledAutoScrollEnabled !== undefined &&
+      controlledAutoScrollEnabled !== prevControlledAutoScroll.current
+    ) {
+      const wasEnabled = autoScrollEnabledRef.current;
+
+      if (controlledAutoScrollEnabled) {
+        scrollToBottom();
+      } else {
+        setIsAutoScrollEnabled(false);
+        if (wasEnabled) {
+          // If explicitly disabled via external control (while it was active),
+          // dismiss the 'view new data' banner by pretending we're at the bottom.
+          setLastLineIsVisible(true);
+        }
+      }
+    }
+    prevControlledAutoScroll.current = controlledAutoScrollEnabled;
+  }, [
+    controlledAutoScrollEnabled,
+    scrollToBottom,
+    setIsAutoScrollEnabled,
+    autoScrollEnabledRef,
+  ]);
+
+  const toggleAutoScroll = useCallback(() => {
+    if (isAutoScrollEnabled) {
+      setIsAutoScrollEnabled(false);
+    } else {
+      scrollToBottom();
+    }
+  }, [isAutoScrollEnabled, setIsAutoScrollEnabled, scrollToBottom]);
 
   const exportFile = useCallback(() => {
     //const view = getViewInstance();
@@ -322,11 +421,22 @@ export const useMonitorCodeMirror: UseMonitorCodeMirror = (
     toggleTimestamps(view);
   }, []);
 
+  useEffect(() => {
+    if (controlledTimestampsActive !== undefined) {
+      const view = viewInstanceRef.current;
+      if (view && areTimestampsActive(view) !== controlledTimestampsActive) {
+        toggleTimestamps(view);
+      }
+    }
+  }, [controlledTimestampsActive]);
+
   return {
     rootRef,
     searchBtnRef,
     lastLineIsVisible,
     timestampsActive,
+    isAutoScrollEnabled,
+    toggleAutoScroll,
     appendContent,
     resetContent,
     scrollToBottom,

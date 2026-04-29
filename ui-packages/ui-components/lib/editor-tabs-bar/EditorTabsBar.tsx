@@ -1,40 +1,34 @@
 import { setCSSVariable } from '@cloud-editor-mono/common';
 import { AddTab, ChevronDown } from '@cloud-editor-mono/images/assets/icons';
 import {
-  closestCenter,
+  defaultDropAnimationSideEffects,
   DndContext,
-  DragEndEvent,
-  KeyboardSensor,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
+  DragOverlay,
 } from '@dnd-kit/core';
-import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
-import {
-  arrayMove,
-  horizontalListSortingStrategy,
-  SortableContext,
-} from '@dnd-kit/sortable';
+import { SortableContext } from '@dnd-kit/sortable';
 import clsx from 'clsx';
 import { Key, useCallback, useEffect, useRef, useState } from 'react';
 import { MenuTriggerState } from 'react-stately';
-import { useScroll } from 'react-use';
-import useMeasureDirty from 'react-use/lib/useMeasureDirty';
 
 import DropdownMenuButton from '../essential/dropdown-menu/DropdownMenuButton';
-import { FilterableListButton } from '../essential/filterable-list/FilterableListButton';
+import FilterableListButton from '../essential/filterable-list/FilterableListButton';
 import {
   FileExtension,
   SUPPORTED_TYPES,
   TabsBarLogic,
 } from './EditorTabsBar.type';
-import { useTabsBar } from './hooks/useTabsBar';
+import { useTabsBarActions } from './hooks/useTabsBarActions';
+import {
+  useTabsBarReorder,
+  verticalColumnCollisionStrategy,
+} from './hooks/useTabsBarReorder';
+import { useTabsBarScroll } from './hooks/useTabsBarScroll';
 import EditorTab from './sub-components/EditorTab';
 import { newTabMenuSections } from './sub-components/editorTabMenuSpec';
 import RenameEditorTab, {
   RenameTabRole,
 } from './sub-components/RenameEditorTab';
+import SortableEditorTab from './sub-components/SortableEditorTab';
 import styles from './tabs-bar.module.scss';
 
 interface EditorTabsBarProps {
@@ -59,7 +53,6 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
     makeUniqueFileName,
     getFileIcon,
     isReadOnly,
-    hasSetHeightOnHover,
     addFile,
     renameFile,
     deleteFile,
@@ -68,23 +61,14 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
     onBeforeFileAction,
     dispatchNewFileAction,
     setDispatchNewFileAction,
-    isRenderedMarkdownFile,
+    showFileSearch,
   } = tabsBarLogic();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollTabsRef = useRef<HTMLUListElement>(null);
   const renameTabRef = useRef<HTMLLIElement>(null);
-  const tabsRef = useRef<{
-    [fileId: string]: HTMLLIElement;
-  }>({});
-
-  const [tabsListScrollable, setTabsListScrollable] = useState(false);
 
   const [, setOpenMenuMap] = useState<Map<string, MenuTriggerState>>(new Map());
-
-  const { x: scrollTabsLeft } = useScroll(scrollTabsRef);
-
-  const measure = useMeasureDirty(scrollTabsRef);
 
   const {
     filePath,
@@ -97,7 +81,7 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
     isNewTabAdded,
     newTabActionType,
     renamingFileId,
-  } = useTabsBar(
+  } = useTabsBarActions(
     tabs,
     selectedTab,
     selectableMainFile,
@@ -113,31 +97,22 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
     onBeforeFileAction,
   );
 
-  // Delay pointer sensor event to not override other pointer interactions by dragging
-  // eg. button click, context menu
-  const pointerSensor = useSensor(PointerSensor, {
-    activationConstraint: {
-      distance: 1,
-    },
+  const {
+    activeTab,
+    dropIndicator,
+    sensors,
+    handleDragStart,
+    handleDragMove,
+    handleDragEnd,
+  } = useTabsBarReorder({
+    tabs,
+    updateTabOrder,
   });
-  const sensors = useSensors(
-    pointerSensor,
-    useSensor(KeyboardSensor),
-    useSensor(TouchSensor),
-  );
 
-  useEffect(() => {
-    if (scrollTabsRef.current) {
-      setTabsListScrollable(
-        Math.round(measure.width) < scrollTabsRef.current.scrollWidth,
-      );
-    }
-  }, [tabs.length, measure.width]);
-
-  useEffect(() => {
-    const ref = tabsRef.current[selectedTab?.fileId || ''];
-    ref?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [selectedTab]);
+  const { isScrollable } = useTabsBarScroll({
+    scrollRef: scrollTabsRef,
+    selectedFileId: selectedTab?.fileId,
+  });
 
   useEffect(() => {
     if (renamingFileId && renameTabRef.current) {
@@ -152,41 +127,18 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
     }
   }, [newTabMenuAction, dispatchNewFileAction, setDispatchNewFileAction]);
 
-  useEffect(() => {
-    return () => {
-      tabsRef.current = {};
-
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
-
-      window.getSelection()?.removeAllRanges();
-    };
-  }, []);
-
-  const handleDragEnd = useCallback(
-    ({ active, over }: DragEndEvent): void => {
-      const prevIndex = active.data.current?.sortable.index;
-      const newIndex = over?.data.current?.sortable.index;
-      if (prevIndex !== newIndex) {
-        const newTabList = arrayMove(tabs, prevIndex, newIndex);
-        updateTabOrder(newTabList.map((tab) => tab.fileId));
-      }
-    },
-    [tabs, updateTabOrder],
-  );
-
   const renderTabNodes = (): JSX.Element => {
     const items = tabs.map((t) => ({ ...t, id: t.fileId }));
 
     return (
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={verticalColumnCollisionStrategy}
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
-        modifiers={[restrictToHorizontalAxis]}
       >
-        <SortableContext items={items} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={items}>
           {items.map((item) => {
             const { id, ...tab } = item;
 
@@ -209,14 +161,7 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
                 }
               />
             ) : (
-              <EditorTab
-                ref={(tabRef): void => {
-                  if (tabRef) {
-                    tabsRef.current[tab.fileId] = tabRef as HTMLLIElement;
-                  } else {
-                    delete tabsRef.current[tab.fileId];
-                  }
-                }}
+              <SortableEditorTab
                 id={id}
                 key={id}
                 tabData={tab}
@@ -227,15 +172,36 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
                 isUnsaved={Boolean(
                   tab.fileId && unsavedFileIds?.has(tab.fileId),
                 )}
-                classes={{ selected: classes?.selected, tab: classes?.tab }}
                 selectTab={onTabClick}
                 isReadOnly={isReadOnly || !!tab.isMetadataReadOnly}
                 tabAction={tabAction}
                 setOpenMenuMap={setOpenMenuMap}
+                dropIndicator={
+                  dropIndicator?.tabId === tab.fileId
+                    ? dropIndicator.direction
+                    : undefined
+                }
               />
             );
           })}
         </SortableContext>
+        <DragOverlay
+          dropAnimation={{
+            sideEffects: defaultDropAnimationSideEffects({
+              styles: { active: { opacity: '0.5' } },
+            }),
+          }}
+        >
+          {activeTab ? (
+            <EditorTab
+              tabData={activeTab}
+              isSelected={activeTab.fileId === selectedTab?.fileId}
+              Icon={activeTab.Icon}
+              classes={{ tab: styles['tab-drag-overlay'] }}
+              isReadOnly={true}
+            />
+          ) : null}
+        </DragOverlay>
       </DndContext>
     );
   };
@@ -261,33 +227,25 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
   };
 
   const getFilterableListSections = useCallback(() => {
-    if (tabsListScrollable) {
-      return {
-        name: 'tabs-list',
-        items: tabs.map((tab) => ({
-          id: tab.fileId,
-          label: {
-            id: `tabList.${tab.fileId}`,
-            defaultMessage: `${tab.fileName}`,
-            description: `Tab file name: ${tab.fileName}`,
-          },
-          labelPrefix: <div>{tab.Icon ? <tab.Icon /> : null}</div>,
-        })),
-      };
-    }
-  }, [tabs, tabsListScrollable]);
+    return {
+      name: 'tabs-list',
+      items: tabs.map((tab) => ({
+        id: tab.fileId,
+        label: {
+          id: `tabList.${tab.fileId}`,
+          defaultMessage: `${tab.fileName}`,
+          description: `Tab file name: ${tab.fileName}`,
+        },
+        labelPrefix: <div>{tab.Icon}</div>,
+      })),
+    };
+  }, [tabs]);
 
   const onFilterableListAction = useCallback(
     (key: Key): void => {
       const tab = tabs.find((tab) => tab.fileId === key);
       if (tab) {
         onTabClick(tab);
-
-        const ref = tabsRef.current[tab.fileId];
-        ref.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-        });
       }
     },
     [tabs, onTabClick],
@@ -295,14 +253,12 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
 
   const renameTabIndex = tabs.findIndex((tab) => tab.fileId === renamingFileId);
 
-  setCSSVariable(styles.tabsBarListScrollLeft, `${scrollTabsLeft}`);
   setCSSVariable(styles.renameTabIndex, `${renameTabIndex}`);
-  setCSSVariable(styles.tabsSize, `${!sketchDataIsLoading ? tabs.length : 1}`);
 
   return (
     <div
       className={clsx(styles['tabs-bar'], classes?.container, {
-        [styles['tabs-bar-markdown-file']]: isRenderedMarkdownFile,
+        [styles['tabs-bar-scrollable']]: isScrollable,
       })}
     >
       <ul
@@ -314,20 +270,13 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
           [styles['last-tab-renaming']]:
             tabs.length > 0 && renameTabIndex === tabs.length - 1,
           [styles['new-tab-renaming']]: isNewTabAdded,
-          [styles['tabs-list-scrollable']]: tabsListScrollable,
-          [styles['tabs-list-height-exception']]:
-            hasSetHeightOnHover && tabsListScrollable,
         })}
       >
         {!sketchDataIsLoading && tabs.length ? (
-          !isNewTabAdded ? (
-            renderTabNodes()
-          ) : (
-            <>
-              {renderTabNodes()}
-              {renderCreateTabNode()}
-            </>
-          )
+          <>
+            {renderTabNodes()}
+            {isNewTabAdded && renderCreateTabNode()}
+          </>
         ) : (
           <EditorTab
             isSelected={true}
@@ -336,45 +285,41 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
           />
         )}
       </ul>
-      {tabsListScrollable ? (
-        <FilterableListButton
-          buttonChildren={<ChevronDown />}
-          getSections={getFilterableListSections}
-          label={'Search tabs'}
-          onAction={onFilterableListAction}
-          classes={{
-            wrapper: styles['filterable-list-button-wrapper'],
-            button: styles['new-tab-menu-button'],
-            listContainer: styles['filterable-list-container'],
-          }}
+      <div className={styles['tabs-bar-right']}>
+        {!isReadOnly ? (
+          <DropdownMenuButton
+            buttonChildren={<AddTab />}
+            sections={newTabMenuSections}
+            onAction={newTabMenuAction}
+            classes={{
+              dropdownMenuButtonWrapper: styles['tabs-bar-right-item'],
+              dropdownMenuButton: styles['tabs-bar-right-button'],
+              dropdownMenu: styles['tabs-bar-right-menu'],
+              dropdownMenuItem: styles['new-tab-menu-item'],
+            }}
+          />
+        ) : null}
+        <input
+          type="file"
+          onChange={handleImportedFile}
+          ref={inputRef}
+          accept={SUPPORTED_TYPES.join(',')}
+          className={styles['import-file-input']}
         />
-      ) : null}
-      {!isReadOnly ? (
-        <DropdownMenuButton
-          buttonChildren={<AddTab />}
-          sections={newTabMenuSections}
-          onAction={newTabMenuAction}
-          classes={{
-            dropdownMenuButtonWrapper: clsx(
-              styles['new-tab-menu-button-wrapper'],
-              {
-                [styles['filterable-list-button-wrapper-visible']]:
-                  tabsListScrollable,
-              },
-            ),
-            dropdownMenuButton: styles['new-tab-menu-button'],
-            dropdownMenu: styles['new-tab-menu'],
-            dropdownMenuItem: styles['new-tab-menu-item'],
-          }}
-        />
-      ) : null}
-      <input
-        type="file"
-        onChange={handleImportedFile}
-        ref={inputRef}
-        accept={SUPPORTED_TYPES.join(',')}
-        className={styles['import-file-input']}
-      />
+        {isScrollable && showFileSearch && (
+          <FilterableListButton
+            buttonChildren={<ChevronDown />}
+            getSections={getFilterableListSections}
+            label={'Search tabs'}
+            onAction={onFilterableListAction}
+            classes={{
+              wrapper: styles['tabs-bar-right-item'],
+              button: styles['tabs-bar-right-button'],
+              listContainer: styles['tabs-bar-right-menu'],
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

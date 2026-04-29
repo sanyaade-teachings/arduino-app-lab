@@ -15,6 +15,7 @@ export interface BasicFileData {
 export interface BrickFileData {
   name: string;
   id: string;
+  category: string;
 }
 
 export type BasicFilesData = BasicFileData[];

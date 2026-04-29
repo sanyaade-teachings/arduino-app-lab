@@ -1,6 +1,7 @@
 import { AriaPopoverProps, usePopover } from '@react-aria/overlays';
 import clsx from 'clsx';
 import { useRef } from 'react';
+import { useInteractOutside } from 'react-aria';
 import { MenuTriggerState } from 'react-stately';
 
 import styles from './dropdown-menu.module.scss';
@@ -19,10 +20,12 @@ const DropdownMenuPopover: React.FC<DropdownMenuPopoverProps> = (
   const { children, state, classes, useStaticPosition = true } = props;
 
   const ref = useRef<HTMLDivElement>(null);
+
   const { popoverProps } = usePopover(
     {
       ...props,
       popoverRef: ref,
+      isNonModal: true,
       ...(!useStaticPosition && {
         offset: 8,
         placement: 'bottom left',
@@ -30,6 +33,13 @@ const DropdownMenuPopover: React.FC<DropdownMenuPopoverProps> = (
     },
     state,
   );
+
+  useInteractOutside({
+    ref,
+    onInteractOutside: () => {
+      state.close();
+    },
+  });
 
   return (
     <div

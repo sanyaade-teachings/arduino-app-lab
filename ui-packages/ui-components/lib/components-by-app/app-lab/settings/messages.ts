@@ -235,3 +235,12 @@ export const networkMessages = defineMessages({
     description: 'Message indicating that there is no network connected',
   },
 });
+
+export const settingsMessages = defineMessages({
+  copyright: {
+    id: 'appLabSettings.copyright',
+    defaultMessage:
+      'Copyright (C) Arduino s.r.l. and/or its affiliated companies.',
+    description: 'Copyright message in the settings page footer',
+  },
+});

@@ -79,6 +79,9 @@ export const BaseModal = forwardRef<HTMLDivElement, ModalRootProps>(
                 : null)}
               {...contentPropsRest}
             >
+              <Dialog.Description hidden>
+                {contentProps?.['aria-describedby'] ?? ''}
+              </Dialog.Description>
               {props.children}
             </Dialog.Content>
           </Dialog.Portal>

@@ -87,9 +87,9 @@ func (a *App) detectBoards() ([]*board.Board, error) {
 	return boards, nil
 }
 
-func (a *App) selectBoard(id string, password string) error {
+func (a *App) selectBoard(serial string, password string) error {
 	for _, b := range a.detectedBoards {
-		if b.Id == id {
+		if b.Info.Serial == serial {
 			if err := b.EstablishConnection(a.ctx(), password); err != nil {
 				return fmt.Errorf("failed to select board: %w", err)
 			}
@@ -100,7 +100,7 @@ func (a *App) selectBoard(id string, password string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("failed to select board: board with id %s not found", id)
+	return fmt.Errorf("failed to select board: board with serial %s not found", serial)
 }
 
 func isProtocolRegistered(

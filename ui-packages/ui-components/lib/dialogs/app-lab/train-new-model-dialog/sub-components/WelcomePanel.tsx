@@ -4,7 +4,7 @@ import { useState } from 'react';
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   Medium,
   Small,
   useI18n,
@@ -71,15 +71,16 @@ const WelcomePanel: React.FC<WelcomePanelProps> = (
           {
             // TODO: Introduce 'Learn more' button when related content page is available
             /* <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             size={ButtonSize.XSmall}
             classes={{ button: styles['button'] }}
+            {formatMessage(messages.letsStart)}
           >
             {formatMessage(messages.learnMore)}
           </Button> */
           }
           <Button
-            type={ButtonType.Primary}
+            variant={ButtonVariant.Primary}
             size={ButtonSize.XSmall}
             onClick={(): void => onStart(dontShowAgain)}
             classes={{ button: styles['button'] }}

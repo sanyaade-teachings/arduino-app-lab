@@ -28,6 +28,9 @@ type ButtonProps = Pick<TextProps, 'size'> & {
   bold?: boolean;
 };
 
+/**
+ *This component if for cloud-editor, use `Button` from `components-by-app/app-lab/essential` instead.
+ */
 export const Button = forwardRef(
   (props: ButtonProps, ref: React.ForwardedRef<Partial<HTMLButtonElement>>) => {
     const {

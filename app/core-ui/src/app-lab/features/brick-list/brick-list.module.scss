@@ -4,8 +4,8 @@
   width: 100%;
   padding: 0px 16px;
   box-sizing: border-box;
-	display: flex;
-	flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
   .container {
     padding-bottom: 16px;
@@ -22,19 +22,19 @@
       height: 100%;
 
       &-left {
-        width: calc(50% + 8px) !important;
-      };
+        width: calc(30% + 8px) !important;
+      }
 
       &-right {
         margin-left: 8px;
-        width: calc(50% - 8px) !important;
+        width: calc(70% - 8px) !important;
 
         & > div {
           background: var(--surface-bg-baseline, #232b2e);
           border-radius: 16px;
           padding: 16px;
         }
-      };
+      }
     }
   }
 }

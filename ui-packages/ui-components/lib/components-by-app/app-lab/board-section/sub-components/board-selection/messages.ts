@@ -11,4 +11,9 @@ export const messages = defineMessages({
     defaultMessage: 'Switch board',
     description: 'Title for the dropdown button used to switch boards',
   },
+  switchBoardDropdownMenuItemNoBoards: {
+    id: 'appLabFooterBar.boardSelection.switchBoardDropdownMenuItemNoBoards',
+    defaultMessage: 'No boards available',
+    description: 'Label shown when no boards are available for selection',
+  },
 });

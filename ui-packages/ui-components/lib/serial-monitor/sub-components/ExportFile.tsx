@@ -5,13 +5,13 @@ import { useI18n } from '../../i18n/useI18n';
 import { messages } from '../messages';
 import styles from './serial-monitor-toolbar.module.scss';
 
-export interface ToggleTimestampsButtonProps {
+export interface ExportFileButtonProps {
   onClick: () => void;
   disabled: boolean;
 }
 
-const ToggleTimestampsButton: React.FC<ToggleTimestampsButtonProps> = (
-  props: ToggleTimestampsButtonProps,
+const ExportFileButton: React.FC<ExportFileButtonProps> = (
+  props: ExportFileButtonProps,
 ) => {
   const { onClick: handleClick, disabled } = props;
 
@@ -31,4 +31,4 @@ const ToggleTimestampsButton: React.FC<ToggleTimestampsButtonProps> = (
   );
 };
 
-export default ToggleTimestampsButton;
+export default ExportFileButton;

@@ -28,6 +28,7 @@
 	&-text {
 		color: var(--text-subtle, #c9d2d2);
 		flex: 1;
+		font-size: 12px;
 		text-align: left;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -46,10 +47,16 @@
 	padding: 4px;
 	z-index: shared.$zIndex5 !important;
 
-	&-delete-item {
+	div[role="separator"] {
+		background-color: var(--grayscale-smoke, #C9D2D2);
+		height: 1px;
+		opacity: 0.1;
+	}
+
+	&-item {
 		border: none;
 		border-radius: 4px;
-		color: var(--feedback-error-default, #ff8878);
+		color: var(--text-default, #fff);
 		padding: 4px 8px;
 		display: flex;
 		align-items: center;
@@ -59,6 +66,10 @@
 		svg {
 			height: 12px;
 			width: 12px;
+		}
+
+		&.is-delete {
+			color: var(--feedback-error-default, #ff8878);
 		}
 
 		&:hover {

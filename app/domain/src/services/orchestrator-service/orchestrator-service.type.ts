@@ -73,6 +73,15 @@ export interface OrchestratorService {
     brickId: string,
     params: BrickCreateUpdateRequest,
   ): Promise<boolean>;
+  addAppCustomBrick(
+    appId: string,
+    body: { name: string; description?: string },
+  ): Promise<{ id: string }>;
+  renameAppCustomBrick(
+    appId: string,
+    brickId: string,
+    params: { name: string },
+  ): Promise<boolean>;
   getBricks(): Promise<BrickListItem[]>;
   getBrickDetails(id: string): Promise<BrickDetails>;
   getConfig(): Promise<AppConfig>;

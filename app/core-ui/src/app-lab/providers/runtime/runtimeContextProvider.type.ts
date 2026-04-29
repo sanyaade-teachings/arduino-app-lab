@@ -7,7 +7,6 @@ import {
   ConsoleSourceKey,
   ConsoleSources,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { Subject } from 'rxjs';
 
 export type AppsStatus = {
   defaultApp?: AppDetailedInfo;
@@ -26,21 +25,21 @@ export type RuntimeActions = {
   resetCurrentAction: () => void;
   currentAction: Action | null;
   currentActionStatus: ActionStatus;
+  currentActionAppId?: string;
   progress: number; // currently not used
 };
 
 export type ConsoleLogic = {
-  consoleSourcesResetSubject: Subject<void>;
-  consoleSources: ConsoleSources;
-  consoleTabs: ConsoleSourceKey[];
-  activeConsoleTab?: ConsoleSourceKey;
-  setActiveConsoleTab: React.Dispatch<
-    React.SetStateAction<ConsoleSourceKey | undefined>
-  >;
+  consoleSources: Record<string, ConsoleSources>;
+  consoleTabs: Record<string, ConsoleSourceKey[]>;
+  activeConsoleTab: Record<string, ConsoleSourceKey | undefined>;
+  setActiveConsoleTab: (
+    appId: string,
+    tab: ConsoleSourceKey | undefined,
+  ) => void;
   appendData: AppendDataToSource;
   addConsoleSource: AddConsoleSource;
-  resetConsoleSources: (keysToRetain: string[]) => void;
-  consoleSourcesOwner?: string;
+  resetConsoleSources: (appId: string, keysToRetain: string[]) => void;
 };
 
 export type UseRuntimeLogic = () => {

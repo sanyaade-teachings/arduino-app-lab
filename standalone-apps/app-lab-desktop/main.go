@@ -5,6 +5,7 @@ import (
 	"app-lab-desktop/internal/learn"
 	"embed"
 	"fmt"
+	"runtime"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -54,15 +55,32 @@ func main() {
 			Appearance: mac.NSAppearanceNameDarkAqua,
 			OnUrlOpen:  app.OnUrlOpen,
 		},
-		SingleInstanceLock: &options.SingleInstanceLock{
-			UniqueId:               "56b1104f-fc4f-4f31-91c6-6447c01338a4",
-			OnSecondInstanceLaunch: app.HandleSecondInstanceLaunch,
-		},
+		SingleInstanceLock: getInstanceLockOptions(app),
 	})
 
 	if err != nil {
 		panic(fmt.Errorf("failed to run application: %w", err))
 	}
+}
+
+// We're returning a SingleInstanceLock struct only on non-Mac platforms
+// because (on other platforms) it's needed to have a proper custom protocol
+// handling during login.
+//
+// On macOS, the custom protocol URL to log in is handled via the `OnUrlOpen` callback
+// so we don't need the HandleSecondInstanceLaunch callback to manage URL parameters.
+//
+// Moreover, on macOS, blocking the second instance is causing issues with the autoupdate
+// because the new updated instance created by `go-updater`
+// won't be executed automatically if another instance is already running.
+func getInstanceLockOptions(app *app.App) *options.SingleInstanceLock {
+	if runtime.GOOS != "darwin" {
+		return &options.SingleInstanceLock{
+			UniqueId:               "56b1104f-fc4f-4f31-91c6-6447c01338a4",
+			OnSecondInstanceLaunch: app.HandleSecondInstanceLaunch,
+		}
+	}
+	return nil
 }
 
 func printHelp(cmd string) {

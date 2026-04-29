@@ -19,7 +19,6 @@ import {
 import {
   CodeEditorText,
   OnChangeHandlerSetCode,
-  Preferences,
   SelectableFileData,
   ToastSize,
   ToastType,
@@ -31,10 +30,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BehaviorSubject, NEVER, Observable, Subject } from 'rxjs';
 
 import { messages } from '../messages';
-import { createSelectableFileData } from '../utils';
 import { UseCodeChange } from './code.type';
 import { useEditExampleNotification } from './notifications';
-import { usePreferenceObservable } from './preferences';
 import { useCodeFormatter } from './queries/codeFormatter';
 import {
   SaveSketchFileMutation,
@@ -84,12 +81,12 @@ export const useCodeChange: UseCodeChange = function (
   compileErrors?: CompileErrors,
   compileErrorsTimestamp?: React.MutableRefObject<number | undefined>,
   openFiles?: SelectableFileData[],
+  autoSave: boolean = true,
   exampleInoData?: RetrieveExampleFileContentsResult,
   exampleFilesData?: RetrieveExampleFileContentsResult[],
   customLibraryFiles?: RetrieveFileContentsResult[],
 ): ReturnType<UseCodeChange> {
   const lastSetCodeTimeStamp = useRef<number>();
-  const autoSave = usePreferenceObservable(Preferences.AutoSave);
 
   const { formatMessage } = useI18n();
 
@@ -251,31 +248,29 @@ export const useCodeChange: UseCodeChange = function (
     (code: string): void => {
       if (pendingApply) return;
 
-      let fileToUpdate: SelectableFileData | null = null;
+      let fileIdToUpdate: string | null = null;
 
       if (mainFile?.fileId) {
-        fileToUpdate = mainFile;
+        fileIdToUpdate = mainFile.fileId;
       } else if (isLibraryRoute) {
         const firstCodeFile = customLibraryFiles?.find((f) =>
           FILES_WITH_CODE.has(f.extension),
         );
         if (firstCodeFile) {
-          fileToUpdate = createSelectableFileData({
-            fileData: firstCodeFile,
-          });
+          fileIdToUpdate = firstCodeFile.path;
         }
       }
 
-      if (fileToUpdate) {
+      if (fileIdToUpdate) {
         const result = codeInjectionsSubjectNext(
-          fileToUpdate.fileId,
+          fileIdToUpdate,
           code,
           {
             saveCode,
           },
           true,
         );
-        selectFile(fileToUpdate.fileId);
+        selectFile(fileIdToUpdate);
 
         if (libraryIncludeToastId) return;
 

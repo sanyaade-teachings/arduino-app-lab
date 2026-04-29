@@ -3,6 +3,7 @@ export * from '../../arduino-app-files-service';
 export * from '../../arduino-auth';
 export * from '../../board-service';
 export * from '../../browser-service';
+export * from '../../clipboard-service';
 export * from '../../edge-impulse-auth-service';
 export * from '../../edge-impulse-service';
 export * from '../../feature-flags-service';

@@ -4,6 +4,7 @@ import {
   setArduinoAuthService,
   setBoardService,
   setBrowserService,
+  setClipboardService,
   setEdgeImpulseService,
   setFeatureFlagService,
   setFileOpenerService,
@@ -20,6 +21,7 @@ import * as StandaloneArduinoAppFilesService from './services/arduinoAppFilesSer
 import * as StandaloneAuthService from './services/authService.impl.standalone';
 import * as StandaloneBoardService from './services/boardService.impl.standalone';
 import * as StandaloneBrowserService from './services/browserService.impl.standalone';
+import * as StandaloneClipboardService from './services/clipboardService.impl.standalone';
 import * as StandaloneEdgeImpulseService from './services/edgeImpulseService.impl.standalone';
 import * as FeatureFlagService from './services/featureFlagsService.impl.standalone';
 import * as StandaloneFileOpenerService from './services/fileOpenerService.impl.standalone';
@@ -36,6 +38,7 @@ export const injectDependencies = (): void => {
   setLearnService(StandaloneLearnService);
   setBoardService(StandaloneBoardService);
   setBrowserService(StandaloneBrowserService);
+  setClipboardService(StandaloneClipboardService);
   setFeatureFlagService(FeatureFlagService);
   setFileOpenerService(StandaloneFileOpenerService);
   setFlasherService(StandaloneFlasherService);

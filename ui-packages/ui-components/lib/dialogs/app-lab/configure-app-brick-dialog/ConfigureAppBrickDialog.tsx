@@ -1,13 +1,12 @@
 import {
   BrickConfigVariable,
   BrickCreateUpdateRequest,
-  BrickDetails,
   BrickInstance,
 } from '@cloud-editor-mono/infrastructure';
 import { capitalize } from 'lodash';
 import { useEffect, useState } from 'react';
 
-import { Button, ButtonType } from '../../../components-by-app/app-lab';
+import { Button, ButtonVariant } from '../../../components-by-app/app-lab';
 import { Input } from '../../../essential/input';
 import { InputStyle } from '../../../essential/input/input.type';
 import { useI18n } from '../../../i18n/useI18n';
@@ -18,7 +17,7 @@ import styles from './configure-app-brick-dialog.module.scss';
 
 export type ConfigureAppBrickDialogLogic = (params: {
   appId: string;
-  brick: BrickDetails;
+  brickId?: string;
   open: boolean;
 }) => {
   brickInstance?: BrickInstance;
@@ -28,7 +27,8 @@ export type ConfigureAppBrickDialogLogic = (params: {
 type ConfigureAppBrickDialogProps = {
   open: boolean;
   appId: string;
-  brick: BrickDetails;
+  brickId?: string;
+  isCustomBrick?: boolean;
   setOpen: (open: boolean) => void;
   logic: ConfigureAppBrickDialogLogic;
 };
@@ -39,11 +39,17 @@ interface BrickVariable extends Omit<BrickConfigVariable, 'value'> {
 
 export const ConfigureAppBrickDialog: React.FC<
   ConfigureAppBrickDialogProps
-> = ({ open, setOpen, appId, brick, logic }: ConfigureAppBrickDialogProps) => {
+> = ({
+  open,
+  setOpen,
+  appId,
+  brickId,
+  logic,
+}: ConfigureAppBrickDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [variables, setVariables] = useState<BrickVariable[]>([]);
 
-  const { brickInstance, confirmAction } = logic({ appId, brick, open });
+  const { brickInstance, confirmAction } = logic({ appId, brickId, open });
 
   const { formatMessage } = useI18n();
 
@@ -57,7 +63,7 @@ export const ConfigureAppBrickDialog: React.FC<
   }, [brickInstance?.config_variables]);
 
   const handleConfirm = async (): Promise<void> => {
-    if (!brick.id) return;
+    if (!brickId) return;
     setLoading(true);
 
     const success = await confirmAction({
@@ -84,7 +90,7 @@ export const ConfigureAppBrickDialog: React.FC<
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => setOpen(false)}
             uppercase={false}
             classes={{
@@ -95,13 +101,13 @@ export const ConfigureAppBrickDialog: React.FC<
             {formatMessage(messages.cancelButton)}
           </Button>
           <Button
-            type={ButtonType.Primary}
+            variant={ButtonVariant.Primary}
             uppercase={false}
             loading={loading}
             disabled={variables.some(
               (variable) => variable.required && !variable.value.trim().length,
             )}
-            isSubmit
+            type="submit"
             classes={{
               button: styles['action-button'],
               textButtonText: styles['action-button-text'],

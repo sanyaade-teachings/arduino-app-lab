@@ -1,5 +1,6 @@
 @use "@cloud-editor-mono/arduino-sass/src/variables" as vars;
 @use "@cloud-editor-mono/arduino-sass/src/breakpoints" as bp;
+@use "../../../../../../public/shared.module.scss";
 
 .container {
     $color: #c9d2d2;
@@ -115,6 +116,11 @@
 
         &.is-selected {
             background-color: $background-color;
+            pointer-events: none;
+        }
+
+        &.no-boards {
+            pointer-events: none;
         }
 
         & > span {
@@ -144,10 +150,18 @@
             }
         }
     }
+
+    &-popover {
+        z-index: shared.$zIndexMax !important;
+    }
 }
 
 .tooltip-content--dropdown {
     @extend %tooltip-content;
     left: 24px;
     bottom: 32px;
+
+    &.dropdown-open {
+        display: none;
+    }
 }

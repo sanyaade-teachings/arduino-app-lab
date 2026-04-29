@@ -1,3 +1,4 @@
+import { ChevronRight } from '@cloud-editor-mono/images/assets/icons';
 import {
   BrickDetails,
   BrickInstance,
@@ -9,16 +10,23 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   BrickDetail,
   BrickDetailLogic,
+  BrickIcon,
   BricksList,
   Button,
-  ButtonType,
+  ButtonVariant,
   ConfigureAppBrickDialog,
   ConfigureAppBrickDialogLogic,
+  XSmall,
+  XXSmall,
 } from '../../../components-by-app/app-lab';
 import { useI18n } from '../../../i18n/useI18n';
 import { AppLabDialog } from '../app-lab-dialog/AppLabDialog';
 import { addAppBrickDialogMessages as messages } from '../messages';
 import styles from './add-app-brick-dialog.module.scss';
+import {
+  CustomBrickDialog,
+  CustomBrickDialogLogic,
+} from './sub-components/CustomBrickDialog';
 
 export type AddAppBrickDialogLogic = () => {
   open: boolean;
@@ -28,8 +36,11 @@ export type AddAppBrickDialogLogic = () => {
   loadBrickDetails: (brickId: string) => Promise<BrickDetails>;
   brickDetailLogic: BrickDetailLogic;
   configureDialogLogic: ConfigureAppBrickDialogLogic;
-  confirmAction: (brickId: string, modelId?: string) => Promise<boolean>;
+  confirmAddAppBrick: (brickId: string, modelId?: string) => Promise<boolean>;
   onOpenChange: (open: boolean) => void;
+  createAppBrickDialogLogic: CustomBrickDialogLogic;
+  openCreateAppBrickDialog: () => void;
+  createAppBrickDialogOpen: boolean;
 };
 
 type AddAppBrickDialogProps = { logic: AddAppBrickDialogLogic };
@@ -44,9 +55,12 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
     appBricks,
     brickDetailLogic,
     configureDialogLogic,
-    confirmAction,
     onOpenChange,
     loadBrickDetails,
+    confirmAddAppBrick,
+    createAppBrickDialogLogic,
+    openCreateAppBrickDialog,
+    createAppBrickDialogOpen,
   } = logic();
   const [loading, setLoading] = useState(false);
   const [selectedBrick, setSelectedBrick] = useState<BrickListItem>();
@@ -71,10 +85,10 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
 
   const { formatMessage } = useI18n();
 
-  const handleConfirm = async (): Promise<void> => {
+  const handleAddAppBrick = async (): Promise<void> => {
     if (!selectedBrick?.id) return;
     setLoading(true);
-    const success = await confirmAction(
+    const success = await confirmAddAppBrick(
       selectedBrick.id,
       selectedModelByBrickId[selectedBrick.id],
     );
@@ -105,130 +119,169 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
     [selectedBrick],
   );
 
+  const customBrickBanner = !succeeded ? (
+    <button
+      className={styles['custom-brick-banner']}
+      onClick={openCreateAppBrickDialog}
+    >
+      <div className={styles['custom-brick-banner-content']}>
+        <div className={styles['custom-brick-banner-icon']}>
+          <BrickIcon />
+        </div>
+        <div className={styles['custom-brick-banner-texts']}>
+          <XSmall className={styles['custom-brick-banner-title']}>
+            {formatMessage(messages.createCustomBrickTitle)}
+          </XSmall>
+          <XXSmall className={styles['custom-brick-banner-subtitle']}>
+            {formatMessage(messages.createCustomBrickSubtitle)}
+          </XXSmall>
+        </div>
+      </div>
+
+      <div className={styles['custom-brick-banner-arrow']}>
+        <ChevronRight />
+      </div>
+    </button>
+  ) : undefined;
+
   return brickDetails ? (
     <ConfigureAppBrickDialog
       open={true}
       setOpen={(): void => setBrickDetails(undefined)}
       appId={appId}
-      brick={brickDetails}
+      brickId={brickDetails.id}
       logic={configureDialogLogic}
     />
   ) : (
-    <AppLabDialog
-      open={open}
-      onOpenChange={(open): void => (open ? onOpenChange(open) : closeDialog())}
-      title={formatMessage(
-        succeeded ? messages.successTitle : messages.dialogTitle,
-      )}
-      onSubmit={succeeded ? closeDialog : handleConfirm}
-      footer={
-        succeeded ? (
-          <Button
-            type={ButtonType.Primary}
-            isSubmit
-            /* eslint-disable-next-line jsx-a11y/no-autofocus */
-            autoFocus
-            classes={{
-              button: styles['action-button'],
-              textButtonText: styles['action-button-text'],
-            }}
-          >
-            {formatMessage(messages.checkButton)}
-          </Button>
-        ) : (
-          <>
-            <Button
-              type={ButtonType.Secondary}
-              onClick={closeDialog}
-              classes={{
-                button: styles['action-button'],
-                textButtonText: styles['action-button-text'],
-              }}
-            >
-              {formatMessage(messages.cancelButton)}
-            </Button>
-            <Button
-              type={ButtonType.Primary}
-              loading={loading}
-              disabled={appBricks?.some(
-                (appBrick) => appBrick.id === selectedBrick?.id,
-              )}
-              isSubmit
-              /* eslint-disable-next-line jsx-a11y/no-autofocus */
-              autoFocus
-              classes={{
-                button: styles['action-button'],
-                textButtonText: styles['action-button-text'],
-              }}
-            >
-              {formatMessage(messages.confirmButton)}
-            </Button>
-          </>
-        )
-      }
-      classes={{
-        root: clsx(styles['root'], {
-          [styles['large']]: !succeeded,
-        }),
-        content: styles['content'],
-        body: clsx(styles['body'], {
-          [styles['succeeded']]: succeeded,
-        }),
-      }}
-    >
-      {succeeded ? (
-        <div className={styles['success-container']}>
-          <p className={styles['success-description']}>
-            {formatMessage(messages.successDescription)}
-          </p>
-          <ol className={styles['success-steps']}>
-            <li className={styles['success-step']}>
-              {formatMessage(messages.successStep1, {
-                bold: (chunks: string) => <b>{chunks}</b>,
-              })}
-            </li>
-            <li className={styles['success-step']}>
-              {formatMessage(messages.successStep2, {
-                bold: (chunks: string) => <b>{chunks}</b>,
-              })}
-            </li>
-          </ol>
-        </div>
-      ) : (
-        <div className={styles['split']}>
-          <div className={(styles['split-item'], styles['split-item-left'])}>
-            <BricksList
-              bricks={bricks}
-              disabledBricks={bricks.filter((brick) =>
-                appBricks?.some((appBrick) => appBrick.id === brick.id),
-              )}
-              selectedBrick={selectedBrick}
-              brickSize="medium"
-              expanded={false}
-              onClick={setSelectedBrick}
-              classes={{
-                container: styles['bricks-list-container'],
-                item: styles['brick-item'],
-                itemSelected: styles['selected'],
-                itemTitle: styles['brick-item-title'],
-              }}
-            />
-          </div>
+    <>
+      {!createAppBrickDialogOpen ? (
+        <AppLabDialog
+          open={open}
+          onOpenChange={(open): void =>
+            open ? onOpenChange(open) : closeDialog()
+          }
+          title={formatMessage(
+            succeeded ? messages.successTitle : messages.dialogTitle,
+          )}
+          onSubmit={succeeded ? closeDialog : handleAddAppBrick}
+          footer={
+            succeeded ? (
+              <Button
+                variant={ButtonVariant.Primary}
+                type="submit"
+                /* eslint-disable-next-line jsx-a11y/no-autofocus */
+                autoFocus
+                classes={{
+                  button: styles['action-button'],
+                  textButtonText: styles['action-button-text'],
+                }}
+              >
+                {formatMessage(messages.checkButton)}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant={ButtonVariant.Secondary}
+                  onClick={closeDialog}
+                  classes={{
+                    button: styles['action-button'],
+                    textButtonText: styles['action-button-text'],
+                  }}
+                >
+                  {formatMessage(messages.cancelButton)}
+                </Button>
+                <Button
+                  variant={ButtonVariant.Primary}
+                  loading={loading}
+                  disabled={appBricks?.some(
+                    (appBrick) => appBrick.id === selectedBrick?.id,
+                  )}
+                  type="submit"
+                  /* eslint-disable-next-line jsx-a11y/no-autofocus */
+                  autoFocus
+                  classes={{
+                    button: styles['action-button'],
+                    textButtonText: styles['action-button-text'],
+                  }}
+                >
+                  {formatMessage(messages.confirmButton)}
+                </Button>
+              </>
+            )
+          }
+          bottomExtension={customBrickBanner}
+          classes={{
+            root: clsx(styles['root'], {
+              [styles['large']]: !succeeded,
+            }),
+            content: styles['content'],
+            body: clsx(styles['body'], {
+              [styles['succeeded']]: succeeded,
+            }),
+          }}
+        >
+          {succeeded ? (
+            <div className={styles['success-container']}>
+              <p className={styles['success-description']}>
+                {formatMessage(messages.successDescription)}
+              </p>
+              <ol className={styles['success-steps']}>
+                <li className={styles['success-step']}>
+                  {formatMessage(messages.successStep1, {
+                    bold: (chunks: string) => <b>{chunks}</b>,
+                  })}
+                </li>
+                <li className={styles['success-step']}>
+                  {formatMessage(messages.successStep2, {
+                    bold: (chunks: string) => <b>{chunks}</b>,
+                  })}
+                </li>
+              </ol>
+            </div>
+          ) : (
+            <div className={styles['split']}>
+              <div
+                className={(styles['split-item'], styles['split-item-left'])}
+              >
+                <BricksList
+                  bricks={bricks}
+                  disabledBricks={bricks.filter((brick) =>
+                    appBricks?.some((appBrick) => appBrick.id === brick.id),
+                  )}
+                  selectedBrick={selectedBrick}
+                  brickSize="medium"
+                  expanded={false}
+                  onClick={setSelectedBrick}
+                  classes={{
+                    container: styles['bricks-list-container'],
+                    item: styles['brick-item'],
+                    itemSelected: styles['selected'],
+                    itemTitle: styles['brick-item-title'],
+                  }}
+                />
+              </div>
 
-          <div
-            className={clsx(styles['split-item'], styles['split-item-right'])}
-          >
-            <BrickDetail
-              brickId={selectedBrick?.id ?? ''}
-              brickDetailLogic={brickDetailLogic}
-              preSelectedModelId={
-                selectedModelByBrickId[selectedBrick?.id ?? '']
-              }
-              preSelectedModelChange={selectedModelChange}
-            />
-          </div>
-        </div>
+              <div
+                className={clsx(
+                  styles['split-item'],
+                  styles['split-item-right'],
+                )}
+              >
+                <BrickDetail
+                  brickId={selectedBrick?.id ?? ''}
+                  brickDetailLogic={brickDetailLogic}
+                  preSelectedModelId={
+                    selectedModelByBrickId[selectedBrick?.id ?? '']
+                  }
+                  preSelectedModelChange={selectedModelChange}
+                />
+              </div>
+            </div>
+          )}
+        </AppLabDialog>
+      ) : (
+        <CustomBrickDialog logic={createAppBrickDialogLogic} />
       )}
-    </AppLabDialog>
+    </>
   );
 };

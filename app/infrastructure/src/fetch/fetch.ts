@@ -36,6 +36,7 @@ function createRequest<T>({
   token,
   abortController,
   headers,
+  errorType = 'json',
 }: CreateRequestOptions): BaseRequest<T> {
   let base = (
     token
@@ -49,7 +50,7 @@ function createRequest<T>({
 
   const request = !abortController ? base : base.signal(abortController);
 
-  return request.errorType('json').resolve((r) => {
+  return request.errorType(errorType).resolve((r) => {
     return r.json<T>().catch(() => {
       return r.res<T>(); // manage unexpected error in `.json()`
     });
@@ -112,9 +113,11 @@ export async function httpPost<T>({
   wretchOptions = {},
   body = {},
   token,
+  params,
   abortController,
   headers,
   handleError = defaultHandleError,
+  errorType,
 }: HttpPostOptions): Promise<T | void> {
   const api = createRequest<T>({
     url,
@@ -122,10 +125,13 @@ export async function httpPost<T>({
     token,
     abortController,
     headers,
+    errorType,
   });
 
   try {
-    const response = await api.post(body, endpoint);
+    const response = await (params
+      ? queryRequest({ baseRequest: api, params }).post(body, endpoint)
+      : api.post(body, endpoint));
     return response;
   } catch (error) {
     handleError(error as WretchError);

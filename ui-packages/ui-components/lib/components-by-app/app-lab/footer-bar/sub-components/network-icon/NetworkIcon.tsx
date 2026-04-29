@@ -2,7 +2,6 @@ import {
   World,
   WorldDisconnected,
 } from '@cloud-editor-mono/images/assets/icons';
-import clsx from 'clsx';
 
 import { IconButton } from '../../../../../essential/icon-button';
 import { useTooltip } from '../../../../../tooltip';
@@ -26,9 +25,7 @@ export const NetworkIcon: React.FC<NetworkIconProps> = ({
     <div {...tooltipProps}>
       <IconButton
         classes={{
-          button: clsx(styles['network-icon'], {
-            [styles['connected']]: networkItem?.state === 'default',
-          }),
+          button: styles['network-icon'],
         }}
         label={networkItem?.label || ''}
         Icon={networkItem?.state === 'default' ? World : WorldDisconnected}

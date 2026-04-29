@@ -58,9 +58,18 @@
   &-content {
     background: none !important;
 
-    & > div:nth-child(2) {
-      flex: 1;
+    form {
+      > div:nth-of-type(2) {
+        flex: 1;
+      }
     }
+  }
+
+  &-bottom-extension {
+    position: absolute;
+    bottom: -76px;
+    left: 0;
+    width: 100%;
   }
 
   ::-webkit-scrollbar {

@@ -15,7 +15,7 @@ import {
   ActionStatus,
   CONSOLE_SOURCE_KEYS,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useAppSSE } from '../../features/app/app-detail/hooks/useAppSSE';
 import { useConsoleSources } from '../../features/app/app-detail/hooks/useConsoleSources';
@@ -34,8 +34,14 @@ export const useRuntimeLogic: UseRuntimeLogic =
       send: sendCurrentAction,
     } = useCurrentAction();
 
+    //TODO: See is there is a way to pass it down as a parameter instead of needed it as a ref. We need to evaluate how to have a system that could potentially handle multiple active apps in the future.
+    //The ref is needed cause on the if the ActiveApp is not yet set the onMessage callback set it as undefined,
+    //and even if the active apps sets later the console remains empty.
+    const activeAppRef = useRef<AppDetailedInfo | undefined>();
+
     //The activeApp is the app that the user is currently interacting with, not necessarily the one running/default.
     const [activeApp, setActiveApp] = useState<AppDetailedInfo | undefined>();
+
     const [isSwapping, setIsSwapping] = useState<boolean>(false);
 
     const {
@@ -44,8 +50,7 @@ export const useRuntimeLogic: UseRuntimeLogic =
       activeConsoleTab,
       addConsoleSource,
       setActiveConsoleTab,
-      consoleSourcesOwner,
-      consoleSourcesResetSubject,
+      resetAllSources,
       appendDataToSource: appendData,
       reset: resetConsoleSources,
     } = useConsoleSources();
@@ -55,10 +60,18 @@ export const useRuntimeLogic: UseRuntimeLogic =
     //On startup success if called after start/stop actions succeeded.
     const onStartupSuccess = useCallback(
       async (param?: { isStopped: boolean }): Promise<void> => {
-        appendData(CONSOLE_SOURCE_KEYS.STARTUP, undefined, undefined, {
-          className: 'success',
-          isGlobalStyle: true,
-        });
+        if (activeApp?.id) {
+          appendData(
+            activeApp.id,
+            CONSOLE_SOURCE_KEYS.STARTUP,
+            undefined,
+            undefined,
+            {
+              className: 'success',
+              isGlobalStyle: true,
+            },
+          );
+        }
         sendCurrentAction({
           type: 'ACTION_SUCCEEDED',
         });
@@ -69,25 +82,40 @@ export const useRuntimeLogic: UseRuntimeLogic =
           variant: 'success',
         });
       },
-      [activeApp?.name, appendData, sendCurrentAction],
+      [activeApp?.id, activeApp?.name, appendData, sendCurrentAction],
     );
 
     //On startup success if called after start/stop actions fail.
     const onStartupError = useCallback(
       (data?: ErrorData): void => {
-        appendData(CONSOLE_SOURCE_KEYS.STARTUP, data, undefined, {
-          className: 'error',
-        });
+        if (activeApp?.id) {
+          appendData(
+            activeApp.id,
+            CONSOLE_SOURCE_KEYS.STARTUP,
+            data,
+            undefined,
+            {
+              className: 'error',
+            },
+          );
+        }
         sendCurrentAction({
           type: 'ACTION_FAILED',
         });
       },
-      [appendData, sendCurrentAction],
+      [activeApp?.id, appendData, sendCurrentAction],
     );
 
     const startAppOnMessage = useCallback(
       (message: MessageData): void => {
-        appendData(CONSOLE_SOURCE_KEYS.STARTUP, message, true);
+        if (activeAppRef.current?.id) {
+          appendData(
+            activeAppRef.current.id,
+            CONSOLE_SOURCE_KEYS.STARTUP,
+            message,
+            true,
+          );
+        }
       },
       [appendData],
     );
@@ -174,10 +202,10 @@ export const useRuntimeLogic: UseRuntimeLogic =
         openUIIfAvailable(activeApp);
       } else {
         onStartupSuccess({ isStopped: true });
+        setActiveApp(undefined);
       }
 
       setIsSwapping(false);
-      setActiveApp(undefined);
     }, [
       activeApp,
       isSwapping,
@@ -189,9 +217,16 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
     const stopAppOnMessage = useCallback(
       (message: MessageData): void => {
-        appendData(CONSOLE_SOURCE_KEYS.STARTUP, message, true);
+        if (activeAppRef.current?.id && !isSwapping) {
+          appendData(
+            activeAppRef.current.id,
+            CONSOLE_SOURCE_KEYS.STARTUP,
+            message,
+            true,
+          );
+        }
       },
-      [appendData],
+      [appendData, isSwapping],
     );
 
     const {
@@ -214,10 +249,10 @@ export const useRuntimeLogic: UseRuntimeLogic =
       resetStreams();
       sendCurrentAction({ type: 'RESET' });
 
-      consoleSourcesResetSubject.next();
+      resetAllSources();
 
       setActiveApp(undefined);
-    }, [consoleSourcesResetSubject, resetStreams, sendCurrentAction]);
+    }, [resetAllSources, resetStreams, sendCurrentAction]);
 
     const runAction = useCallback(
       async (
@@ -235,10 +270,9 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
         //Run action start
         setActiveApp(app);
-        addConsoleSource(CONSOLE_SOURCE_KEYS.STARTUP, {
-          sourcesOwnerAppId: app.id,
-        });
-        setActiveConsoleTab(CONSOLE_SOURCE_KEYS.STARTUP);
+        activeAppRef.current = app;
+
+        addConsoleSource(app.id, CONSOLE_SOURCE_KEYS.STARTUP);
         startAppStream(app.id);
 
         sendCurrentAction({
@@ -256,20 +290,17 @@ export const useRuntimeLogic: UseRuntimeLogic =
         openUIIfAvailable,
         runningApp,
         sendCurrentAction,
-        setActiveConsoleTab,
         startAppStream,
       ],
     );
 
     const stopAction = useCallback(
       async (app: AppDetailedInfo) => {
-        addConsoleSource(CONSOLE_SOURCE_KEYS.STARTUP, {
-          sourcesOwnerAppId: app.id,
-        });
-        setActiveConsoleTab(CONSOLE_SOURCE_KEYS.STARTUP);
+        addConsoleSource(app.id, CONSOLE_SOURCE_KEYS.STARTUP);
 
         if (!activeApp?.id) {
           setActiveApp(app);
+          activeAppRef.current = app;
         }
 
         //Aborting the previous action
@@ -298,7 +329,6 @@ export const useRuntimeLogic: UseRuntimeLogic =
       },
       [
         addConsoleSource,
-        setActiveConsoleTab,
         activeApp?.id,
         currentActionStatus,
         sendCurrentAction,
@@ -310,14 +340,15 @@ export const useRuntimeLogic: UseRuntimeLogic =
     const swapAction = useCallback(
       async (app: AppDetailedInfo): Promise<void> => {
         if (!runningApp?.id || !app.id) return;
-        resetConsoleSources([]);
 
-        addConsoleSource(CONSOLE_SOURCE_KEYS.STARTUP, {
-          sourcesOwnerAppId: app.id,
-        });
-        setActiveConsoleTab(CONSOLE_SOURCE_KEYS.STARTUP);
+        startAppAbort();
+        resetConsoleSources(runningApp.id, []);
+        resetConsoleSources(app.id, []);
+
+        addConsoleSource(app.id, CONSOLE_SOURCE_KEYS.STARTUP);
 
         setActiveApp(app);
+        activeAppRef.current = app;
         sendCurrentAction({
           type: 'ACTION_REQUESTED',
           payload: {
@@ -333,7 +364,7 @@ export const useRuntimeLogic: UseRuntimeLogic =
         resetConsoleSources,
         runningApp,
         sendCurrentAction,
-        setActiveConsoleTab,
+        startAppAbort,
         stopAppStream,
       ],
     );
@@ -376,14 +407,12 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
     const consoleLogic = useMemo(
       () => ({
-        consoleSourcesResetSubject,
         consoleSources,
         consoleTabs,
         activeConsoleTab,
         setActiveConsoleTab,
         appendData,
         addConsoleSource,
-        consoleSourcesOwner,
         resetConsoleSources,
       }),
       [
@@ -391,8 +420,6 @@ export const useRuntimeLogic: UseRuntimeLogic =
         addConsoleSource,
         appendData,
         consoleSources,
-        consoleSourcesOwner,
-        consoleSourcesResetSubject,
         consoleTabs,
         resetConsoleSources,
         setActiveConsoleTab,

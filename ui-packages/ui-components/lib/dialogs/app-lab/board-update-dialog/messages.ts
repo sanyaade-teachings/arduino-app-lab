@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 export const messages = defineMessages({
   title: {
     id: 'app-lab.board-update-dialog.title',
-    defaultMessage: "What's new",
+    defaultMessage: 'Updates Available',
     description: 'Title shown on the board update dialog for updates',
   },
 
@@ -52,7 +52,7 @@ export const messages = defineMessages({
   },
   checkingForUpdatesDescription: {
     id: 'app-lab.board-update-dialog.checking-for-updates-description',
-    defaultMessage: 'Gathering fresh system bit. Almost there!',
+    defaultMessage: 'Gathering fresh system bits. Almost there!',
     description: 'Additional info text shown when checking for updates',
   },
   checkingFailed: {
@@ -101,10 +101,10 @@ export const messages = defineMessages({
   },
 
   // Update labels
-  unoQSoftwareUpdate: {
-    id: 'app-lab.board-update-dialog.uno-q-software-update',
-    defaultMessage: 'UNO Q software update',
-    description: 'Label for UNO Q software update section',
+  softwareUpdate: {
+    id: 'app-lab.board-update-dialog.software-update',
+    defaultMessage: '{boardModel} Software update',
+    description: 'Label for software update section',
   },
   arduinoAppLab: {
     id: 'app-lab.board-update-dialog.arduino-app-lab',

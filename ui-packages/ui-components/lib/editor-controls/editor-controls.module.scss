@@ -3,7 +3,6 @@
 
 .editor-controls-container {
     position: absolute;
-    top: editor-tabs-bar-variables.$tabHeight * 1px;
     right: 14px;
     z-index: shared.$zIndex1;
     display: flex;

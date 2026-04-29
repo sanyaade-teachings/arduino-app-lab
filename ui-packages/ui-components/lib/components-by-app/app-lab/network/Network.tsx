@@ -1,5 +1,7 @@
 import {
   Button,
+  ButtonSize,
+  ButtonVariant,
   useI18n,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import {
@@ -12,7 +14,6 @@ import {
 } from 'react';
 
 import { AppLabDialog } from '../../../dialogs';
-import { ButtonSize, ButtonType } from '../../../essential/app-lab-button';
 import { skipNetworkMessages } from './messages';
 import styles from './network.module.scss';
 import {
@@ -119,7 +120,7 @@ const Network = forwardRef((props: NetworkProps, ref) => {
     () => (
       <>
         <Button
-          type={ButtonType.Secondary}
+          variant={ButtonVariant.Secondary}
           size={ButtonSize.Large}
           onClick={(): void => {
             setSkipModalOpen(false);
@@ -130,7 +131,7 @@ const Network = forwardRef((props: NetworkProps, ref) => {
         </Button>
 
         <Button
-          type={ButtonType.Primary}
+          variant={ButtonVariant.Primary}
           size={ButtonSize.Large}
           onClick={(): void => setSkipModalOpen(false)}
         >

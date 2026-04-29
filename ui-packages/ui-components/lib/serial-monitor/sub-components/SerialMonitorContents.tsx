@@ -76,7 +76,10 @@ const SerialMonitorContents: React.FC<SerialMonitorContentsProps> = ({
           label={formatMessage(translations.viewNewData)}
           Icon={ArrowDown}
           classes={{
-            button: styles['serial-monitor-scroll-down'],
+            button: clsx(
+              styles['serial-monitor-scroll-down'],
+              classes?.viewNewDataButton,
+            ),
           }}
         >
           <XSmall>{formatMessage(translations.viewNewData)}</XSmall>

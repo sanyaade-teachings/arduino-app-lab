@@ -1,10 +1,10 @@
 import { createFileRoute, useParams } from '@tanstack/react-router';
 
-import AppDetail from '../../features/app/app-detail/AppDetail.feat';
+import AppDetailFeat from '../../features/app/app-detail/AppDetail.feat';
 
 const ExampleAppDetail: React.FC = () => {
   const { appId } = useParams({ from: '/examples/$appId' });
-  return <AppDetail key={appId} appId={appId} section="examples" />;
+  return <AppDetailFeat key={appId} appId={appId} section="examples" />;
 };
 
 export const Route = createFileRoute('/examples/$appId')({

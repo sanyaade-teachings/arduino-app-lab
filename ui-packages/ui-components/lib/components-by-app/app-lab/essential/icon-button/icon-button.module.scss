@@ -1,0 +1,47 @@
+.icon-button {
+  &.xx-small {
+    padding: 0;
+    height: 20px;
+    width: 20px;
+
+    svg {
+      height: 12px;
+      width: 12px;
+    }
+
+    border-radius: 4px;
+  }
+
+  &.x-small {
+    border-radius: 8px;
+    height: 28px;
+    width: 28px;
+  }
+
+  &.small {
+    padding: 10px;
+    border-radius: 8px;
+    height: 36px;
+    width: 36px;
+  }
+
+  &.large {
+    border-radius: 12px;
+    padding: 16px;
+    height: 48px;
+    width: 48px;
+  }
+}
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip-content {
+  background-color: #aeb8b8;
+  border-radius: 3px;
+  color: #171e21;
+  font-size: 12px;
+  font-weight: 400;
+  padding: 2px 8px;
+}

@@ -168,6 +168,7 @@ export const createUseFooterBarLogic = function (
 
     const { setSetupCompleted, setNetworkStepSkipped } =
       useContext(SetupContext);
+
     useEffect(() => {
       if (boardIsReachable) {
         setSystemResources((prev) => {
@@ -176,12 +177,17 @@ export const createUseFooterBarLogic = function (
             ...newItems.network,
             label: connectingName ?? undefined,
             state: isConnected ? 'default' : 'inactive',
-            onClick: !isConnected
-              ? (): void => {
-                  setSetupCompleted(false);
-                  setNetworkStepSkipped(false);
-                }
-              : undefined,
+            onClick: (): void => {
+              if (isConnected) {
+                navigate({
+                  to: '/settings',
+                  hash: 'network',
+                });
+              } else {
+                setSetupCompleted(false);
+                setNetworkStepSkipped(false);
+              }
+            },
           };
           return newItems;
         });
@@ -190,6 +196,7 @@ export const createUseFooterBarLogic = function (
       boardIsReachable,
       isConnected,
       connectingName,
+      navigate,
       setSetupCompleted,
       setNetworkStepSkipped,
     ]);

@@ -24,8 +24,10 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
     stepIsSkippable,
     boards,
     selectedBoard,
+    selectingBoard,
     selectBoard,
     autoSelectBoard,
+    isAutoSelectingBoard,
     isBoard,
     showLoader,
     showBoardSelectionPage,
@@ -42,6 +44,7 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
     onBackStep,
     unlockAutoFlow,
     setupCompleted,
+    boardSelectionStatus,
   } = setupLogic();
 
   const { formatMessage } = useI18n();
@@ -59,7 +62,10 @@ const Setup: React.FC<SetupProps> = (props: SetupProps) => {
       isBoardConnectingOrChecking={isBoardConnectingOrChecking}
       connToBoardError={connToBoardError}
       selectedBoard={selectedBoard}
+      selectingBoard={selectingBoard}
+      boardSelectionStatus={boardSelectionStatus}
       setupCompleted={setupCompleted}
+      isAutoSelectingBoard={isAutoSelectingBoard}
     />
   ) : showPostSelectionSetup ? (
     <div className={styles['setup-container']}>

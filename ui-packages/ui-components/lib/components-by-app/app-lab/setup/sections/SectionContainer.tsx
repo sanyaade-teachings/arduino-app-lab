@@ -1,15 +1,17 @@
 import {
+  AppLabInfo,
   BackArrow,
   InfoIconOutline,
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   Large,
   Small,
   useI18n,
   useTooltip,
+  XSmall,
   XXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { useRef } from 'react';
@@ -93,7 +95,7 @@ export function SectionContainer<T extends SetupItem>(
           <div className={styles['section-header-left']}>
             {showBack && (
               <Button
-                type={ButtonType.Tertiary}
+                variant={ButtonVariant.Tertiary}
                 size={ButtonSize.XSmall}
                 onClick={onBack}
                 Icon={BackArrow}
@@ -110,46 +112,47 @@ export function SectionContainer<T extends SetupItem>(
         <div className={styles['section-content']}>
           <XXSmall>{`STEP ${step + 1}/${itemsLength}`}</XXSmall>
 
-          <div className={styles['title-row']}>
-            <Large bold>{formatMessage(sectionTitleMessages[step])}</Large>
+          <div>
+            <div className={styles['title-row']}>
+              <Large bold>{formatMessage(sectionTitleMessages[step])}</Large>
 
-            {isNetworkSetup ? (
-              <div className={styles['tooltip-trigger']} {...tooltipProps}>
-                <span className={styles['info-icon']} aria-hidden="true">
-                  <InfoIconOutline />
-                </span>
+              {isNetworkSetup ? (
+                <div className={styles['tooltip-trigger']} {...tooltipProps}>
+                  <span className={styles['info-icon']} aria-hidden="true">
+                    <AppLabInfo />
+                  </span>
 
-                <Small>
-                  {
-                    formatMessage(
-                      tooltipMessages.wifiTooltipTitle,
-                    ) /* "Why we ask for this" */
-                  }
-                </Small>
-              </div>
-            ) : null}
-            {currentStep === SetupItemId.ArduinoAccount ? (
-              <div {...accountTooltipProps}>
-                <div className={styles['title-tooltip']}>
-                  <div className={styles['info-icon']}>
-                    <InfoIconOutline />
-                  </div>
                   <XXSmall>
-                    {formatMessage(tooltipMessages.accountTooltipTitle)}
+                    {
+                      formatMessage(
+                        tooltipMessages.wifiTooltipTitle,
+                      ) /* "Why we ask for this" */
+                    }
                   </XXSmall>
                 </div>
+              ) : null}
+              {currentStep === SetupItemId.ArduinoAccount ? (
+                <div {...accountTooltipProps}>
+                  <div className={styles['title-tooltip']}>
+                    <div className={styles['info-icon']}>
+                      <InfoIconOutline />
+                    </div>
+                    <XXSmall>
+                      {formatMessage(tooltipMessages.accountTooltipTitle)}
+                    </XXSmall>
+                  </div>
 
-                {renderAccountTooltip(setupStyles['tooltip-content'])}
+                  {renderAccountTooltip(setupStyles['tooltip-content'])}
+                </div>
+              ) : null}
+            </div>
+            {isNetworkSetup ? (
+              <div className={styles['sub-title']}>
+                <XSmall>{'Select a network to connect your board'}</XSmall>
+                {renderTooltip(styles['tooltip-content'])}
               </div>
             ) : null}
           </div>
-
-          {isNetworkSetup ? (
-            <div className={styles['sub-title']}>
-              <Small bold>{'Select a network to connect your board'}</Small>
-              {renderTooltip(styles['tooltip-content'])}
-            </div>
-          ) : null}
 
           {currentStep === SetupItemId.LinuxCredentials ? (
             <div className={styles['sub-title']}>
@@ -165,7 +168,7 @@ export function SectionContainer<T extends SetupItem>(
         <div className={styles['buttons-wrapper']}>
           {skippable && (
             <Button
-              type={ButtonType.Secondary}
+              variant={ButtonVariant.Secondary}
               size={ButtonSize.Small}
               onClick={handleSkip}
               disabled={stepIsLoading}

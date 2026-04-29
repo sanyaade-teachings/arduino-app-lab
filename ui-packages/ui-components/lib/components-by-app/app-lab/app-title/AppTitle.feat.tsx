@@ -1,9 +1,12 @@
 import {
+  AppLabToggleOff,
+  AppLabToggleOn,
   Bin,
   CaretDown,
   Download,
   Duplicate,
   Pencil,
+  Power,
 } from '@cloud-editor-mono/images/assets/icons';
 import { canRenameApp } from '@cloud-editor-mono/infrastructure';
 import clsx from 'clsx';
@@ -23,9 +26,9 @@ import {
 import { DropdownMenuButton } from '../../../essential/dropdown-menu/DropdownMenuButton';
 import { Input, InputStyle } from '../../../essential/input';
 import { useI18n } from '../../../i18n/useI18n';
-import { useTooltip } from '../../../tooltip';
-import { XSmall, XXSmall } from '../../../typography';
+import { XSmall, XXSmall, XXXSmall } from '../../../typography';
 import { EmojiPicker } from '../emoji-picker';
+import { useTooltip } from '../essential/tooltip';
 import styles from './app-title.module.scss';
 import { AppAction, AppTitleLogic } from './AppTitle.type';
 import { appTitleMessages } from './messages';
@@ -40,7 +43,8 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
   const inputRef = useRef<HTMLDivElement>(null);
   const [inputWidth, setInputWidth] = useState(0);
   const nameRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const {
     app,
     appStatus,
@@ -50,6 +54,9 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
     name,
     editing,
     hasError,
+    defaultApp,
+    openApp,
+    setAsDefaultApp,
     onAppNameChange,
     onAppAction,
     onResetAppName,
@@ -66,6 +73,9 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
     timeout: 0,
     tooltipType: 'title',
   });
+
+  const SwitchIcon =
+    defaultApp?.id === app?.id ? AppLabToggleOn : AppLabToggleOff;
 
   const measureWidth = useCallback((): void => {
     const width = nameRef.current?.getBoundingClientRect().width ?? 0;
@@ -105,7 +115,7 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
   return (
     <div
       className={clsx(styles['app-title'], {
-        [styles['active']]: editing || open,
+        [styles['active']]: editing || emojiOpen || actionsOpen,
         [styles['example']]: app?.example,
       })}
     >
@@ -119,7 +129,8 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
           <EmojiPicker
             value={app?.icon}
             onChange={onUpdateAppIcon}
-            onOpen={setOpen}
+            onOpen={setEmojiOpen}
+            isOpen={emojiOpen}
           />
         )}
       </div>
@@ -215,6 +226,52 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
                   : []),
               ],
             },
+            {
+              name: 'Default app',
+              items: [
+                {
+                  id: 'default',
+                  node: (
+                    <div className={styles['default-app-menu-item']}>
+                      <div className={styles['default-app-menu-item-title']}>
+                        <Power />
+                        <XXSmall>
+                          {formatMessage(appTitleMessages.runAtStartup)}
+                        </XXSmall>
+                        <SwitchIcon
+                          onClick={(): void => {
+                            setAsDefaultApp?.(defaultApp?.id !== app?.id);
+                          }}
+                        />
+                      </div>
+                      <XXXSmall
+                        className={styles['default-app-menu-item-content']}
+                      >
+                        {defaultApp && defaultApp.id !== app?.id
+                          ? formatMessage(appTitleMessages.overrideAsDefault, {
+                              appName: (
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  className={styles['default-app-name']}
+                                  onClick={(): void => openApp?.(defaultApp)}
+                                  onKeyUp={(): void => openApp?.(defaultApp)}
+                                >
+                                  {defaultApp.name}
+                                </span>
+                              ),
+                              bold: (text: string) => <b>{text}</b>,
+                            })
+                          : formatMessage(appTitleMessages.setAsDefault, {
+                              bold: (text: string) => <b>{text}</b>,
+                            })}
+                      </XXXSmall>
+                    </div>
+                  ),
+                  label: formatMessage(appTitleMessages.runAtStartup),
+                },
+              ],
+            },
           ]}
           classes={{
             dropdownMenu: styles['dropdown-menu'],
@@ -222,9 +279,17 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
             dropdownMenuButtonOpen: styles['dropdown-menu-button-open'],
             dropdownMenuButtonWrapper: clsx(styles['app-actions']),
             dropdownMenuItem: styles['dropdown-menu-item'],
+            dropdownMenuList: styles['dropdown-menu-list'],
           }}
           onAction={(key): void => onAppAction(key as AppAction)}
-          onOpen={setOpen}
+          onOpen={(isOpen): void => {
+            if (emojiOpen) {
+              setEmojiOpen(false);
+            }
+            setActionsOpen(isOpen);
+          }}
+          isOpen={actionsOpen}
+          useStaticPosition={false}
           buttonChildren={<CaretDown />}
         />
       )}

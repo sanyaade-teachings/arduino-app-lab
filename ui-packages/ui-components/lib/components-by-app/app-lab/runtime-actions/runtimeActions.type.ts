@@ -3,11 +3,9 @@ import { AppDetailedInfo, AppStatus } from '@cloud-editor-mono/infrastructure';
 export type RuntimeActionsLogic = () => {
   appId: string;
   appName?: string;
-  appDefault?: AppDetailedInfo;
   appStatus: AppStatus;
   currentAction: Action | null;
   currentActionStatus: ActionStatus;
-  setAsDefaultApp?: (isSelected: boolean) => void;
   openApp?: (app: AppDetailedInfo) => void;
   runApp: (appId: string) => void;
   stopApp: (appId: string, appStatus: AppStatus) => void;

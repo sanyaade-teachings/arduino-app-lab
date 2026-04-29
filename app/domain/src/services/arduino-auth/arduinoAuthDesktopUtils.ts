@@ -102,10 +102,12 @@ const generateAuthUris = (): { redirect_uri: string; logout_uri: string } => {
 
 const { redirect_uri, logout_uri } = generateAuthUris();
 
+const { cacheLocation: _cacheLocation, ...baseOptions } = defaultAuth0Options;
+
 export const defaultDesktopAuth0Options: DefaultAuthOptions = {
-  ...defaultAuth0Options,
+  ...baseOptions,
   authorizationParams: {
-    ...defaultAuth0Options.authorizationParams,
+    ...baseOptions.authorizationParams,
     redirect_uri,
     logout_uri,
     source: 'app-lab',

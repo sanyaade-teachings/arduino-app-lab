@@ -2,7 +2,7 @@ import { Terminal } from '@cloud-editor-mono/images/assets/icons';
 
 import {
   Button,
-  ButtonType,
+  ButtonAppearance,
   ButtonVariant,
 } from '../../../components-by-app/app-lab';
 import { useI18n } from '../../../i18n/useI18n';
@@ -32,7 +32,7 @@ export const DisableNetworkModeDialog: React.FC<
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             onClick={(): void => onOpenChange(false)}
             classes={{
               button: styles['action-button'],
@@ -42,8 +42,8 @@ export const DisableNetworkModeDialog: React.FC<
             {formatMessage(messages.cancelButton)}
           </Button>
           <Button
-            type={ButtonType.Secondary}
-            variant={ButtonVariant.Destructive}
+            variant={ButtonVariant.Secondary}
+            appearance={ButtonAppearance.Destructive}
             onClick={confirmAction}
           >
             {formatMessage(messages.confirmButton)}

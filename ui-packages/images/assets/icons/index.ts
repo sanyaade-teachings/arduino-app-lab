@@ -3,6 +3,8 @@ import AccountConnectedBoards from '../account-connected-boards.svg?react';
 import AccountCustomAiModels from '../account-custom-ai-models.svg?react';
 import AccountStarEmpty from '../account-star-empty.svg?react';
 import AccountStarFilled from '../account-star-filled.svg?react';
+import AccountView from '../account-view.svg?react';
+import AccountViewCrossed from '../account-view-crossed.svg?react';
 import AccountViewFilled from '../account-view-filled.svg?react';
 import AccountViewFilledCrossed from '../account-view-filled-crossed.svg?react';
 import AddBrick from '../add-brick.svg?react';
@@ -52,6 +54,8 @@ import BellWithDot from '../bell-with-dot.svg?react';
 import Bin from '../bin.svg?react';
 import Board from '../board.svg?react';
 import Board2 from '../board-2.svg?react';
+import BoardUnoQ from '../board-unoq.svg?react';
+import BoardVentunoQ from '../board-ventunoq.svg?react';
 import BrickSettings from '../brick-settings.svg?react';
 import Bricks from '../bricks.svg?react';
 import CaretDown from '../caret-down.svg?react';
@@ -94,7 +98,6 @@ import ExplainError from '../explain-error.svg?react';
 import FeedbackThumbsDown from '../feedback-thumbs-down.svg?react';
 import FeedbackThumbsUp from '../feedback-thumbs-up.svg?react';
 import FileAdd from '../file-add.svg?react';
-import FileConfig from '../file-config.svg?react';
 import FileCopy from '../file-copy.svg?react';
 import FileFolder from '../file-folder.svg?react';
 import FileFolderOpen from '../file-folder-open.svg?react';
@@ -109,9 +112,12 @@ import FileTypeImage from '../file-type-image.svg?react';
 import FileTypeIno from '../file-type-ino.svg?react';
 import FileTypeSecrets from '../file-type-secrets.svg?react';
 import FileTypeText from '../file-type-text.svg?react';
+import FileYaml from '../file-yaml.svg?react';
+import FileOutline from '../FileOutline.svg?react';
 import FixError from '../fix-error.svg?react';
 import Folder from '../folder.svg?react';
 import FolderAdd from '../folder-add.svg?react';
+import FolderOutline from '../FolderOutline.svg?react';
 import FullScreenExpand from '../fullscreen-expand-arrows.svg?react';
 import GenAISendArrow from '../gen-ai-send-arrow.svg?react';
 import GoToError from '../go-to-error.svg?react';
@@ -141,6 +147,8 @@ import Monitor from '../monitor.svg?react';
 import MyApps from '../my-apps.svg?react';
 import Navigation from '../navigation.svg?react';
 import Navigation2 from '../navigation-2.svg?react';
+import NavigationArrow from '../navigation-arrow.svg?react';
+import NavigationChevron from '../navigation-chevron.svg?react';
 import NavigationGroup from '../navigation-group.svg?react';
 import NavigationGroupOutline from '../navigation-group-outline.svg?react';
 import NoBoard from '../no-board.svg?react';
@@ -182,6 +190,7 @@ import SelectedDeviceTick from '../selected-device-tick.svg?react';
 import Settings from '../settings.svg?react';
 import ShareSketchIcon from '../share-sketch-icon.svg?react';
 import SidePanelTrigger from '../side-panel-trigger.svg?react';
+import Sidebar from '../sidebar.svg?react';
 import Sketch from '../sketch.svg?react';
 import SketchIcon from '../sketch-icon.svg?react';
 import SketchIconOutline from '../sketch-icon-outline.svg?react';
@@ -216,7 +225,6 @@ import TriangleSharp from '../triangle-sharp.svg?react';
 import TriangleSharpOutline from '../triangle-sharp-outline.svg?react';
 import Undo from '../undo-icon.svg?react';
 import Unlink from '../unlink-icon.svg?react';
-import BoardConnected from '../uno-q.svg?react';
 import UnsavedBadge from '../unsaved-badge.svg?react';
 import Upload from '../upload.svg?react';
 import UploadClock from '../upload-clock.svg?react';
@@ -243,6 +251,8 @@ export {
   AccountCustomAiModels,
   AccountStarEmpty,
   AccountStarFilled,
+  AccountView,
+  AccountViewCrossed,
   AccountViewFilled,
   AccountViewFilledCrossed,
   AddBrick,
@@ -293,7 +303,8 @@ export {
   Bin,
   Board,
   Board2,
-  BoardConnected,
+  BoardUnoQ,
+  BoardVentunoQ,
   Bricks,
   BrickSettings,
   CaretDown,
@@ -336,7 +347,6 @@ export {
   FeedbackThumbsDown,
   FeedbackThumbsUp,
   FileAdd,
-  FileConfig,
   FileCopy,
   FileFolder,
   FileFolderOpen,
@@ -344,6 +354,7 @@ export {
   FileHeader,
   FileImage,
   FileIno,
+  FileOutline,
   FilePython,
   FileText,
   FileTypeHeader,
@@ -351,9 +362,11 @@ export {
   FileTypeIno,
   FileTypeSecrets,
   FileTypeText,
+  FileYaml,
   FixError,
   Folder,
   FolderAdd,
+  FolderOutline,
   FullScreenExpand,
   GenAISendArrow,
   GoogleClassroom,
@@ -383,6 +396,8 @@ export {
   MyApps,
   Navigation,
   Navigation2,
+  NavigationArrow,
+  NavigationChevron,
   NavigationGroup,
   NavigationGroupOutline,
   NoBoard,
@@ -422,6 +437,7 @@ export {
   SelectedDeviceTick,
   Settings,
   ShareSketchIcon,
+  Sidebar,
   SidePanelTrigger,
   Sketch,
   SketchIcon,

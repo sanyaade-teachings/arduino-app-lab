@@ -1,3 +1,4 @@
+import { ConflictType } from '../dialogs/app-lab/duplicate-file-dialog/types';
 import { FileNode, FolderNode, TreeNode } from './fileTree.type';
 
 /**
@@ -59,6 +60,19 @@ export const canEditNode = (node: TreeNode): boolean => {
     return canEditFile(node);
   } else if (isFolderNode(node)) {
     // Enable editing for user-created folders
+    const isSketchFolder = node.path === 'sketch';
+    const isMainPythonFolder = node.path === 'python';
+    return !isMainPythonFolder && !isSketchFolder;
+  }
+  return false;
+};
+
+export const canBeDragged = (node: TreeNode): boolean => {
+  if (isFileNode(node)) {
+    // All files can be dragged except protected ones
+    return canEditFile(node);
+  } else if (isFolderNode(node)) {
+    // Folders can be dragged - same logic as canBeRenamed
     const isSketchFolder = node.path === 'sketch';
     const isMainPythonFolder = node.path === 'python';
     return !isMainPythonFolder && !isSketchFolder;
@@ -166,4 +180,52 @@ export const formatDate = (dateStr: string): string => {
   const year = date.getFullYear();
 
   return `${day} ${month} ${year}, ${time}`;
+};
+
+export const checkForDuplicates = (
+  nodes: TreeNode[] | undefined,
+  toPath: string,
+  draggedNodeType: 'file' | 'folder',
+): {
+  hasDuplicate: boolean;
+  conflictType: ConflictType;
+} => {
+  const targetFileName = toPath.split('/').pop() || '';
+  const targetParentPath = toPath.split('/').slice(0, -1).join('/');
+
+  const findDuplicate = (
+    nodes: TreeNode[] | undefined,
+    targetPath: string,
+    fileName: string,
+  ): {
+    hasDuplicate: boolean;
+    conflictType: ConflictType;
+  } => {
+    if (!nodes) return { hasDuplicate: false, conflictType: null };
+
+    for (const node of nodes) {
+      const nodePath = node.path;
+      const nodeParentPath = nodePath.split('/').slice(0, -1).join('/');
+      const nodeFileName = nodePath.split('/').pop() || '';
+
+      // Check if this node is at the target location with the same name
+      if (nodeParentPath === targetPath && nodeFileName === fileName) {
+        // Determine conflict type based on dragged node and existing node types
+        const conflictType = `${draggedNodeType}-${node.type}` as ConflictType;
+        return { hasDuplicate: true, conflictType };
+      }
+
+      // Recursively check children for folders
+      if (node.type === 'folder' && node.children) {
+        const childResult = findDuplicate(node.children, targetPath, fileName);
+        if (childResult.hasDuplicate) {
+          return childResult;
+        }
+      }
+    }
+
+    return { hasDuplicate: false, conflictType: null };
+  };
+
+  return findDuplicate(nodes, targetParentPath, targetFileName);
 };

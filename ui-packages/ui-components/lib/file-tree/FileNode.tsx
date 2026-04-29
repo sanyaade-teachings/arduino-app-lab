@@ -32,15 +32,23 @@ const FileNode: React.FC<FileNodeProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [value, setValue] = useState<string>(node.data.name);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const preSubmit = useCallback((): void => {
+    if (isSubmitting) {
+      return;
+    }
+
     const isNewNode = node.data.name === '';
     if (value && (isNewNode || value !== node.data.name)) {
-      onEditSubmit(value);
+      setIsSubmitting(true);
+      onEditSubmit(value).finally(() => {
+        setIsSubmitting(false);
+      });
     } else {
       onEditCancel();
     }
-  }, [node.data.name, onEditCancel, onEditSubmit, value]);
+  }, [isSubmitting, node.data.name, onEditCancel, onEditSubmit, value]);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -91,15 +99,22 @@ const FileNode: React.FC<FileNodeProps> = ({
           autoCapitalize="off"
           spellCheck="false"
           value={value}
-          onChange={(e): void => setValue(e.target.value)}
+          disabled={isSubmitting}
+          onChange={(e): void => {
+            if (!isSubmitting) {
+              setValue(e.target.value);
+            }
+          }}
           onBlur={(): void => {
-            preSubmit();
+            if (!isSubmitting) {
+              preSubmit();
+            }
           }}
           onClick={(e): void => e.stopPropagation()}
           onKeyDown={(e): void => {
             e.stopPropagation();
 
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !isSubmitting) {
               preSubmit();
             } else if (e.key === 'Escape') {
               onEditCancel();

@@ -2,12 +2,7 @@
 @use "../code-editor/code-editor-variables.module.scss";
 @use "./toolbar-common.module.scss";
 
-$toolbarPaddingLeft: calc(
-    (#{code-editor-variables.$sharedGutterWidthVar} + #{code-editor-variables.$sharedFoldGutterWidthVar}) * 1px
-);
-
 .toolbar {
-    padding-left: $toolbarPaddingLeft;
     padding-top: 14px;
     padding-bottom: 14px;
     padding-right: 14px;

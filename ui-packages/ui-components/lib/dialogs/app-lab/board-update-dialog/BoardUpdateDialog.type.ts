@@ -1,3 +1,5 @@
+import { Board } from '../../../components-by-app/app-lab';
+
 export enum UpdaterStatus {
   None = 'None',
   Checking = 'Checking',
@@ -13,6 +15,7 @@ export enum UpdaterStatus {
 }
 
 export type BoardUpdateDialogLogic = () => {
+  board?: Board;
   open: boolean;
   isBoard: boolean | undefined;
   status: UpdaterStatus;

@@ -1,6 +1,12 @@
 import clsx from 'clsx';
 import { uniqueId } from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 import { XXSmall } from '../typography';
@@ -11,9 +17,16 @@ interface UseTooltipParams {
   title?: string;
   timeout?: number;
   triggerType?: 'hover' | 'click';
-  tooltipType?: 'title' | 'tooltip';
   renderDelay?: number;
+
+  /**
+   * @deprecated to be removed, now the tooltip will automatically determine the best direction to open based on available space.
+   */
   direction?: 'down' | 'up' | 'right' | 'up-right';
+  /**
+   * @deprecated to be removed, the style now is added from the wrapper on the respective app.
+   */
+  tooltipType?: 'title' | 'tooltip';
 }
 
 type UseTooltip = (params: UseTooltipParams) => {
@@ -36,15 +49,18 @@ export const useTooltip: UseTooltip = ({
   renderDelay = 0,
   tooltipType = 'tooltip',
   triggerType = 'hover',
-  direction = 'down',
 }: UseTooltipParams) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [position, setPosition] = useState<{
-    top: number;
-    left: number;
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+    transform?: string;
   } | null>(null);
   const tooltipTimeoutId = useRef<number | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const [id, setId] = useState<string>();
 
   useEffect(() => {
@@ -52,25 +68,83 @@ export const useTooltip: UseTooltip = ({
   }, []);
 
   const updatePosition = useCallback(() => {
-    if (triggerRef.current && direction === 'up-right') {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.top - 12,
-        left: rect.left,
-      });
+    if (!triggerRef.current || !tooltipRef.current) return;
+
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+
+    const spaceAbove = triggerRect.top;
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const spaceLeft = triggerRect.left + triggerRect.width / 2;
+    const spaceRight =
+      window.innerWidth - triggerRect.right + triggerRect.width / 2;
+
+    let newTop: number | undefined;
+    let newBottom: number | undefined;
+    let newLeft: number | undefined;
+    let newRight: number | undefined;
+    let transform: string | undefined;
+
+    // Vertical positioning
+    if (spaceBelow >= tooltipRect.height + 8 || spaceBelow >= spaceAbove) {
+      // Prefer bottom
+      newTop = triggerRect.bottom + 8;
+    } else {
+      // Fallback to top
+      newBottom = window.innerHeight - triggerRect.top + 8;
     }
-  }, [direction]);
+
+    // Horizontal positioning
+    if (
+      spaceRight >= tooltipRect.width / 2 &&
+      spaceLeft >= tooltipRect.width / 2
+    ) {
+      // Center horizontally
+      newLeft = triggerRect.left + triggerRect.width / 2;
+      transform = 'translateX(-50%)';
+    } else if (spaceRight >= tooltipRect.width) {
+      // Align to left of element
+      newLeft = triggerRect.left;
+    } else if (spaceLeft >= tooltipRect.width) {
+      // Align to right of element
+      newRight = window.innerWidth - triggerRect.right;
+    } else {
+      // Best effort left aligned
+      newLeft = 8;
+    }
+
+    setPosition({
+      top: newTop,
+      bottom: newBottom,
+      left: newLeft,
+      right: newRight,
+      transform,
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (showTooltip) {
+      updatePosition();
+      // Re-calculate position on resize/scroll for robustness
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+
+      return () => {
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
+      };
+    }
+  }, [showTooltip, updatePosition]);
 
   const handleClick = useCallback(() => {
     if (tooltipTimeoutId.current) {
       window.clearTimeout(tooltipTimeoutId.current);
     }
-    updatePosition();
     setShowTooltip(true);
     tooltipTimeoutId.current = window.setTimeout(() => {
       setShowTooltip(false);
     }, timeout);
-  }, [timeout, updatePosition]);
+  }, [timeout]);
 
   const handleMouseEnter = useCallback(() => {
     if (tooltipTimeoutId.current) {
@@ -78,10 +152,9 @@ export const useTooltip: UseTooltip = ({
     }
 
     tooltipTimeoutId.current = window.setTimeout(() => {
-      updatePosition();
       setShowTooltip(true);
     }, renderDelay);
-  }, [renderDelay, updatePosition]);
+  }, [renderDelay]);
 
   const handleMouseLeave = useCallback(() => {
     if (tooltipTimeoutId.current) {
@@ -95,32 +168,27 @@ export const useTooltip: UseTooltip = ({
 
   const renderTooltip = useCallback(
     (className: string | undefined) => {
-      const usePortal = direction === 'up-right';
-
       const tooltipContent = (
         <div
+          ref={tooltipRef}
           role="tooltip"
           id={id}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className={clsx(
-            styles['tooltip'],
-            showTooltip && styles['tooltip-show'],
-            tooltipType === 'title' && styles['tooltip--title'],
-            direction === 'up' && styles['tooltip-up'],
-            direction === 'up-right' && styles['tooltip-up-right'],
-            className,
-          )}
-          style={
-            usePortal && position
-              ? {
-                  position: 'fixed',
-                  top: position.top,
-                  left: position.left,
-                  transform: 'translateY(-100%)',
-                }
-              : undefined
-          }
+          className={clsx(className, styles['tooltip'], {
+            [styles['tooltip-show']]: showTooltip,
+            [styles['tooltip--title']]: tooltipType === 'title',
+          })}
+          style={{
+            position: 'fixed',
+            top: position?.top,
+            bottom: position?.bottom,
+            left: position?.left,
+            right: position?.right,
+            transform: position?.transform,
+            opacity: position ? 1 : 0, // Hide until positioned
+            pointerEvents: position ? 'auto' : 'none',
+          }}
         >
           {title && (
             <div className={styles['tooltip-title']}>
@@ -131,15 +199,10 @@ export const useTooltip: UseTooltip = ({
         </div>
       );
 
-      if (usePortal) {
-        return createPortal(tooltipContent, document.body);
-      }
-
-      return tooltipContent;
+      return createPortal(tooltipContent, document.body);
     },
     [
       content,
-      direction,
       handleMouseEnter,
       handleMouseLeave,
       id,

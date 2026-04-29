@@ -21,6 +21,10 @@ const SerialMonitor: React.FC<SerialMonitorProps> = (
     //Default values for the Serial Monitor on the cloud editor
     codeMirrorParams = DEFAULT_SERIAL_MONITOR_CODE_MIRROR_PARAMS,
     sendMessagePlaceholder,
+    autoScrollEnabled,
+    onAutoScrollChanged,
+    timestampsActive: controlledTimestampsActive,
+    onTimestampsChanged,
   } = props;
 
   const {
@@ -48,7 +52,14 @@ const SerialMonitor: React.FC<SerialMonitorProps> = (
     toggleTimestamps,
     exportFile,
     toggleSearchPanel,
-  } = useMonitorCodeMirror(status, codeMirrorParams);
+  } = useMonitorCodeMirror(
+    status,
+    codeMirrorParams,
+    autoScrollEnabled,
+    onAutoScrollChanged,
+    controlledTimestampsActive,
+    onTimestampsChanged,
+  );
 
   contentUpdateLogic(appendContent, resetContent, resetSource);
 

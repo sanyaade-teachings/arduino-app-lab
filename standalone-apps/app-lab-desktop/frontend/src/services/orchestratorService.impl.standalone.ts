@@ -10,6 +10,7 @@ import {
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   addAppBrickV1Request,
+  addAppCustomBrickV1Request,
   addAppSketchLibraryV1Request,
   AIModelItem,
   applyBoardUpdateV1Request,
@@ -47,6 +48,7 @@ import {
   ListLibrariesParams,
   postAppStartStreamV1Request,
   postAppStopStreamV1Request,
+  renameAppCustomBrickV1Request,
   updateAppBrickV1Request,
   updateAppDetailV1Request,
   upsertSystemPropertyV1Request,
@@ -189,11 +191,29 @@ export const updateAppBrick: OrchestratorService['updateAppBrick'] =
     return updateAppBrickV1Request(appId, brickId, params, origin);
   };
 
+export const addAppCustomBrick: OrchestratorService['addAppCustomBrick'] =
+  async function (
+    appId: string,
+    body: {
+      name: string;
+      description?: string;
+    },
+  ) {
+    const origin = await getOrchestratorURL();
+    return addAppCustomBrickV1Request(appId, body, origin);
+  };
+
+export const renameAppCustomBrick: OrchestratorService['renameAppCustomBrick'] =
+  async function (appId: string, brickId: string, params: { name: string }) {
+    const origin = await getOrchestratorURL();
+    return renameAppCustomBrickV1Request(appId, brickId, params, origin);
+  };
+
 export const getBricks: OrchestratorService['getBricks'] = async function () {
   const origin = await getOrchestratorURL();
 
   const response = await getBricksV1Request(origin);
-  return response.bricks || [];
+  return response.bricks?.filter((brick) => brick.author === 'Arduino') || [];
 };
 
 export const getBrickDetails: OrchestratorService['getBrickDetails'] =

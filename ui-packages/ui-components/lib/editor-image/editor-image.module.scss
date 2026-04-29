@@ -1,16 +1,10 @@
-@use "../editor-tabs-bar/editor-tabs-bar-variables.module.scss";
-@use "../editor-tabs-bar/tabs-bar.module.scss";
 @use "../../public/shared.module.scss";
 
 .container {
-    margin-top: editor-tabs-bar-variables.$tabHeight * 1px;
-    margin-left: tabs-bar.$tabsBarPaddingLeft;
     width: 100%;
     overflow: auto;
     text-align: center;
     background-color: shared.theme-var(--editor-background);
-
-    border-bottom-right-radius: 8px;
 }
 
 .container-scaled {

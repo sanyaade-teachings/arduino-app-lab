@@ -63,6 +63,16 @@ export let updateAppBrick: OrchestratorService['updateAppBrick'] =
     throw new Error('updateAppBrick service not implemented');
   };
 
+export let addAppCustomBrick: OrchestratorService['addAppCustomBrick'] =
+  async function () {
+    throw new Error('addAppCustomBrick service not implemented');
+  };
+
+export let renameAppCustomBrick: OrchestratorService['renameAppCustomBrick'] =
+  async function () {
+    throw new Error('renameAppCustomBrick service not implemented');
+  };
+
 export let getBricks: OrchestratorService['getBricks'] = async function () {
   throw new Error('getBricks service not implemented');
 };
@@ -135,6 +145,7 @@ export let getSystemProperty: OrchestratorService['getSystemProperty'] =
   async function () {
     throw new Error('getSystemProperty service not implemented');
   };
+
 export let upsertSystemProperty: OrchestratorService['upsertSystemProperty'] =
   async function () {
     throw new Error('upsertSystemProperty service not implemented');
@@ -222,6 +233,8 @@ export const setOrchestratorService = (service: OrchestratorService): void => {
   addAppBrick = service.addAppBrick;
   deleteAppBrick = service.deleteAppBrick;
   updateAppBrick = service.updateAppBrick;
+  addAppCustomBrick = service.addAppCustomBrick;
+  renameAppCustomBrick = service.renameAppCustomBrick;
   getSystemPropertyKeys = service.getSystemPropertyKeys;
   getSystemProperty = service.getSystemProperty;
   upsertSystemProperty = service.upsertSystemProperty;

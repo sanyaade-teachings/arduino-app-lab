@@ -464,6 +464,11 @@ export let removeAppFile: ArduinoAppFilesService['removeAppFile'] =
     throw new Error('deleteSketchFile method not implemented');
   };
 
+export let moveAppFile: ArduinoAppFilesService['moveAppFile'] =
+  async function () {
+    throw new Error('moveAppFile method not implemented');
+  };
+
 export let createAppFolder: ArduinoAppFilesService['createAppFolder'] =
   async function () {
     throw new Error('createAppFolder method not implemented');
@@ -478,6 +483,7 @@ export const setArduinoAppFilesService = (
   saveAppFile = service.saveAppFile;
   createAppFile = service.createAppFile;
   renameAppFile = service.renameAppFile;
+  moveAppFile = service.moveAppFile;
   removeAppFile = service.removeAppFile;
   createAppFolder = service.createAppFolder;
 };

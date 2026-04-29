@@ -8,7 +8,7 @@ import {
 import { EventSourceMessage } from '@microsoft/fetch-event-source';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { LINE_SEPARATOR } from '../constants';
+import { LINE_SEPARATOR } from '../utils/constants';
 
 type Connect<T> = T extends AppSSEWithId
   ? (id: string) => Promise<void>

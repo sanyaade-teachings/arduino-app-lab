@@ -1,8 +1,12 @@
 import { Terminal } from '@cloud-editor-mono/images/assets/icons';
 
-import { IconButton } from '../../../essential/icon-button';
-import { useTooltip } from '../../../tooltip';
 import { XXSmall } from '../../../typography';
+import {
+  ButtonAppearance,
+  ButtonSize,
+  ButtonVariant,
+} from '../essential/button';
+import { IconButton } from '../essential/icon-button';
 import styles from './board-section.module.scss';
 import { BoardSectionProps } from './BoardSection.type';
 import BoardSelection from './sub-components/board-selection/BoardSelection';
@@ -20,12 +24,6 @@ const BoardSection: React.FC<BoardSectionProps> = (
     terminalError,
   } = props;
 
-  const { props: tooltipProps, renderTooltip } = useTooltip({
-    content: "Connect to the board's shell",
-    direction: 'up',
-    timeout: 0,
-  });
-
   const handleOpenTerminal = async (): Promise<void> => {
     if (!onOpenTerminal) return;
 
@@ -42,15 +40,14 @@ const BoardSection: React.FC<BoardSectionProps> = (
         autoSelectBoard={autoSelectBoard}
       />
       {!isBoard && (
-        <div className={styles['tooltip']} {...tooltipProps}>
-          <IconButton
-            classes={{ button: styles['terminal-button'] }}
-            Icon={Terminal}
-            onPress={handleOpenTerminal}
-            label={'Terminal'}
-          />
-          {renderTooltip(styles['tooltip-content'])}
-        </div>
+        <IconButton
+          Icon={Terminal}
+          size={ButtonSize.XSmall}
+          variant={ButtonVariant.Secondary}
+          appearance={ButtonAppearance.LowContrast}
+          onClick={handleOpenTerminal}
+          label={"Connect to the board's shell"}
+        />
       )}
       <div className={styles['terminal-error-container']}>
         {terminalError && (

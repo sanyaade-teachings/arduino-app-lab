@@ -4,6 +4,7 @@ import {
   getAppFileContent,
   getCodeSubjects,
   getUnsavedFilesSubjectNext,
+  moveAppFile,
   removeAppFile,
   removeCodeSubject,
   renameAppFile,
@@ -90,11 +91,12 @@ type UseRetrieveBatchArduinoAppFileContents = (
   appPath?: string,
   pendingFileIds?: string[],
   pendingFileIdWasRemoved?: boolean,
+  updateOpenFile?: (currFileId: string, nextFileId: string) => void,
 ) => {
   filesContents?: FileWithContent[];
   fileIsDeleting: boolean;
   refreshFileContents: (filePaths: string[]) => void;
-  deleteAppFile: (path?: string) => Promise<void>;
+  deleteAppFile: (path?: string, nodeType?: 'file' | 'folder') => Promise<void>;
   renameAppFile: (
     from?: string,
     to?: string,
@@ -106,6 +108,11 @@ type UseRetrieveBatchArduinoAppFileContents = (
     fileExtension: string,
   ) => Promise<void>;
   createAppFolder: (path: string) => Promise<void>;
+  moveFileHandler: (
+    fromPath: string,
+    toPath: string,
+    filesToUpdate?: Array<{ oldPath: string; newPath: string }>,
+  ) => Promise<void>;
   isLoading: boolean;
   allContentsRetrieved: boolean;
 };
@@ -120,6 +127,7 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
     appPath?: string,
     pendingFileIds: string[] = [],
     pendingFileIdWasRemoved: boolean = false,
+    updateOpenFile?: (currFileId: string, nextFileId: string) => void,
   ): ReturnType<UseRetrieveBatchArduinoAppFileContents> {
     const queryClient = useQueryClient();
 
@@ -171,6 +179,8 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
       filesListKey,
       appPath,
     );
+
+    const { moveAppFileMutate } = useMoveArduinoAppFile(filesListKey, appPath);
 
     const results = useQueries({
       queries: (files ?? []).map((file) => ({
@@ -265,19 +275,90 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
           });
         }
 
+        // For folders, track files that will need path updates after the rename
+        const filesToUpdate: Array<{ oldPath: string; newPath: string }> = [];
+        if (nodeType === 'folder' && prevName && newName) {
+          filesContents.items.forEach((file) => {
+            if (file.path.startsWith(prevName + '/')) {
+              // This file was inside the renamed folder, calculate its new path
+              const relativePath = file.path.substring(prevName.length);
+              const newFilePath = newName + relativePath;
+
+              filesToUpdate.push({
+                oldPath: file.path,
+                newPath: newFilePath,
+              });
+            }
+          });
+        }
+
+        // Update filesContents paths immediately for the renamed folder/file
         renameFile(prevName, newName);
+
+        // Update paths for files inside renamed folder
+        if (filesToUpdate.length > 0) {
+          setFilesContents((prev) => {
+            const updatedItems = prev.items.map((item) => {
+              const update = filesToUpdate.find((u) => u.oldPath === item.path);
+              return update ? { ...item, path: update.newPath } : item;
+            });
+            return { ...prev, items: updatedItems };
+          });
+        }
+
+        // Update open file paths - handle both single file and multiple files
+        if (updateOpenFile) {
+          if (filesToUpdate.length > 0) {
+            // Handle folder rename with multiple files inside
+            filesToUpdate.forEach(({ oldPath, newPath }) => {
+              updateOpenFile(oldPath, newPath);
+            });
+          } else {
+            // Handle single file/folder rename
+            if (prevName && newName) {
+              updateOpenFile(prevName, newName);
+            }
+          }
+        }
+
         try {
           await renameAppFileMutate({ from: prevName, to: newName, nodeType });
-          if (nodeType === 'folder') {
-            // Invalidate the file list query to force a refresh
-            queryClient.invalidateQueries(['app-files']);
-          }
         } catch (error) {
+          // Rollback file path updates if rename failed
           renameFile(newName, prevName);
+
+          // Rollback paths for files inside renamed folder
+          if (filesToUpdate.length > 0) {
+            setFilesContents((prev) => {
+              const updatedItems = prev.items.map((item) => {
+                const update = filesToUpdate.find(
+                  (u) => u.newPath === item.path,
+                );
+                return update ? { ...item, path: update.oldPath } : item;
+              });
+              return { ...prev, items: updatedItems };
+            });
+          }
+
+          // Rollback open file paths
+          if (updateOpenFile) {
+            if (filesToUpdate.length > 0) {
+              // Handle folder rename rollback with multiple files inside
+              filesToUpdate.forEach(({ oldPath, newPath }) => {
+                updateOpenFile(newPath, oldPath);
+              });
+            } else {
+              // Handle single file/folder rename rollback
+              if (prevName && newName) {
+                updateOpenFile(newName, prevName);
+              }
+            }
+          }
+
           throw error;
         }
       },
-      [queryClient, renameAppFileMutate],
+      [renameAppFileMutate, updateOpenFile, filesContents.items],
     );
 
     const addAppFile = useCallback(
@@ -347,6 +428,44 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
       [deleteAppFileMutate, filesContents],
     );
 
+    const moveFileHandler = useCallback(
+      async (
+        fromPath: string,
+        toPath: string,
+        filesToUpdate?: Array<{ oldPath: string; newPath: string }>,
+      ): Promise<void> => {
+        // Prepare path updates to apply immediately after move
+        const pathUpdates = filesToUpdate || [
+          { oldPath: fromPath, newPath: toPath },
+        ];
+
+        await moveAppFileMutate({ fromPath, toPath });
+
+        // Update filesContents paths immediately to prevent filtering
+        setFilesContents((prev) => {
+          const updatedItems = prev.items.map((item) => {
+            const update = pathUpdates.find((u) => u.oldPath === item.path);
+            return update ? { ...item, path: update.newPath } : item;
+          });
+          return { ...prev, items: updatedItems };
+        });
+
+        // Update open file paths - handle both single file and multiple files
+        if (updateOpenFile) {
+          if (filesToUpdate && filesToUpdate.length > 0) {
+            // Handle folder move with multiple files
+            filesToUpdate.forEach(({ oldPath, newPath }) => {
+              updateOpenFile(oldPath, newPath);
+            });
+          } else {
+            // Handle single file move
+            updateOpenFile(fromPath, toPath);
+          }
+        }
+      },
+      [moveAppFileMutate, updateOpenFile],
+    );
+
     return {
       filesContents:
         filesContents.items.length > 0 ? filesContents.items : undefined,
@@ -356,6 +475,7 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
       renameAppFile: renameAppFile,
       createAppFolder: createAppFolderMutate,
       addAppFile,
+      moveFileHandler,
       isLoading:
         filesContents.items.length > 0
           ? results.some((result) => result.isLoading)
@@ -548,6 +668,45 @@ export const useCreateArduinoAppFolder: UseCreateArduinoAppFolder = function (
 
   return {
     createAppFolderMutate,
+    isLoading,
+  };
+};
+
+type UseMoveArduinoAppFile = (
+  keyToInvalidate: QueryKey,
+  appPath?: string,
+) => {
+  moveAppFileMutate: UseMutateAsyncFunction<
+    void,
+    unknown,
+    { fromPath: string; toPath: string },
+    unknown
+  >;
+  isLoading: boolean;
+};
+
+export const useMoveArduinoAppFile: UseMoveArduinoAppFile = function (
+  keyToInvalidate: QueryKey,
+  appPath?: string,
+): ReturnType<UseMoveArduinoAppFile> {
+  const queryClient = useQueryClient();
+
+  const { isLoading, mutateAsync: moveAppFileMutate } = useMutation({
+    mutationFn: (payload: { fromPath: string; toPath: string }) =>
+      moveAppFile(
+        appPath + '/' + payload.fromPath,
+        appPath + '/' + payload.toPath,
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: keyToInvalidate,
+        exact: true,
+      });
+    },
+  });
+
+  return {
+    moveAppFileMutate,
     isLoading,
   };
 };

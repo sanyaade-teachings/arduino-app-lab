@@ -17,6 +17,7 @@ type AppLabDialogStyles = {
   header?: string;
   body?: string;
   footer?: string;
+  bottomExtension?: string;
   closeButton?: string;
 };
 
@@ -25,6 +26,7 @@ type AppLabDialogProps = ComponentProps<typeof BaseModal> & {
   asChild?: boolean;
   classes?: AppLabDialogStyles;
   footer?: React.ReactNode;
+  bottomExtension?: React.ReactNode;
   onSubmit?: () => unknown;
 };
 
@@ -44,6 +46,7 @@ export const AppLabDialog = forwardRef(
       asChild = false,
       footer,
       onSubmit,
+      bottomExtension,
       ...rest
     } = props;
 
@@ -115,6 +118,16 @@ export const AppLabDialog = forwardRef(
             ) : null}
           </form>
         </ModalContent>
+        {bottomExtension ? (
+          <div
+            className={clsx(
+              styles['app-lab-dialog-bottom-extension'],
+              classes.bottomExtension,
+            )}
+          >
+            {bottomExtension}
+          </div>
+        ) : null}
       </BaseModal>
     );
   },

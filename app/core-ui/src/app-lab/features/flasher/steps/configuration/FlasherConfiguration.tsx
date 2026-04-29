@@ -4,16 +4,13 @@ import {
 } from '@cloud-editor-mono/domain/src/services/flasher-service';
 import {
   AppLabInfo,
-  CaretDown,
   TriangleSharp,
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
-  ButtonType,
+  ButtonVariant,
   Checkbox,
-  DropdownMenuButton,
-  Input,
-  InputStyle,
+  Select,
   Skeleton,
   useI18n,
   useTooltip,
@@ -21,7 +18,7 @@ import {
   XXXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import clsx from 'clsx';
-import { Key, useEffect, useRef, useState } from 'react';
+import { Key, useEffect, useState } from 'react';
 
 import styles from '../../flasher.module.scss';
 import { messages } from '../../messages';
@@ -47,14 +44,12 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
   onConfirm,
 }: FlasherConfigurationProps) => {
   const { formatMessage } = useI18n();
-  const [open, setOpen] = useState(false);
   const [disabled, setDisabled] = useState(true);
   const [imageVersions, setImageVersions] = useState<OSImageRelease[]>([]);
   const [imageVersion, setImageVersion] = useState<OSImageRelease>();
   const [preserve, setPreserve] = useState(true);
   const [preserveSupported, setPreserveSupported] = useState(true);
   const [hasEnoughSpace, setHasEnoughSpace] = useState(true);
-  const inputRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadResources = async (): Promise<void> => {
@@ -97,27 +92,12 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageVersion]);
 
-  useEffect(() => {
-    if (!open) return;
-    function handleClickOutside(event: MouseEvent): void {
-      if (
-        inputRef.current &&
-        !inputRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [open]);
-
   const { props: tooltipProps, renderTooltip } = useTooltip({
     content: formatMessage(messages.configurationStepPreserveDataTooltip, {
       bold: (text: string) => <b>{text}</b>,
     }),
+    direction: 'up-right',
+    timeout: 0,
   });
 
   const handleConfirm = (): void => {
@@ -173,78 +153,42 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
         ) : flashEvent === null ? (
           <>
             <div className={stepStyles['image-version-container']}>
-              <div
-                ref={inputRef}
-                role="button"
-                tabIndex={0}
-                className={clsx(stepStyles['image-version'], {
-                  [stepStyles['disabled']]: disabled,
-                  [stepStyles['open']]: open,
-                })}
-                onClick={(): void => setOpen((prev) => !prev)}
-                onKeyUp={(): void => setOpen((prev) => !prev)}
-              >
-                <Input
-                  inputStyle={InputStyle.AppLab}
-                  id="image-version"
-                  type="text"
-                  readOnly
-                  name="image-version"
-                  value={
-                    imageVersion
-                      ? [
-                          imageVersion.version_label,
-                          imageVersion.latest ? ' (Latest)' : '',
-                        ].join('')
-                      : ''
-                  }
-                  onClick={(): void => setOpen((prev) => !prev)}
-                  onChange={(key: Key): void =>
-                    setImageVersion(imageVersions.find((v) => v.id === key))
-                  }
-                  label={formatMessage(
-                    messages.configurationStepImageVersionLabel,
-                  )}
-                  classes={{
-                    input: stepStyles['input'],
-                    inputLabel: stepStyles['input-label'],
-                  }}
-                />
-                {!disabled && (
-                  <DropdownMenuButton
-                    isOpen={open}
-                    sections={[
-                      {
-                        name: 'Image Versions',
-                        items: imageVersions.map((version) => ({
-                          id: version.id || '',
-                          label: [
-                            version.version_label,
-                            version.latest ? ' (Latest)' : '',
-                          ].join(''),
-                        })),
-                      },
-                    ]}
-                    classes={{
-                      dropdownMenu: stepStyles['dropdown-menu'],
-                      dropdownMenuButton: stepStyles['dropdown-menu-button'],
-                      dropdownMenuButtonWrapper:
-                        stepStyles['dropdown-menu-button-wrapper'],
-                    }}
-                    onAction={(key: Key): void =>
-                      setImageVersion(imageVersions.find((v) => v.id === key))
-                    }
-                    buttonChildren={
-                      <CaretDown
-                        className={clsx(stepStyles['dropdown-menu-icon'], {
-                          [stepStyles['dropdown-menu-icon--open']]: open,
-                        })}
-                        onClick={(): void => setOpen((prev) => !prev)}
-                      />
-                    }
-                  />
+              <Select
+                id="image-version"
+                name="image-version"
+                disabled={disabled}
+                value={
+                  imageVersion
+                    ? [
+                        imageVersion.version_label,
+                        imageVersion.latest ? ' (Latest)' : '',
+                      ].join('')
+                    : ''
+                }
+                label={formatMessage(
+                  messages.configurationStepImageVersionLabel,
                 )}
-              </div>
+                sections={[
+                  {
+                    name: 'Image Versions',
+                    items: imageVersions.map((version) => ({
+                      id: version.id || '',
+                      label: [
+                        version.version_label,
+                        version.latest ? ' (Latest)' : '',
+                      ].join(''),
+                    })),
+                  },
+                ]}
+                classes={{
+                  disabled: stepStyles['image-version--disabled'],
+                  input: stepStyles['image-version-input'],
+                  inputLabel: stepStyles['image-version-input-label'],
+                }}
+                onChange={(key: Key): void =>
+                  setImageVersion(imageVersions.find((v) => v.id === key))
+                }
+              />
               {disabled && (
                 <button
                   className={stepStyles['input-button']}
@@ -349,7 +293,7 @@ export const FlasherConfiguration: React.FC<FlasherConfigurationProps> = ({
               <Button
                 disabled={!hasEnoughSpace || flashEvent !== null}
                 loading={flashEvent !== null}
-                type={ButtonType.Primary}
+                variant={ButtonVariant.Primary}
                 onClick={handleConfirm}
                 classes={{
                   textButtonText: stepStyles['flash-button'],

@@ -17,10 +17,11 @@ import (
 )
 
 const (
-	arduinoQFqbn          = "arduino:zephyr:unoq"
 	orchestratorTunnelTag = "orchestrator"
 	boardOrchestratorPort = 8800
 )
+
+var supportedBoards = []string{"arduino:zephyr:unoq", "arduino:zephyr:ventunoq"}
 
 // This type is needed to avoid Wails name clash during JS bindings generation.
 // Without this, the type github.com/arduino/arduino-app-cli/pkg/board.Board is lost
@@ -199,12 +200,12 @@ func (b *Board) GetNetworkModeStatus(ctx context.Context) (bool, error) {
 	return board.NetworkModeStatus(ctx, b.Conn)
 }
 
-func (b *Board) EnableNetworkMode(ctx context.Context) error {
-	return board.EnableNetworkMode(ctx, b.Conn)
+func (b *Board) EnableNetworkMode(ctx context.Context, password string) error {
+	return board.EnableNetworkMode(ctx, b.Conn, password)
 }
 
-func (b *Board) DisableNetworkMode(ctx context.Context) error {
-	return board.DisableNetworkMode(ctx, b.Conn)
+func (b *Board) DisableNetworkMode(ctx context.Context, password string) error {
+	return board.DisableNetworkMode(ctx, b.Conn, password)
 }
 
 func (b *Board) GetOrchestratorURL() (string, error) {

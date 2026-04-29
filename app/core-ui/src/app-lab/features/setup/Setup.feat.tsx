@@ -2,6 +2,7 @@ import { AppLabSetup } from '@cloud-editor-mono/ui-components/lib/components-by-
 import { useCallback } from 'react';
 
 import { UseBoards } from '../../hooks/useBoards';
+import { useReloadApp } from '../../hooks/useReloadApp';
 import { createUseSetupLogic } from './setup.logic';
 
 interface SetupProps {
@@ -9,6 +10,13 @@ interface SetupProps {
 }
 
 const Setup: React.FC<SetupProps> = ({ boardsProps }: SetupProps) => {
+  useReloadApp({
+    boardsProps,
+    showRoutes: false, // Setup non mostra routes
+    apps: undefined,
+    currentSection: undefined,
+  });
+
   const setupLogic = useCallback(
     () => createUseSetupLogic(boardsProps)(),
     [boardsProps],

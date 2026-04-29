@@ -19,6 +19,9 @@ export type AppTitleLogic = () => {
   name: string;
   editing: boolean;
   hasError: boolean;
+  defaultApp?: AppDetailedInfo;
+  setAsDefaultApp?: (isSelected: boolean) => Promise<void>;
+  openApp?: (app: AppDetailedInfo) => void;
   onAppNameChange: (value: string) => void;
   onAppAction: (action: AppAction) => void;
   onResetAppName: () => void;

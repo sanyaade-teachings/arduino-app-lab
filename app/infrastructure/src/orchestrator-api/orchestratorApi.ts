@@ -9,6 +9,7 @@ import {
   httpPatch,
   httpPatchRaw,
   httpPost,
+  httpPostRaw,
   httpPut,
   httpPutRaw,
 } from '../fetch';
@@ -214,6 +215,48 @@ export async function updateAppBrickV1Request(
   const endpoint = `/v1/apps/${appId}/bricks/${brickId}`;
 
   const response = await httpPatchRaw({ url: origin, endpoint, body: params });
+
+  return response?.status === 200;
+}
+
+export async function addAppCustomBrickV1Request(
+  appId: string,
+  body: { name: string; description?: string },
+  origin: string = Config.ORCHESTRATOR_API_URL,
+): Promise<{ id: string }> {
+  const endpoint = `/v1/apps/${appId}/bricks`;
+
+  const response = await httpPost<{
+    id: string;
+  }>({
+    url: origin,
+    endpoint,
+    body,
+    params: { skip_compose: 'true' },
+    handleError: (error) => {
+      throw error;
+    },
+    errorType: 'text',
+  });
+
+  if (!response) {
+    throw new Error(
+      `Call to "${endpoint}" did not respond with the expected result`,
+    );
+  }
+
+  return response;
+}
+
+export async function renameAppCustomBrickV1Request(
+  appId: string,
+  brickId: string,
+  params: { name: string },
+  origin: string = Config.ORCHESTRATOR_API_URL,
+): Promise<boolean> {
+  const endpoint = `/v1/apps/${appId}/bricks/${brickId}/rename`;
+
+  const response = await httpPostRaw({ url: origin, endpoint, body: params });
 
   return response?.status === 200;
 }

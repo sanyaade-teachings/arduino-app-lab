@@ -218,6 +218,40 @@ const removeNodeByPath = (root: FolderNode, relativePath: string): void => {
   parent.modifiedAt = getNowIso();
 };
 
+const findNodeByPath = (
+  root: FolderNode,
+  relativePath: string,
+): TreeNode | null => {
+  const segments = relativePath.split('/');
+  const name = segments.pop();
+  const folderPath = segments.join('/');
+  const parent = findFolderNode(root, folderPath);
+
+  if (!parent || !name) return null;
+
+  return parent.children.find((n) => n.path === relativePath) || null;
+};
+
+const addNodeToPath = (
+  root: FolderNode,
+  relativePath: string,
+  node: TreeNode,
+): void => {
+  const segments = relativePath.split('/');
+  const name = segments.pop();
+  const folderPath = segments.join('/');
+  const parent = findFolderNode(root, folderPath);
+
+  if (!parent || !name) return;
+
+  // Update the node's path and name
+  node.path = relativePath;
+  node.name = name;
+
+  parent.children.push(node);
+  parent.modifiedAt = getNowIso();
+};
+
 const renameNodePath = (node: TreeNode, from: string, to: string): void => {
   if (node.type === 'file') {
     if (node.path === from) {
@@ -337,6 +371,29 @@ export const MockArduinoAppFilesService: ArduinoAppFilesService = {
         fileContents.set(newKey, content);
       }
     });
+  },
+
+  async moveAppFile(fromPath: string, toPath: string): Promise<void> {
+    const fromRelative = stripAppRoot(fromPath);
+    const toRelative = stripAppRoot(toPath);
+
+    // Move the file/folder in the tree structure
+    const nodeToMove = findNodeByPath(mockRoot, fromRelative);
+    if (!nodeToMove) {
+      throw new Error(`File or folder not found: ${fromPath}`);
+    }
+
+    removeNodeByPath(mockRoot, fromRelative);
+    addNodeToPath(mockRoot, toRelative, nodeToMove);
+
+    // Move file content if it's a file
+    if (nodeToMove.type === 'file') {
+      const content = fileContents.get(fromPath);
+      if (content !== undefined) {
+        fileContents.delete(fromPath);
+        fileContents.set(toPath, content);
+      }
+    }
   },
 
   async removeAppFile(path: string): Promise<void> {

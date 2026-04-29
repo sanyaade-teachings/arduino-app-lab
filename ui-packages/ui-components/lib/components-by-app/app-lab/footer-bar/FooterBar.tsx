@@ -2,8 +2,8 @@ import { isFFEnabled } from '@cloud-editor-mono/domain/src/services/services-by-
 import { Spinner, Stats } from '@cloud-editor-mono/images/assets/icons';
 import {
   Button,
+  ButtonAppearance,
   ButtonSize,
-  ButtonType,
   ButtonVariant,
   useI18n,
   useTooltip,
@@ -101,7 +101,6 @@ const FooterBar: React.FC<FooterBarProps> = (props: FooterBarProps) => {
   const { props: tooltipPropsAppName, renderTooltip: renderTooltipAppName } =
     useTooltip({
       content: runningApp?.name,
-      direction: 'up',
       timeout: 0,
     });
 
@@ -184,8 +183,8 @@ const FooterBar: React.FC<FooterBarProps> = (props: FooterBarProps) => {
           })}
         >
           <Button
-            variant={ButtonVariant.LowContrast}
-            type={ButtonType.Tertiary}
+            appearance={ButtonAppearance.LowContrast}
+            variant={ButtonVariant.Tertiary}
             onClick={clickHandlerSystemStats}
             size={ButtonSize.XSmall}
             Icon={Stats}
@@ -287,9 +286,9 @@ const FooterBar: React.FC<FooterBarProps> = (props: FooterBarProps) => {
               )}
               <Button
                 onClick={stopApp}
-                type={ButtonType.Secondary}
+                variant={ButtonVariant.Secondary}
                 size={ButtonSize.XSmall}
-                variant={ButtonVariant.Destructive}
+                appearance={ButtonAppearance.Destructive}
                 disabled={stopDisabled}
               >
                 Stop

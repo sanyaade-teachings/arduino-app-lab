@@ -65,9 +65,9 @@ export function useEdgeImpulse(): EdgeImpulseContextValue {
       return _logout();
     },
     onSuccess: async () => {
-      queryClient.invalidateQueries(['ei-token']);
-      queryClient.invalidateQueries(['ei-user']);
-      queryClient.invalidateQueries(['ei-auth-check']);
+      queryClient.setQueryData(['ei-token'], null);
+      queryClient.setQueryData(['ei-user', null], null);
+      queryClient.setQueryData(['ei-auth-check'], false);
     },
   });
 

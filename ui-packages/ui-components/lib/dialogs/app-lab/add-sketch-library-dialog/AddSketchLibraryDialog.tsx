@@ -5,7 +5,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'react-use';
 
-import { SketchLibraryCard } from '../../../components-by-app/app-lab';
+import { Board, SketchLibraryCard } from '../../../components-by-app/app-lab';
 import { SearchField } from '../../../essential/search-field';
 import { useI18n } from '../../../i18n/useI18n';
 import { Skeleton } from '../../../skeleton';
@@ -14,6 +14,7 @@ import { addSketchLibraryDialogMessages as messages } from '../messages';
 import styles from './add-sketch-library-dialog.module.scss';
 
 export type AddSketchLibraryDialogLogic = () => {
+  board?: Board;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   libraries?: SketchLibrary[];
@@ -34,6 +35,7 @@ export const AddSketchLibraryDialog: React.FC<AddSketchDialogProps> = ({
   logic,
 }: AddSketchDialogProps) => {
   const {
+    board,
     open,
     onOpenChange,
     libraries = [],
@@ -96,6 +98,7 @@ export const AddSketchLibraryDialog: React.FC<AddSketchDialogProps> = ({
           {libraries.map((library) => (
             <SketchLibraryCard
               key={library.id}
+              board={board}
               library={library}
               onInstall={addSketchLibrary}
               onDelete={deleteSketchLibrary}

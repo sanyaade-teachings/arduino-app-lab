@@ -2,22 +2,26 @@
 @use "@cloud-editor-mono/arduino-sass/src/variables" as vars;
 @use "@cloud-editor-mono/arduino-sass/src/breakpoints" as bp;
 
-$topBarHeight: 74px !default;
+$topBarHeight: 56px !default;
 
 .top-bar {
-  height: $topBarHeight;
-  display: grid;
-  grid-template-columns: 1fr min-content 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   background-color: #090f11;
   gap: 16px;
   flex-shrink: 0;
+  padding: 12px 16px;
 
   .breadcrumbs {
     display: flex;
     color: #5d6a6b;
     height: 36px;
     overflow: visible;
+
+    .breadcrumb-separator span {
+      line-height: 19px !important;
+    }
 
     @include bp.breakpoint(vars.$breakpoint-lg) {
       .wrapper:not(.wrapper-active) {
@@ -56,13 +60,21 @@ $topBarHeight: 74px !default;
   height: 100%;
   white-space: nowrap;
   cursor: pointer;
+  color: var(--text-subtle, #c9d2d2);
+  
+  * {
+    line-height: unset !important;
+  }
 
-  &.item-active {
-    cursor: default;
+  &:hover, &.item-active {
+    color: #ffffff !important;
+  }
+
+  a {
+    color: inherit;
   }
 
   .label {
-    color: #ffffff;
     text-decoration: none;
     max-width: 25vw;
     display: flex;
@@ -72,11 +84,16 @@ $topBarHeight: 74px !default;
     overflow: hidden;
     text-overflow: ellipsis;
 
+    .back-app-button {
+      outline: none;
+      margin: 0 4px;
+      width: 14px;
+      height: 14px;
+    }
     .back-button {
       transform: rotate(90deg);
       outline: none;
-      margin-right: 4px;
-      margin-left: 4px;
+      margin: 0 4px;
     }
 
     span {

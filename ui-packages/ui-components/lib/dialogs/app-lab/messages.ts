@@ -42,6 +42,86 @@ export const addAppBrickDialogMessages = defineMessages({
     defaultMessage: 'Check usage examples',
     description: 'Text for check usage examples button in add app brick dialog',
   },
+  createCustomBrickTitle: {
+    id: 'customBrickDialog.createCustomBrickTitle',
+    defaultMessage: 'Create custom brick',
+    description:
+      'Text for the title of the button for creating custom brick in add app brick dialog',
+  },
+  createCustomBrickSubtitle: {
+    id: 'customBrickDialog.createCustomBrickSubtitle',
+    defaultMessage: 'Create your modular software component for your project',
+    description:
+      'Text for the subtitle of the button for creating custom brick in add app brick dialog',
+  },
+  createBrickDialogTitle: {
+    id: 'customBrickDialog.createBrickDialogTitle',
+    defaultMessage: 'Create Brick',
+    description: 'Text for the title of create brick dialog',
+  },
+  createBrickBodyTitle: {
+    id: 'customBrickDialog.createBrickBodyTitle',
+    defaultMessage: 'Give a name',
+    description: 'Text for the title in the body of create brick dialog',
+  },
+  createBrickBodyDescription: {
+    id: 'customBrickDialog.createBrickBodyDescription',
+    defaultMessage:
+      'A {brickFolder} will be created with a subfolder named after your Brick. It will include the default files README.txt and config.yaml.',
+    description: 'Text for the description in the body of create brick dialog',
+  },
+  brickFolder: {
+    id: 'customBrickDialog.brickFolder',
+    defaultMessage: 'brick folder',
+    description:
+      'Text to refer to the folder that will be created for the new brick',
+  },
+  createButton: {
+    id: 'customBrickDialog.createButton',
+    defaultMessage: 'Create',
+    description: 'Text for the create button in the create brick dialog',
+  },
+  renameBrickDialogTitle: {
+    id: 'customBrickDialog.renameBrickDialogTitle',
+    defaultMessage: 'Rename Brick',
+    description: 'Text for the title of rename brick dialog',
+  },
+  renameBrickBodyTitle: {
+    id: 'customBrickDialog.renameBrickBodyTitle',
+    defaultMessage: `Rename {brickName}`,
+    description: 'Text for the title in the body of rename brick dialog',
+  },
+  renameBrickBodyDescription: {
+    id: 'customBrickDialog.renameBrickBodyDescription',
+    defaultMessage:
+      'Renaming will update the Brick folder name and ID. Make sure to update {mainPy} to match the new name, or imports may stop working.',
+    description: 'Text for the description in the body of rename brick dialog',
+  },
+  mainPy: {
+    id: 'customBrickDialog.mainPy',
+    defaultMessage: 'main.py',
+    description: 'Text to refer to the main.py file of the brick',
+  },
+  renameButton: {
+    id: 'customBrickDialog.renameButton',
+    defaultMessage: 'Rename',
+    description: 'Text for the rename button in the rename brick dialog',
+  },
+  customBrickInputLabel: {
+    id: 'customBrickDialog.customBrickInputLabel',
+    defaultMessage: 'Brick name',
+    description: 'Label for the input to set the name of the new brick',
+  },
+  customBrickRenameInputLabel: {
+    id: 'customBrickDialog.customBrickRenameInputLabel',
+    defaultMessage: 'Rename Brick',
+    description: 'Label for the input to set the new name of the brick',
+  },
+  customBrickId: {
+    id: 'customBrickDialog.customBrickId',
+    defaultMessage: 'New ID: {brickId} (lowercase, no spaces)',
+    description: 'Helper text for the input to set the name of the new brick',
+  },
 });
 
 export const configureAppBrickDialogMessages = defineMessages({
@@ -143,6 +223,17 @@ export const deleteAppBrickDialogMessages = defineMessages({
     defaultMessage: 'Delete',
     description: 'Label for the confirm button',
   },
+  customBrickBodyTitle: {
+    id: 'deleteAppBrickDialog.customBrickBodyTitle',
+    defaultMessage: 'Delete {brickName}?',
+    description: 'Message shown in the delete custom brick dialog',
+  },
+  customBrickBodyDescription: {
+    id: 'deleteAppBrickDialog.customBrickBodyDescription',
+    defaultMessage:
+      'The {brickName} folder will remain, but the Brick will no longer work. You can recreate it using the same name to restore it.',
+    description: 'Message to confirm the deletion of a custom brick',
+  },
 });
 
 export const swapRunningAppDialogMessages = defineMessages({
@@ -223,6 +314,11 @@ export const createAppDialogMessages = defineMessages({
     defaultMessage: 'Create new',
     description: 'Label for the confirm button',
   },
+  appNameRequired: {
+    id: 'createAppDialog.appNameRequired',
+    defaultMessage: 'App name is required',
+    description: 'Error message when app name is empty',
+  },
   appNameInUse: {
     id: 'createAppDialog.appNameInUse',
     defaultMessage: 'Name already in use, please choose another one.',
@@ -250,6 +346,46 @@ export const createAppDialogMessages = defineMessages({
     id: 'createAppDialog.failedDuplicate',
     defaultMessage: 'Failed to duplicate app. Please try again.',
     description: 'Notification message shown when app duplication fails',
+  },
+});
+
+export const renameAppDialogMessages = defineMessages({
+  dialogTitle: {
+    id: 'renameAppDialog.title',
+    defaultMessage: 'Rename app',
+    description: 'Title shown in the rename app dialog',
+  },
+  inputPlaceholder: {
+    id: 'renameAppDialog.inputPlaceholder',
+    defaultMessage: 'Insert new name',
+    description: 'Placeholder text for the app name input field',
+  },
+  cancelButton: {
+    id: 'renameAppDialog.cancelButton',
+    defaultMessage: 'Cancel',
+    description: 'Label for the cancel button',
+  },
+  confirmButton: {
+    id: 'renameAppDialog.confirmButton',
+    defaultMessage: 'Rename',
+    description: 'Label for the confirm button',
+  },
+  appNameInUse: {
+    id: 'renameAppDialog.appNameInUse',
+    defaultMessage: 'Name already in use, please choose another one.',
+    description:
+      'Error message when trying to set an app name that is already used',
+  },
+  successRename: {
+    id: 'renameAppDialog.successRename',
+    defaultMessage: 'App renamed successfully',
+    description:
+      'Notification message shown when an app is renamed successfully',
+  },
+  failedRename: {
+    id: 'renameAppDialog.failedRename',
+    defaultMessage: 'Failed to rename app. Please try again.',
+    description: 'Notification message shown when app rename fails',
   },
 });
 
@@ -610,6 +746,54 @@ export const networkSettingsDialogMessages = defineMessages({
   },
 });
 
+export const deleteTreeItemDialogMessages = defineMessages({
+  deleteFileTitle: {
+    id: 'deleteTreeItemDialog.deleteFileTitle',
+    defaultMessage: 'Delete File',
+    description: 'Title shown in the delete file dialog',
+  },
+  deleteFolderTitle: {
+    id: 'deleteTreeItemDialog.deleteFolderTitle',
+    defaultMessage: 'Delete Folder',
+    description: 'Title shown in the delete folder dialog',
+  },
+  dialogTitle: {
+    id: 'deleteTreeItemDialog.title',
+    defaultMessage: 'Delete',
+    description: 'Title shown in the delete tree item dialog',
+  },
+  fileBodyTitle: {
+    id: 'deleteTreeItemDialog.fileBodyTitle',
+    defaultMessage: 'Delete {fileName}?',
+    description: 'Message shown in the delete file dialog',
+  },
+  fileBodyDescription: {
+    id: 'deleteTreeItemDialog.fileBodyDescription',
+    defaultMessage: 'This will permanently delete the file',
+    description: 'Message to confirm the deletion of a file',
+  },
+  directoryBodyTitle: {
+    id: 'deleteTreeItemDialog.directoryBodyTitle',
+    defaultMessage: 'Delete {fileName}?',
+    description: 'Message shown in the delete directory dialog',
+  },
+  directoryBodyDescription: {
+    id: 'deleteTreeItemDialog.directoryBodyDescription',
+    defaultMessage: 'This will permanently delete the folder and all its files',
+    description: 'Message to confirm the deletion of a directory',
+  },
+  cancelButton: {
+    id: 'deleteTreeItemDialog.cancelButton',
+    defaultMessage: 'Cancel',
+    description: 'Label for the cancel button',
+  },
+  confirmButton: {
+    id: 'deleteTreeItemDialog.confirmButton',
+    defaultMessage: 'Yes, Delete',
+    description: 'Label for the confirm button',
+  },
+});
+
 export const disableNetworkModeDialogMessages = defineMessages({
   dialogTitle: {
     id: 'disableNetworkModeDialog.title',
@@ -639,5 +823,107 @@ export const disableNetworkModeDialogMessages = defineMessages({
     defaultMessage: 'Disable',
     description:
       'Label for the confirm button in the disable network mode dialog',
+  },
+});
+
+export const duplicateFileDialogMessages = defineMessages({
+  fileConflictTitle: {
+    id: 'duplicateFileDialog.fileConflictTitle',
+    defaultMessage: 'File Conflict',
+    description: 'Title shown when a file conflict is detected',
+  },
+  folderConflictTitle: {
+    id: 'duplicateFileDialog.folderConflictTitle',
+    defaultMessage: 'Folder Conflict',
+    description: 'Title shown when a folder conflict is detected',
+  },
+  nameConflictTitle: {
+    id: 'duplicateFileDialog.nameConflictTitle',
+    defaultMessage: 'Name Conflict',
+    description:
+      'Title shown when a name conflict is detected between file and folder',
+  },
+  fileBodyTitle: {
+    id: 'duplicateFileDialog.fileBodyTitle',
+    defaultMessage: '{fileName} already exists',
+    description: 'Title shown in the dialog body when a file already exists',
+  },
+  folderBodyTitle: {
+    id: 'duplicateFileDialog.folderBodyTitle',
+    defaultMessage: '{fileName} already exists',
+    description: 'Title shown in the dialog body when a folder already exists',
+  },
+  nameConflictBodyTitle: {
+    id: 'duplicateFileDialog.nameConflictBodyTitle',
+    defaultMessage: '{fileName} already exists',
+    description:
+      'Title shown in the dialog body when a name conflict is detected between file and folder',
+  },
+  fileBodyDescription: {
+    id: 'duplicateFileDialog.fileBodyDescription',
+    defaultMessage:
+      'Do you want to overwrite the existing file or keep both?',
+    description: 'Description shown when a file conflict is detected',
+  },
+  folderBodyDescription: {
+    id: 'duplicateFileDialog.folderBodyDescription',
+    defaultMessage:
+      'A folder with this name already exists. Merge the folders or keep both as separate folders.',
+    description: 'Description shown when a folder conflict is detected',
+  },
+  fileFolderConflictDescription: {
+    id: 'duplicateFileDialog.fileFolderConflictDescription',
+    defaultMessage:
+      "Can't move this file. A folder with the same name already exists. Keep both to create a renamed copy.",
+    description:
+      'Description shown when trying to move a file to a location with a folder of the same name',
+  },
+  folderFileConflictDescription: {
+    id: 'duplicateFileDialog.folderFileConflictDescription',
+    defaultMessage:
+      "Can't move this folder. A file with the same name already exists. Keep both to create a renamed copy.",
+    description:
+      'Description shown when trying to move a folder to a location with a file of the same name',
+  },
+  sourceLabel: {
+    id: 'duplicateFileDialog.sourceLabel',
+    defaultMessage: 'Source',
+    description: 'Label for the source file path',
+  },
+  targetLabel: {
+    id: 'duplicateFileDialog.targetLabel',
+    defaultMessage: 'Target',
+    description: 'Label for the target file path',
+  },
+  warningMessage: {
+    id: 'duplicateFileDialog.warningMessage',
+    defaultMessage:
+      'Warning: Choosing "Overwrite" will permanently replace the existing {itemType}.',
+    description: 'Warning message about overwriting files',
+  },
+  cancelButton: {
+    id: 'duplicateFileDialog.cancelButton',
+    defaultMessage: 'Cancel',
+    description: 'Label for the cancel button',
+  },
+  skipButton: {
+    id: 'duplicateFileDialog.skipButton',
+    defaultMessage: 'Skip',
+    description: 'Label for the skip button',
+  },
+  overwriteButton: {
+    id: 'duplicateFileDialog.overwriteButton',
+    defaultMessage: 'Overwrite',
+    description: 'Label for the overwrite button',
+  },
+  mergeButton: {
+    id: 'duplicateFileDialog.mergeButton',
+    defaultMessage: 'Merge',
+    description: 'Label for the merge button in folder conflict',
+  },
+  keepBothButton: {
+    id: 'duplicateFileDialog.keepBothButton',
+    defaultMessage: 'Keep both',
+    description: 'Label for the keep both button',
   },
 });

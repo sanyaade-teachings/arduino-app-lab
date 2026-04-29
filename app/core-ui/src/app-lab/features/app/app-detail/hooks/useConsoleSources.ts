@@ -9,48 +9,56 @@ import { uniqueId } from 'lodash';
 import { useCallback, useRef, useState } from 'react';
 import { BehaviorSubject, Subject } from 'rxjs';
 
-const consoleSourcesResetSubject = new Subject<void>();
-
 export const useConsoleSources: UseConsoleSources =
   function (): ReturnType<UseConsoleSources> {
-    const consoleSources = useRef<ConsoleSources>({});
-
-    const [consoleTabs, setConsoleTabs] = useState<ConsoleSourceKey[]>([]);
+    const consoleSources = useRef<Record<string, ConsoleSources>>({});
+    const [consoleTabs, setConsoleTabs] = useState<
+      Record<string, ConsoleSourceKey[]>
+    >({});
     const [activeConsoleTab, setActiveConsoleTab] = useState<
-      ConsoleSourceKey | undefined
-    >(consoleTabs[0]);
-
-    // To track which appId created/owns the current console sources
-    const [consoleSourcesOwner, setConsoleSourcesOwner] = useState<
-      string | undefined
-    >();
+      Record<string, ConsoleSourceKey | undefined>
+    >({});
 
     const addConsoleSource = useCallback(
       (
+        appId: string,
         key: keyof ConsoleSources,
         options?: {
-          sourcesOwnerAppId?: string;
           initialValue?: string;
           initialMeta?: Partial<ConsoleLogValue['meta']>;
         },
       ): void => {
-        const { sourcesOwnerAppId, initialValue, initialMeta } = options || {};
+        const { initialValue, initialMeta } = options || {};
 
-        if (!consoleSources.current[key]) {
+        if (!consoleSources.current[appId]) {
+          consoleSources.current[appId] = {};
+        }
+
+        if (!consoleSources.current[appId][key]) {
           const value = initialValue || '';
 
-          consoleSources.current[key] = {
+          consoleSources.current[appId][key] = {
             id: uniqueId(),
             subject: new BehaviorSubject<ConsoleLogValue>({
               value,
               meta: { id: key, ...initialMeta },
             }),
+            resetSubject: new Subject<void>(),
           };
 
-          setConsoleTabs(Object.keys(consoleSources.current));
-          if (sourcesOwnerAppId) {
-            setConsoleSourcesOwner(sourcesOwnerAppId);
-          }
+          setConsoleTabs((prev) => {
+            const nextTabs = Object.keys(consoleSources.current[appId]);
+            if (
+              prev[appId] &&
+              prev[appId].length === nextTabs.length &&
+              prev[appId].every((v, i) => v === nextTabs[i])
+            )
+              return prev;
+            return {
+              ...prev,
+              [appId]: nextTabs,
+            };
+          });
         }
       },
       [],
@@ -58,23 +66,25 @@ export const useConsoleSources: UseConsoleSources =
 
     const appendDataToSource = useCallback(
       (
+        appId: string,
         key: keyof ConsoleSources,
         data?: MessageData | ErrorData,
         createMissingKeys = false,
         meta?: Partial<ConsoleLogValue['meta']>,
       ): void => {
         const content = data?.message || '';
+        const appSources = consoleSources.current[appId];
 
-        if (!consoleSources.current[key]) {
+        if (!appSources || !appSources[key]) {
           return createMissingKeys
-            ? addConsoleSource(key, {
+            ? addConsoleSource(appId, key, {
                 initialValue: content,
                 initialMeta: meta,
               })
             : undefined;
         }
 
-        consoleSources.current[key].subject.next({
+        appSources[key].subject.next({
           value: content,
           meta: {
             id: key,
@@ -85,28 +95,62 @@ export const useConsoleSources: UseConsoleSources =
       [addConsoleSource],
     );
 
-    const reset = useCallback((keysToRetain: string[]): void => {
-      Object.keys(consoleSources.current).forEach((key) => {
+    const reset = useCallback((appId: string, keysToRetain: string[]): void => {
+      const appSources = consoleSources.current[appId];
+      if (!appSources) return;
+
+      Object.keys(appSources).forEach((key) => {
         if (!keysToRetain.includes(key)) {
-          delete consoleSources.current[key];
+          delete appSources[key];
         }
       });
 
-      setConsoleTabs(Object.keys(consoleSources.current));
-      setActiveConsoleTab(undefined);
+      setConsoleTabs((prev) => {
+        const nextTabs = Object.keys(appSources);
+        if (
+          prev[appId] &&
+          prev[appId].length === nextTabs.length &&
+          prev[appId].every((v, i) => v === nextTabs[i])
+        )
+          return prev;
+        return { ...prev, [appId]: nextTabs };
+      });
+      setActiveConsoleTab((prev) => {
+        if (prev[appId] === undefined) return prev;
+        return { ...prev, [appId]: undefined };
+      });
+    }, []);
 
-      if (keysToRetain.length === 0) {
-        setConsoleSourcesOwner(undefined);
+    const resetAllSources = useCallback((appId?: string): void => {
+      if (appId) {
+        Object.values(consoleSources.current[appId] || {}).forEach((source) =>
+          source.resetSubject?.next(),
+        );
+      } else {
+        Object.values(consoleSources.current).forEach((appSources) => {
+          Object.values(appSources).forEach((source) =>
+            source.resetSubject?.next(),
+          );
+        });
       }
     }, []);
 
+    const setTabForApp = useCallback(
+      (appId: string, tab: ConsoleSourceKey | undefined) => {
+        setActiveConsoleTab((prev) => {
+          if (prev[appId] === tab) return prev;
+          return { ...prev, [appId]: tab };
+        });
+      },
+      [],
+    );
+
     return {
-      consoleSourcesOwner,
+      resetAllSources,
       consoleSources: consoleSources.current,
-      consoleSourcesResetSubject,
       consoleTabs,
       activeConsoleTab,
-      setActiveConsoleTab,
+      setActiveConsoleTab: setTabForApp,
       addConsoleSource,
       appendDataToSource,
       reset,

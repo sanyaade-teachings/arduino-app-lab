@@ -5,7 +5,7 @@ type BaudRateSelectorProps = {
   onBaudRateSelected: (baudRate: number) => void;
   selectedBaudRate: number;
   disabled: boolean;
-  classes?: { wrapper?: string; menu?: string };
+  classes?: { wrapper?: string; menu?: string; menuPopover?: string };
 };
 
 const ButtonContent: React.FC<React.PropsWithChildren> = ({

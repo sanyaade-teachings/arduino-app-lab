@@ -1,7 +1,7 @@
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   Medium,
   useI18n,
   XSmall,
@@ -32,14 +32,14 @@ const SkipLoginDialog: React.FC<SkipLoginDialogProps> = (
       footer={
         <>
           <Button
-            type={ButtonType.Secondary}
+            variant={ButtonVariant.Secondary}
             size={ButtonSize.XSmall}
             onClick={(): void => onConfirm()}
           >
             {formatMessage(skipLoginDialogMessages.skipButton)}
           </Button>
           <Button
-            type={ButtonType.Primary}
+            variant={ButtonVariant.Primary}
             size={ButtonSize.XSmall}
             onClick={(): void => onClose()}
           >

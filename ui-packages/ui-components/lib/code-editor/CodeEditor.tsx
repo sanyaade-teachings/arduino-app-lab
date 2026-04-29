@@ -58,12 +58,15 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
     showReadOnlyBanner,
     gutter,
     hasHeader = true,
-    hasTabs = true,
+    useScrollPastEnd = false,
   } = codeEditorLogic();
   const code = getCode && getCode();
 
   useEffect(() => {
-    if (fontSize !== Number(getCSSVariable(styleVars.editorFontSize))) {
+    if (
+      fontSize &&
+      fontSize !== Number(getCSSVariable(styleVars.editorFontSize))
+    ) {
       setCSSVariable(styleVars.editorFontSize, `${fontSize}`);
     }
   }, [fontSize]);
@@ -78,11 +81,11 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
     ) {
       setCSSVariable(
         styleVars.editorPaddingBottom,
-        readOnlyBannerRef.current.offsetHeight.toString(),
+        (readOnlyBannerRef.current.offsetHeight + 32).toString(),
       );
     }
     return () => {
-      setCSSVariable(styleVars.editorPaddingBottom, '0');
+      setCSSVariable(styleVars.editorPaddingBottom, '90');
     };
   }, [showReadOnlyBanner, readOnlyBannerContents]);
 
@@ -123,10 +126,7 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
     !sketchDataIsLoading ? (
     <div
       ref={containerRef}
-      className={clsx(styles['code-editor'], classes?.container, {
-        [styles['container-without-gutter']]: !gutter,
-        [styles['code-editor-with-tabs-bar']]: hasTabs,
-      })}
+      className={clsx(styles['code-editor'], classes?.container)}
     >
       <CodeEditorElement
         viewInstanceId={ViewInstances.Editor}
@@ -147,9 +147,8 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
         readOnly={readOnly}
         gutter={gutterWithFontSize}
         hasHeader={hasHeader}
-        classes={{
-          container: styles.container,
-        }}
+        useScrollPastEnd={useScrollPastEnd}
+        classes={{ container: styles['code-editor-element'] }}
       />
       {state.isOpen && !readOnly ? (
         <div ref={menuRef}>
@@ -180,17 +179,13 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
         </div>
       ) : null}
       {showReadOnlyBanner && readOnlyBannerContents && (
-        <div className={styles['read-only-banner']} ref={readOnlyBannerRef}>
+        <div className={styles['code-editor-banner']} ref={readOnlyBannerRef}>
           {readOnlyBannerContents}
         </div>
       )}
     </div>
   ) : (
-    <div
-      className={clsx(styles['code-editor-skeleton'], {
-        [styles['code-editor-skeleton-with-tabs-bar']]: hasTabs,
-      })}
-    >
+    <div className={clsx(styles['code-editor-skeleton'])}>
       <Skeleton variant="rounded" count={skeletonChildren} />
     </div>
   );

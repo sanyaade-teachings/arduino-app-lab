@@ -9,6 +9,7 @@ export type Board = {
   isSelecting?: boolean;
   checkingStatus?: boolean;
   name: string;
+  fqbn: string;
   type: string;
   connectionType: ConnectionType;
   protocol: string;
@@ -47,7 +48,11 @@ export type UseBoardConfigurationLogic = () => {
 export type UseLinuxCredentialsLogic = () => {
   userPasswordChecked: boolean;
   userPasswordIsSet: boolean;
-  setUserPassword: (password: string, passwordConfirmation: string) => void;
+  setUserPassword: (
+    password: string,
+    passwordConfirmation: string,
+    onSuccess?: (password: string) => void,
+  ) => void;
   setUserPasswordIsLoading: boolean;
   setUserPasswordIsError: boolean;
   setUserPasswordConfirmationIsError: boolean;
@@ -66,6 +71,7 @@ export type UseSetupLogic = () => {
   isBoard?: boolean;
   boards: Board[];
   selectedBoard: Board | undefined;
+  selectingBoard?: Board;
   selectBoard: (board: Board) => void;
   autoSelectBoard: (boardId: string) => void;
   isAutoSelectingBoard: boolean;
@@ -87,6 +93,11 @@ export type UseSetupLogic = () => {
   onBackStep?: () => void;
   unlockAutoFlow?: () => void;
   setupCompleted?: boolean;
+  boardSelectionStatus?:
+    | 'selection-started'
+    | 'conn-started'
+    | 'conn-error'
+    | 'conn-and-selection-done';
 };
 
 export enum SetupItemId {

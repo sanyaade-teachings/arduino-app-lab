@@ -5,7 +5,13 @@ import { trackedData } from './trackData';
 
 export function buildTimestamp(source?: number): string {
   const date = source ? new Date(source) : new Date();
-  return date.toLocaleTimeString() + '.' + date.getMilliseconds();
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    fractionalSecondDigits: 3,
+    hour12: false,
+  });
 }
 
 class Timestamp extends GutterMarker {
@@ -64,4 +70,9 @@ export function toggleTimestamps(view: EditorView): void {
       effects: timestampsCompartment.reconfigure([]),
     });
   }
+}
+
+export function areTimestampsActive(view: EditorView): boolean {
+  const currentExt = timestampsCompartment.get(view.state);
+  return currentExt === timestampGutter;
 }

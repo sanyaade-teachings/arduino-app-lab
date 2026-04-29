@@ -1029,6 +1029,7 @@ export const useMainLogic: UseMainLogic =
         hasSetHeightOnHover,
         dispatchNewFileAction,
         setDispatchNewFileAction,
+        showFileSearch: true,
       };
     };
 
@@ -1067,6 +1068,8 @@ export const useMainLogic: UseMainLogic =
       openFiles,
     );
 
+    const autoSave = usePreferenceObservable(Preferences.AutoSave);
+
     const {
       setCode,
       formatCode,
@@ -1097,6 +1100,7 @@ export const useMainLogic: UseMainLogic =
       compileErrors,
       compileErrorsTimestamp,
       openFiles,
+      autoSave,
       exampleData,
       exampleFiles,
       customLibraryFiles,

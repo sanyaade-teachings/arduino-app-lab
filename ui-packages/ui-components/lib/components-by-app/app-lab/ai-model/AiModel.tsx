@@ -12,7 +12,7 @@ import { AIModelItem } from '@cloud-editor-mono/infrastructure';
 import {
   Button,
   ButtonSize,
-  ButtonType,
+  ButtonVariant,
   DropdownMenuButton,
   DropdownMenuItemType,
   ProgressBar,
@@ -198,7 +198,7 @@ export const AiModel: React.FC<AiModelProps> = (props: AiModelProps) => {
           <ul className={styles['more-info-list']}>
             <Button
               size={ButtonSize.XXSmall}
-              type={ButtonType.Tertiary}
+              variant={ButtonVariant.Tertiary}
               onClick={(e): void => {
                 e.stopPropagation();
                 if (model.edgeImpulseProps) {
@@ -307,7 +307,7 @@ export const AiModel: React.FC<AiModelProps> = (props: AiModelProps) => {
                   </span>
                 ) : (
                   <Button
-                    type={ButtonType.Primary}
+                    variant={ButtonVariant.Primary}
                     size={ButtonSize.XSmall}
                     title={
                       selectedImpulse?.isOutdated

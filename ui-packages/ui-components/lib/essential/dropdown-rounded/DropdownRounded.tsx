@@ -79,7 +79,7 @@ interface DropdownRoundedProps<T extends string, V extends string | number>
   onChange: (value: V) => void;
   disabled?: boolean;
   ButtonContent?: React.FC<React.PropsWithChildren>;
-  classes?: { wrapper?: string; menu?: string };
+  classes?: { wrapper?: string; menu?: string; menuPopover?: string };
 }
 
 const DropdownRounded = <T extends string, V extends string | number>(
@@ -137,7 +137,11 @@ const DropdownRounded = <T extends string, V extends string | number>(
         </XSmall>
       </Button>
       {state.isOpen && (
-        <DropdownMenuPopover triggerRef={popoverRef} state={state}>
+        <DropdownMenuPopover
+          triggerRef={popoverRef}
+          state={state}
+          classes={{ dropdownMenuPopover: classes?.menuPopover }}
+        >
           <Menu
             {...menuProps}
             {...props}

@@ -1,16 +1,19 @@
 package board
 
 import (
-	"os"
-	"slices"
 	"sync"
+
+	"github.com/arduino/arduino-app-cli/pkg/x/devicetree"
 )
 
+var knownBoards = []string{"arduino,imola", "arduino,monza", "arduino"}
+
 var onBoard = sync.OnceValue(func() bool {
-	var boardNames = []string{"UNO Q\n", "Imola\n", "Inc. Robotics RB1\n"}
-	buf, err := os.ReadFile("/sys/class/dmi/id/product_name")
-	if err == nil && slices.Contains(boardNames, string(buf)) {
-		return true
+	compatible := devicetree.LoadCompatible()
+	for _, knownBoard := range knownBoards {
+		if compatible.IsCompatibleWith(knownBoard) {
+			return true
+		}
 	}
 	return false
 })()

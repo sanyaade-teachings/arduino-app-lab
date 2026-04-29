@@ -1,3 +1,5 @@
+import { NodeApi } from 'react-arborist';
+
 export interface BaseNode {
   name: string;
   path: string;
@@ -22,4 +24,9 @@ export type TreeNode = FileNode | FolderNode;
 export type FileTreeApi = {
   handleFileCreate: (path?: string) => void;
   handleFolderCreate: (path?: string) => void;
+  handleDrop: (args: {
+    dragNodes: NodeApi<TreeNode>[];
+    parentNode: NodeApi<TreeNode> | null;
+    index: number;
+  }) => void;
 };
