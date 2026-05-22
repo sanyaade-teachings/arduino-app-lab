@@ -12,6 +12,7 @@ import (
 	"app-lab-desktop/internal/arduinoapps"
 	"app-lab-desktop/internal/auth"
 	"app-lab-desktop/internal/board"
+	"app-lab-desktop/internal/carrier"
 	"app-lab-desktop/internal/featureflags"
 	"app-lab-desktop/internal/flasher"
 	"app-lab-desktop/internal/fs"
@@ -31,6 +32,10 @@ func (a *App) IsBoard() bool {
 
 func (a *App) NeedsImageUpdate() bool {
 	return a.selectedBoard.IsR0Build()
+}
+
+func (a *App) RebootBoard(password string) error {
+	return a.selectedBoard.RebootBoard(a.selectedBoard.Conn, password)
 }
 
 // Orchestrator URL management
@@ -204,6 +209,22 @@ func (a *App) IsDirectory(path string) (bool, error) {
 	return fs.IsDirectory(a.selectedBoard.Conn, path)
 }
 
+func (a *App) SelectFilesDialog(remoteDir string) ([]string, error) {
+	return fs.SelectFilesDialog(a.ctx(), a.selectedBoard.Conn, remoteDir)
+}
+
+func (a *App) ImportFileToAppFromPath(remoteDir string, filePaths string, newFileName string) (string, error) {
+	return fs.ImportFileToAppFromPath(a.ctx(), a.selectedBoard.Conn, remoteDir, filePaths, newFileName)
+}
+
+func (a *App) SelectFolderDialog(remoteDir string) (string, error) {
+	return fs.SelectFolderDialog(a.ctx(), a.selectedBoard.Conn, remoteDir)
+}
+
+func (a *App) ImportFolderToAppFromPath(remoteDir string, folderPath string, newFileName string) (string, error) {
+	return fs.ImportFolderToAppFromPath(a.ctx(), a.selectedBoard.Conn, remoteDir, folderPath, newFileName)
+}
+
 // Apps UI management
 func (a *App) OpenUIWhenReady(port int, timeout int) error {
 	return appui.OpenUIWhenReady(a.ctx(), a.selectedBoard, port, timeout)
@@ -269,6 +290,7 @@ func (a *App) InferOrchestratorURL() (string, error) {
 	return orchestratorURL, nil
 }
 
+// App import/export
 func (a *App) ExportApp(appID string, appName string, includeData bool) (string, error) {
 	orchestratorURL, err := a.InferOrchestratorURL()
 	if err != nil {
@@ -278,13 +300,13 @@ func (a *App) ExportApp(appID string, appName string, includeData bool) (string,
 	return arduinoapps.ExportApp(a.ctx(), orchestratorURL, appID, appName, includeData)
 }
 
-func (a *App) ImportApp() (string, error) {
+func (a *App) SelectAppDialog() (string, error) {
 	orchestratorURL, err := a.InferOrchestratorURL()
 	if err != nil {
 		return "", fmt.Errorf("failed to get orchestrator URL for import app: %w", err)
 	}
 
-	return arduinoapps.ImportApp(a.ctx(), orchestratorURL)
+	return arduinoapps.SelectAppDialog(a.ctx(), orchestratorURL)
 }
 
 func (a *App) ImportAppFromPath(filePath string) (string, error) {
@@ -296,10 +318,7 @@ func (a *App) ImportAppFromPath(filePath string) (string, error) {
 	return arduinoapps.ImportAppFromPath(a.ctx(), orchestratorURL, filePath)
 }
 
-func (a *App) SaveTempFile(fileName string, data []byte) (string, error) {
-	return arduinoapps.SaveTempFile(fileName, data)
-}
-
+// Edge Impulse integration
 func (a *App) GetRefreshToken(user string) (string, error) {
 	return auth.GetRefreshToken(user)
 }
@@ -310,4 +329,21 @@ func (a *App) SetRefreshToken(user string, token string) error {
 
 func (a *App) DeleteRefreshToken(user string) error {
 	return auth.DeleteRefreshToken(user)
+}
+
+// Carrier
+func (a *App) CarrierList() ([]carrier.Carrier, error) {
+	return carrier.List(a.ctx(), a.selectedBoard.Conn)
+}
+
+func (a *App) CarrierShow(carrierName string) (carrier.ShowResult, error) {
+	return carrier.Show(a.ctx(), a.selectedBoard.Conn, carrierName)
+}
+
+func (a *App) CarrierDisable(password string, carrierName string) (carrier.ShowCarrierResult, error) {
+	return carrier.Disable(a.selectedBoard.Conn, password, carrierName)
+}
+
+func (a *App) CarrierEnable(password string, carrierName string, configuration []carrier.EnableDeviceConfig) (carrier.ShowCarrierResult, error) {
+	return carrier.Enable(a.selectedBoard.Conn, password, carrierName, configuration)
 }

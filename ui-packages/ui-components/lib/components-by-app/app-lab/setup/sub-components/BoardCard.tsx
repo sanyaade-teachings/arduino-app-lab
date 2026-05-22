@@ -3,7 +3,13 @@ import clsx from 'clsx';
 import { ArcSpinner as Loader } from '../../../../essential/loader';
 import { useI18n } from '../../../../i18n/useI18n';
 import { useTooltip } from '../../../../tooltip';
-import { Small, XSmall, XXSmall } from '../../../../typography';
+import { Small, XSmall } from '../../../../typography';
+import {
+  Badge,
+  BadgeSize,
+  BadgeStyle,
+  BadgeVariant,
+} from '../../essential/badge';
 import { tooltipMessages, welcomeMessages } from '../messages';
 import styles from './board-card.module.scss';
 
@@ -93,20 +99,25 @@ const BoardCard: React.FC<BoardCardProps> = (props: BoardCardProps) => {
           </Small>
 
           {isMulti && isNew && (
-            <div className={styles['new-badge']}>
-              <XXSmall uppercase>
-                {formatMessage(welcomeMessages.newBoardBadge)}
-              </XXSmall>
-            </div>
+            <Badge
+              size={BadgeSize.Small}
+              style={BadgeStyle.Light}
+              variant={BadgeVariant.Warning}
+              classes={{ container: styles['new-badge'] }}
+            >
+              {formatMessage(welcomeMessages.newBoardBadge)}
+            </Badge>
           )}
         </div>
 
         {!isMulti && isNew && (
-          <div className={styles['new-badge']}>
-            <XXSmall uppercase>
-              {formatMessage(welcomeMessages.newBoardBadge)}
-            </XXSmall>
-          </div>
+          <Badge
+            style={BadgeStyle.Light}
+            variant={BadgeVariant.Warning}
+            classes={{ container: styles['new-badge'] }}
+          >
+            {formatMessage(welcomeMessages.newBoardBadge)}
+          </Badge>
         )}
 
         {lastConnection && (

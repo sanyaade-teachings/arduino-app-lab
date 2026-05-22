@@ -119,6 +119,7 @@ export const createUseSetupLogic = function (
       selectBoard,
       autoSelectBoard,
       isAutoSelectingBoard,
+      couldNotAutoSelectBoard,
       showBoardConnPswPrompt,
       onConnPswCancel,
       onConnPswSubmit,
@@ -126,7 +127,6 @@ export const createUseSetupLogic = function (
       connToBoardError,
       connToBoardCompleted,
       setSelectedBoardCheckingStatus,
-      couldNotAutoSelectBoard,
     } = boardsProps;
 
     const {
@@ -135,10 +135,20 @@ export const createUseSetupLogic = function (
       getPropsLoading,
       upsertProp,
       upsertPropsLoading,
+      refetchSystemProps,
     } = useSystemProps();
 
     const { onOpenTerminal, terminalError } = useTerminal();
     const { boardItem } = useBoardItem();
+
+    // Track if auto-selection was ever started to keep loader during transition
+    const [autoSelectionStarted, setAutoSelectionStarted] = useState(false);
+
+    useEffect(() => {
+      if (isAutoSelectingBoard) {
+        setAutoSelectionStarted(true);
+      }
+    }, [isAutoSelectingBoard]);
 
     const {
       setBoardNameIsSuccess,
@@ -167,6 +177,12 @@ export const createUseSetupLogic = function (
       }
     }, [networkConnected, setNetworkStepSkipped]);
 
+    useEffect(() => {
+      if (networkConnected && getPropsError) {
+        refetchSystemProps();
+      }
+    }, [networkConnected, getPropsError, refetchSystemProps]);
+
     const { setUserPasswordIsSuccess } = useContext(LinuxCredentialsContext);
 
     useEffect(() => {
@@ -179,10 +195,10 @@ export const createUseSetupLogic = function (
       }
     }, [setSelectedBoardCheckingStatus, connToBoardCompleted, setCurrentStep]);
 
-    const setupChecksDone = networkStatusChecked && !getPropsLoading;
+    const setupChecksDone = !getPropsLoading;
     const setupPropsAreComplete = Boolean(
       setupChecksDone &&
-        (networkConnected || networkStepSkipped) &&
+        (networkConnected || networkStepSkipped || !networkStatusChecked) &&
         systemProps &&
         systemProps[SystemPropKey.SetupBoardName] &&
         systemProps[SystemPropKey.SetupKeyboard] &&
@@ -374,38 +390,50 @@ export const createUseSetupLogic = function (
       (connToBoardCompleted && currentStep === 'waiting-selection') || // step is updating to 'checking-status'
       currentStep === 'checking-status';
 
+    // Reset state when we exit the selection page, have connection error, or no boards available
+    useEffect(() => {
+      if (
+        !showBoardSelectionPage ||
+        connToBoardError ||
+        couldNotAutoSelectBoard ||
+        (boards.length === 0 && !isAutoSelectingBoard)
+      ) {
+        setAutoSelectionStarted(false);
+      }
+    }, [
+      showBoardSelectionPage,
+      connToBoardError,
+      couldNotAutoSelectBoard,
+      boards.length,
+      isAutoSelectingBoard,
+    ]);
+
     const stepIsSkippable =
       (currentStep === SetupItemId.BoardConfiguration &&
         hasBoardConfigurationError) ||
       currentStep === SetupItemId.NetworkSetup ||
       currentStep === SetupItemId.ArduinoAccount;
 
-    const [autoSelectionIsOngoing, setAutoSelectionIsOngoing] =
-      useState(isAutoSelectingBoard);
-
-    useEffect(() => {
-      if (isAutoSelectingBoard) {
-        setAutoSelectionIsOngoing(true);
-      } else if (
-        !showBoardSelectionPage ||
-        connToBoardError ||
-        boards.length === 0 // ? could be unnecessary as `couldNotAutoSelectBoard` should become `true` in this case
-      ) {
-        setAutoSelectionIsOngoing(false);
-      }
-    }, [
-      isAutoSelectingBoard,
-      showBoardSelectionPage,
-      connToBoardError,
-      boards.length,
-    ]);
+    // Fallback timeout to prevent infinite loader in edge cases
+    const [loaderTimedOut, setLoaderTimedOut] = useState(false);
 
     const showLoader =
       showBoardSelectionPage &&
       !showBoardConnPswPrompt &&
       !connToBoardError &&
+      autoSelectionStarted &&
       !couldNotAutoSelectBoard &&
-      autoSelectionIsOngoing;
+      !loaderTimedOut;
+
+    useEffect(() => {
+      const timeout = setTimeout(() => {
+        if (showLoader && !loaderTimedOut) {
+          setLoaderTimedOut(true);
+        }
+      }, 30000); // 30 seconds timeout
+
+      return () => clearTimeout(timeout);
+    }, [showLoader, loaderTimedOut]);
 
     return {
       isBoard,

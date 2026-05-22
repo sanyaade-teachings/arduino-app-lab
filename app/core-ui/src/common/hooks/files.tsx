@@ -11,7 +11,7 @@ import { UseFiles } from './files.type';
 import { useObservable } from './useObservable';
 
 export const OPEN_FILES_KEY = 'arduino:editor:open-files';
-export type OpenFilesStoreItem = { items: string[] };
+export type OpenFilesStoreItem = { items: string[]; selected: string | null };
 export type OpenFilesStore = { [key: string]: OpenFilesStoreItem };
 
 export const SKETCH_SECRETS_FILE_ID = 'sketch.secrets';
@@ -20,6 +20,7 @@ export const useFiles: UseFiles = function ({
   mainFile,
   bricks,
   files,
+  defaultFilePath,
   filesAreLoading = true,
   filesContentLoaded = false,
   isLibraryRoute = false,
@@ -33,17 +34,17 @@ export const useFiles: UseFiles = function ({
     undefined,
   );
   const [openFileIds, setOpenFileIds] = useState<string[]>([]);
-  const [enableOpenFilesPersistence] = useState(isClassicSketch);
+  const [enableOpenFilesPersistence] = useState(true);
 
   const queryClient = useQueryClient();
-  const { data: storedOpenFileNames } = useQuery(
+  const { data: openFilesStore } = useQuery(
     ['get-stored-open-files', storeEntityId],
     async () => {
       if (!storeEntityId) {
         return null;
       }
       const store = await IDB.get<OpenFilesStore>(OPEN_FILES_KEY);
-      return store?.[storeEntityId]?.items ?? null;
+      return store?.[storeEntityId] || null;
     },
     {
       enabled: enableOpenFilesPersistence,
@@ -116,7 +117,7 @@ export const useFiles: UseFiles = function ({
       filesContentLoaded &&
       (showSketchSecretsFile ||
         openFileIds.includes(SKETCH_SECRETS_FILE_ID) ||
-        storedOpenFileNames?.includes(SKETCH_SECRETS_FILE_ID))
+        openFilesStore?.items?.includes(SKETCH_SECRETS_FILE_ID))
     ) {
       return {
         fileId: SKETCH_SECRETS_FILE_ID,
@@ -131,8 +132,8 @@ export const useFiles: UseFiles = function ({
   }, [
     filesContentLoaded,
     openFileIds,
+    openFilesStore?.items,
     showSketchSecretsFile,
-    storedOpenFileNames,
   ]);
 
   const otherFiles = useMemo(() => {
@@ -221,10 +222,11 @@ export const useFiles: UseFiles = function ({
   const openFilesInitComplete = useRef(false);
 
   useEffect(() => {
-    const storedOpenFileNamesIsLoading = storedOpenFileNames === undefined;
+    const storedOpenFileNamesIsLoading = openFilesStore === undefined;
     if (storedOpenFileNamesIsLoading || openFilesInitComplete.current) {
       return;
     }
+
     if (filesContentLoaded) {
       // When first load is complete, lock the open files state
       // NOTE: `filesContentLoaded` is set atomically with `files` final value,
@@ -233,44 +235,56 @@ export const useFiles: UseFiles = function ({
     }
 
     const initOpenFiles = (): void => {
-      let currOpenFilesIds: string[];
+      let currOpenFilesIds: string[] = [];
 
-      if (storedOpenFileNames) {
-        currOpenFilesIds = storedOpenFileNames.reduce((acc, fileName) => {
-          const file =
-            fileName === SKETCH_SECRETS_FILE_ID
-              ? sketchSecretsFile
-              : editorFileNamesMap[fileName];
+      if (openFilesStore && openFilesStore.items.length > 0) {
+        currOpenFilesIds = openFilesStore.items.reduce((acc, fileId) => {
+          const file = editorFileIdsMap[fileId];
           return file ? [...acc, file.fileId] : acc;
         }, [] as string[]);
+      } else {
+        if (isClassicSketch) {
+          // Open all files in classic sketch
+          currOpenFilesIds = editorFiles.map((f) => f.fileId);
+        } else {
+          // If no stored open files, open default ones
+          currOpenFilesIds = [defaultFilePath || 'app.yaml'];
+        }
+      }
 
-        // Always ensure main file is included in open files
+      if (isClassicSketch) {
+        // Always ensure main file is included in open files only in classic sketch
         // If the sketch is renamed outside of current session, the stored ino file name can be outdated
         const mainFileId =
           selectableMainFile?.fileId || mainLibraryFile?.fileId;
         if (
+          isClassicSketch &&
           mainFileId &&
           editorFileIdsMap[mainFileId] &&
           !currOpenFilesIds.includes(mainFileId)
         ) {
           currOpenFilesIds = [mainFileId, ...currOpenFilesIds];
         }
-      } else {
-        if (autoOpenedFiles) {
-          currOpenFilesIds = editorFiles
-            .filter((f) => autoOpenedFiles.includes(f.fileId))
-            .map((f) => f.fileId);
-        } else {
-          currOpenFilesIds = bricks
-            ? editorFiles.reduce<string[]>(
-                (acc, f) =>
-                  f.fileExtension === 'brick' ? acc : [...acc, f.fileId],
-                [],
-              )
-            : editorFiles.map((f) => f.fileId);
-        }
       }
+
       setOpenFileIds(currOpenFilesIds);
+
+      if (!isClassicSketch) {
+        const lastSelectedFileId = openFilesStore?.selected;
+        let currSelectedFileId: string | null = null;
+        if (
+          lastSelectedFileId &&
+          currOpenFilesIds.includes(lastSelectedFileId)
+        ) {
+          currSelectedFileId = lastSelectedFileId;
+        }
+
+        if (openFilesInitComplete.current && !currSelectedFileId) {
+          currSelectedFileId = currOpenFilesIds[0];
+        }
+
+        setSelectedFileId(currSelectedFileId ?? undefined);
+      }
 
       const mainFileId = selectableMainFile?.fileId || mainLibraryFile?.fileId;
       if (
@@ -295,9 +309,10 @@ export const useFiles: UseFiles = function ({
     mainLibraryFile?.fileId,
     selectedFileId,
     sketchSecretsFile,
-    storedOpenFileNames,
     isClassicSketch,
     autoOpenedFiles,
+    openFilesStore,
+    defaultFilePath,
   ]);
 
   useEffect(() => {
@@ -310,27 +325,25 @@ export const useFiles: UseFiles = function ({
   }, [filesContentLoaded]);
 
   const storeOpenFiles = useCallback(
-    async (fileIds: string[]) => {
+    async (fileIds: string[], selectedFileId: string | undefined) => {
       if (!storeEntityId || !enableOpenFilesPersistence) {
         return;
       }
 
       const uniqueFileIds = Array.from(new Set(fileIds));
-      const fileNames = uniqueFileIds.reduce((acc, id) => {
-        if (id === SKETCH_SECRETS_FILE_ID) {
-          // Used fileId instead for fileFullName for secrets tab (sketch.secrets)
-          return [...acc, SKETCH_SECRETS_FILE_ID];
-        }
-        const file = editorFileIdsMap[id];
-        return file ? [...acc, file.fileFullName] : acc;
-      }, [] as string[]);
-
       await IDB.update(OPEN_FILES_KEY, (prevValue?: OpenFilesStore) => {
-        return { ...prevValue, [storeEntityId]: { items: fileNames } };
+        const prevStoreItem = prevValue?.[storeEntityId];
+        return {
+          ...prevValue,
+          [storeEntityId]: {
+            items: uniqueFileIds,
+            selected: selectedFileId ?? prevStoreItem?.selected ?? null,
+          },
+        };
       });
       queryClient.invalidateQueries(['get-stored-open-files', storeEntityId]);
     },
-    [storeEntityId, enableOpenFilesPersistence, queryClient, editorFileIdsMap],
+    [storeEntityId, enableOpenFilesPersistence, queryClient],
   );
 
   useEffect(() => {
@@ -338,8 +351,8 @@ export const useFiles: UseFiles = function ({
       return;
     }
     // Store open files when openFileIds or files changes
-    storeOpenFiles(openFileIds);
-  }, [openFilesInitComplete, openFileIds, storeOpenFiles]);
+    storeOpenFiles(openFileIds, selectedFileId);
+  }, [openFilesInitComplete, openFileIds, selectedFileId, storeOpenFiles]);
 
   const selectFile = useCallback(
     (fileId?: string, openAtIndex?: number) => {
@@ -404,7 +417,6 @@ export const useFiles: UseFiles = function ({
           if (fileId === prevSelectedFileId) {
             // Always select tab to the left if not closing the leftmost tab
             // NOTE: main .ino file cannot be closed so there is always a tab remaining
-            // TODO: consider this is no longer true with AL
             const closedFileIndex = prevOpenFileIds.indexOf(fileId);
             return closedFileIndex === 0
               ? prevOpenFileIds[1]
@@ -461,36 +473,45 @@ export const useFiles: UseFiles = function ({
   );
 
   const onSketchRename = useCallback(
-    async (newName: string) => {
-      if (
-        !storeEntityId ||
-        !selectableMainFile ||
-        !storedOpenFileNames?.length
-      ) {
+    async (_newName: string) => {
+      if (!storeEntityId || !selectableMainFile || !openFilesStore) {
         return;
       }
 
-      // Update stored main ino file name
-      const newInoFileName = `${newName}.ino`;
+      // CHECK ME: this might restore open files when renaming classic sketch
       await IDB.update(OPEN_FILES_KEY, (prevValue?: OpenFilesStore) => {
         const storeItem = prevValue?.[storeEntityId] || {
-          items: [selectableMainFile.fileFullName],
+          items: [selectableMainFile.fileId],
+          selected: selectableMainFile.fileId,
         };
-        storeItem.items = storeItem.items.map((fileName) =>
-          selectableMainFile.fileFullName === fileName
-            ? newInoFileName
-            : fileName,
-        );
         return { ...prevValue, [storeEntityId]: storeItem };
       });
       queryClient.invalidateQueries(['get-stored-open-files', storeEntityId]);
     },
-    [
-      selectableMainFile,
-      queryClient,
-      storeEntityId,
-      storedOpenFileNames?.length,
-    ],
+    [storeEntityId, selectableMainFile, openFilesStore, queryClient],
+  );
+
+  const onAppRename = useCallback(
+    async (newAppId: string) => {
+      if (!storeEntityId || !openFilesStore) {
+        return;
+      }
+
+      const prevAppId = storeEntityId.split('-')[0];
+      if (!prevAppId || prevAppId === newAppId) return;
+
+      const newStoreEntityId = storeEntityId.replace(prevAppId, newAppId);
+
+      await IDB.update(OPEN_FILES_KEY, (prevValue?: OpenFilesStore) => {
+        if (!prevValue) return {};
+
+        const storeItem = prevValue?.[storeEntityId];
+        delete prevValue?.[storeEntityId];
+        return { ...prevValue, [newStoreEntityId]: storeItem };
+      });
+      queryClient.invalidateQueries(['get-stored-open-files', storeEntityId]);
+    },
+    [openFilesStore, queryClient, storeEntityId],
   );
 
   return {
@@ -499,11 +520,12 @@ export const useFiles: UseFiles = function ({
     openFiles,
     unsavedFileIds,
     selectedFile,
-    storedOpenFileNames,
+    openFilesStore,
     selectFile,
     closeFile,
     updateOpenFile,
     updateOpenFilesOrder,
     onSketchRename,
+    onAppRename,
   };
 };

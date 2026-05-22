@@ -1,4 +1,6 @@
 import { SnackbarProvider } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { HelmetProvider } from 'react-helmet-async';
 
 import QueryProvider from '../../common/providers/data-fetching/QueryProvider';
@@ -25,34 +27,36 @@ const AppLabProvider: React.FC<AppLabProviderProps> = (
   const { children } = props;
 
   return (
-    <QueryProvider>
-      <I18nProvider>
-        <BoardResourcesContextProvider>
-          <EdgeImpulseContextProvider>
-            <AuthContextProvider>
-              <SetupContextProvider>
-                <BoardConfigurationContextProvider>
-                  <NetworkContextProvider>
-                    <LinuxCredentialsContextProvider>
-                      <EdgeImpulseModelsContextProvider>
-                        <RuntimeContextProvider>
-                          <UpdaterContextProvider>
-                            <ThemeProvider>
-                              <SnackbarProvider />
-                              <HelmetProvider>{children}</HelmetProvider>
-                            </ThemeProvider>
-                          </UpdaterContextProvider>
-                        </RuntimeContextProvider>
-                      </EdgeImpulseModelsContextProvider>
-                    </LinuxCredentialsContextProvider>
-                  </NetworkContextProvider>
-                </BoardConfigurationContextProvider>
-              </SetupContextProvider>
-            </AuthContextProvider>
-          </EdgeImpulseContextProvider>
-        </BoardResourcesContextProvider>
-      </I18nProvider>
-    </QueryProvider>
+    <DndProvider backend={HTML5Backend}>
+      <QueryProvider>
+        <I18nProvider>
+          <BoardResourcesContextProvider>
+            <EdgeImpulseContextProvider>
+              <AuthContextProvider>
+                <SetupContextProvider>
+                  <BoardConfigurationContextProvider>
+                    <NetworkContextProvider>
+                      <LinuxCredentialsContextProvider>
+                        <EdgeImpulseModelsContextProvider>
+                          <RuntimeContextProvider>
+                            <UpdaterContextProvider>
+                              <ThemeProvider>
+                                <SnackbarProvider />
+                                <HelmetProvider>{children}</HelmetProvider>
+                              </ThemeProvider>
+                            </UpdaterContextProvider>
+                          </RuntimeContextProvider>
+                        </EdgeImpulseModelsContextProvider>
+                      </LinuxCredentialsContextProvider>
+                    </NetworkContextProvider>
+                  </BoardConfigurationContextProvider>
+                </SetupContextProvider>
+              </AuthContextProvider>
+            </EdgeImpulseContextProvider>
+          </BoardResourcesContextProvider>
+        </I18nProvider>
+      </QueryProvider>
+    </DndProvider>
   );
 };
 

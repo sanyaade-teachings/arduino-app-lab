@@ -80,6 +80,7 @@ import {
   SOURCE_LIBRARY_ID_PARAM,
 } from '../../../routing/routing.type';
 import { queryClient } from '../../providers/data-fetching/QueryProvider';
+import { getDefaultFileContent } from '../../utils';
 import {
   SaveSketchFileMutation,
   SketchDataBaseQueryKey,
@@ -613,11 +614,17 @@ export const useRetrieveBatchFileContents: UseRetrieveBatchFileContents =
       })),
     });
 
-    const refreshFileContents = (paths?: string[]): void => {
-      const queries = paths
-        ? paths.map((path) => [GET_BATCH_FILE_CONTENT_QUERY_KEY, path])
-        : [GET_BATCH_FILE_CONTENT_QUERY_KEY];
-      queryClient.invalidateQueries(queries);
+    const refreshFileContents = (paths: string[] = []): void => {
+      if (paths.length === 0) {
+        // Invalidate all files
+        queryClient.invalidateQueries([GET_BATCH_FILE_CONTENT_QUERY_KEY]);
+        return;
+      }
+
+      paths.forEach((path) => {
+        const queryKey = [GET_BATCH_FILE_CONTENT_QUERY_KEY, path];
+        queryClient.invalidateQueries({ queryKey });
+      });
     };
 
     const renameSketchFile = useCallback(
@@ -657,13 +664,15 @@ export const useRetrieveBatchFileContents: UseRetrieveBatchFileContents =
         fileExtension: string,
         code?: string,
       ) => {
+        const defaultContent = getDefaultFileContent(fileExtension);
+
         const newFile: RetrieveFileContentsResult = {
           fullName: `${fileName}.${fileExtension}`,
           name: fileName,
-          data: '',
+          data: code ?? defaultContent,
           path: fileId,
           href: '',
-          content: '',
+          content: code ?? defaultContent,
           extension: fileExtension ?? '',
           mimetype: '',
         };

@@ -83,6 +83,51 @@ export const deviceMessages = defineMessages({
   },
 });
 
+export const carrierMessages = defineMessages({
+  title: {
+    id: 'appLabSettings.carrier.title',
+    defaultMessage: 'Carriers',
+    description: 'Title for the carriers section in the settings page',
+  },
+  carrierToggle: {
+    id: 'appLabSettings.carrier.toggle',
+    defaultMessage:
+      'Enable external carriers connected to your Arduino { boardType }',
+    description:
+      'Label for the toggle to enable a carrier in the settings page',
+  },
+  carrierType: {
+    id: 'appLabSettings.carrier.type',
+    defaultMessage: 'Carrier type',
+    description: 'Label for the carrier type in the settings page',
+  },
+  carrierDescription: {
+    id: 'appLabSettings.carrier.description',
+    defaultMessage:
+      'Select which peripheral you are connecting to the carrier.',
+    description: 'Label for the carrier description in the settings page',
+  },
+  carrierTooltip: {
+    id: 'appLabSettings.carrier.tooltip',
+    defaultMessage:
+      "If you connect a display, the USB-C video port will be deactivated. This means that after restarting, the USB-C port won't work for video anymore, as long as the display port is properly set up.",
+    description:
+      'Tooltip providing information about carriers in the settings page',
+  },
+  carrierInfo: {
+    id: 'appLabSettings.carrier.info',
+    defaultMessage:
+      'Restart the board to have your peripherals working properly',
+    description:
+      'Message providing information about carriers in the settings page',
+  },
+  carrierButton: {
+    id: 'appLabSettings.carrier.button',
+    defaultMessage: 'Apply and reboot',
+    description: 'Button text to restart the board after enabling a carrier',
+  },
+});
+
 export const systemMessages = defineMessages({
   title: {
     id: 'appLabSettings.system.title',

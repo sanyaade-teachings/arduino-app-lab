@@ -75,11 +75,13 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
     updateLastConnection,
   } = useBoardSerialTracker();
 
-  const passwordRef = useRef<HTMLDivElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    passwordRef?.current?.focus();
-  }, []);
+    if (showBoardConnPswPrompt) {
+      setTimeout(() => passwordRef?.current?.focus(), 10);
+    }
+  }, [showBoardConnPswPrompt]);
 
   // Check which boards are new
   useEffect(() => {
@@ -294,6 +296,7 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
           onOpenChange={(isOpen: boolean): void => {
             if (!isOpen) closePasswordPrompt();
           }}
+          onSubmit={submitPassword}
           footer={
             <>
               <Button
@@ -305,9 +308,9 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
               </Button>
               <Button
                 variant={ButtonVariant.Primary}
-                onClick={submitPassword}
                 loading={isBoardConnectingOrChecking}
                 disabled={!boardConnPsw || isBoardConnectingOrChecking}
+                type="submit"
               >
                 {formatMessage(welcomeMessages.confirmButton)}
               </Button>
@@ -330,7 +333,7 @@ const Welcome: React.FC<WelcomeProps> = (props: WelcomeProps) => {
             }}
           />
           <Input
-            ref={passwordRef}
+            inputRef={passwordRef}
             inputStyle={InputStyle.AppLab}
             value={boardConnPsw}
             sensitive={true}

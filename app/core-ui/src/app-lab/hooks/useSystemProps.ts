@@ -20,6 +20,7 @@ type UseSystemProps = () => {
     key: SystemPropKey;
     value: string;
   }) => Promise<SystemPropertyValue>;
+  refetchSystemProps: () => void;
 };
 
 export const useSystemProps: UseSystemProps = () => {
@@ -41,6 +42,7 @@ export const useSystemProps: UseSystemProps = () => {
     isSuccess: getPropsSuccess,
     isError: getPropsError,
     isLoading: getPropsLoading,
+    refetch: refetchSystemProps,
   } = useQuery<Record<string, string | undefined>>(
     ['system-properties'],
     async () => {
@@ -86,5 +88,6 @@ export const useSystemProps: UseSystemProps = () => {
     getPropsLoading,
     upsertPropsLoading,
     upsertProp: mutateAsync,
+    refetchSystemProps,
   };
 };

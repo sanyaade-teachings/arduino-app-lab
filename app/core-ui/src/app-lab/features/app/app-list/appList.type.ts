@@ -3,7 +3,7 @@ import {
   CreateAppDialogLogic,
   DeleteAppDialogLogic,
   ExportAppDialogLogic,
-  ImportAppDialogLogic,
+  ImportResourceLogic,
   RenameAppDialogLogic,
   SnackbarProps,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
@@ -23,7 +23,7 @@ export interface UseAppListLogic {
   openCreateAppDialog: () => void;
   openImportAppDialog: () => void;
   createAppDialogLogic: CreateAppDialogLogic;
-  importAppDialogLogic: ImportAppDialogLogic;
+  importAppDialogLogic: ImportResourceLogic;
   importedAppId?: string;
   sendNotification: (props: Omit<SnackbarProps, 'onClose' | 'toastId'>) => void;
   appActions: AppActions;

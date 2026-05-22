@@ -1,14 +1,14 @@
-import { AppUIService } from './app-ui-service.type';
+import { AppUIService, ForwardPort } from './app-ui-service.type';
 
 export const MockAppUIService: AppUIService = {
-  findUIPort: async (appId: string): Promise<number> => {
-    console.info('[MockAppUIService] findUIPort called', { appId });
-    return 3000;
-  },
-
-  findUIPorts: async (appId: string): Promise<number[]> => {
-    console.info('[MockAppUIService] findUIPorts called', { appId });
-    return [3000];
+  findPorts: async (appId: string): Promise<ForwardPort[]> => {
+    console.info('[MockAppUIService] findPorts called', { appId });
+    return [
+      {
+        port: 3000,
+        type: 'webview',
+      },
+    ];
   },
 
   openUIWhenReady: async (port: number): Promise<void> => {

@@ -23,6 +23,7 @@ const LinuxCredentials = forwardRef((props: LinuxCredentialsProps, ref) => {
   const { logic, unlockAutoFlow } = props;
   const passwordConfirmationInputRef = useRef<HTMLInputElement>(null);
   const {
+    isVentunoQ,
     setUserPassword,
     setUserPasswordIsLoading,
     setUserPasswordIsError,
@@ -132,6 +133,11 @@ const LinuxCredentials = forwardRef((props: LinuxCredentialsProps, ref) => {
           </XXSmall>
         )}
       </div>
+      {isVentunoQ && (
+        <div className={styles['distro']}>
+          Distribution: Ubuntu, provided by Canonical
+        </div>
+      )}
     </div>
   );
 });

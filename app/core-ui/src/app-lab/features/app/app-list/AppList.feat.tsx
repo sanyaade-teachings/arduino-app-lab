@@ -12,12 +12,13 @@ import {
   DeleteAppDialog,
   DropdownMenuButton,
   ExportAppDialog,
-  ImportAppDialog,
+  ImportResourceDialog,
   RenameAppDialog,
   TopBar,
   useI18n,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import React, { Key } from 'react';
+import clsx from 'clsx';
 
 import styles from './app-list.module.scss';
 import { useAppListLogic } from './appList.logic';
@@ -32,6 +33,11 @@ interface AppListProps {
 }
 
 const AppList: React.FC<AppListProps> = ({ section }) => {
+  const [menuOpenAppId, setMenuOpenAppId] = React.useState<string | null>(null);
+  const [animatingAppId, setAnimatingAppId] = React.useState<string | null>(
+    null,
+  );
+
   const {
     apps,
     isLoading: appsLoading,
@@ -51,6 +57,17 @@ const AppList: React.FC<AppListProps> = ({ section }) => {
 
   const { formatMessage } = useI18n();
 
+  // Reset animating state when importedAppId changes
+  React.useEffect(() => {
+    if (importedAppId) {
+      setAnimatingAppId(importedAppId);
+      // Reset after animation duration (3.3s)
+      setTimeout(() => {
+        setAnimatingAppId(null);
+      }, 3300);
+    }
+  }, [importedAppId]);
+
   return (
     <section className={styles['main']}>
       <CreateAppDialog logic={createAppDialogLogic} />
@@ -58,7 +75,7 @@ const AppList: React.FC<AppListProps> = ({ section }) => {
       <RenameAppDialog logic={renameAppDialogLogic} />
       <DeleteAppDialog logic={deleteAppDialogLogic} />
       <ExportAppDialog logic={exportAppDialogLogic} />
-      <ImportAppDialog logic={importAppDialogLogic} />
+      <ImportResourceDialog logic={importAppDialogLogic} />
 
       <TopBar pathItems={[section]}>
         <div />
@@ -94,7 +111,7 @@ const AppList: React.FC<AppListProps> = ({ section }) => {
                   : openImportAppDialog()
               }
               useStaticPosition
-              buttonChildren={(buttonProps, buttonRef) => (
+              buttonChildren={(buttonProps, buttonRef): React.ReactElement => (
                 <Button
                   {...buttonProps}
                   ref={buttonRef}
@@ -129,13 +146,17 @@ const AppList: React.FC<AppListProps> = ({ section }) => {
           apps.map((app, i) => (
             <div
               key={i}
-              className={`${styles['app-link']} ${
-                app.id === importedAppId ? styles['app-link--highlighted'] : ''
-              }`}
-              onClick={(e) => handleAppClick(app.id || '', e)}
+              className={clsx(
+                styles['app-link'],
+                app.id === importedAppId && styles['app-link--highlighted'],
+                menuOpenAppId === app.id && styles['menu-open'],
+              )}
+              onClick={(e: React.MouseEvent): void =>
+                handleAppClick(app.id || '', e)
+              }
               role="button"
               tabIndex={0}
-              onKeyUp={(e) => {
+              onKeyUp={(e: React.KeyboardEvent): void => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   handleAppClick(app.id || '');
                 }
@@ -145,11 +166,14 @@ const AppList: React.FC<AppListProps> = ({ section }) => {
                 {...app}
                 {...(section === 'my-apps' && {
                   defaultApp,
-                  onRename: () => appActions.onRename(app),
-                  onDuplicate: () => appActions.onDuplicate(app),
-                  onExport: () => appActions.onExport(app),
-                  onSetAsDefault: () => appActions.onSetAsDefault(app),
-                  onDelete: () => appActions.onDelete(app),
+                  onRename: (): void => appActions.onRename(app),
+                  onDuplicate: (): void => appActions.onDuplicate(app),
+                  onExport: (): void => appActions.onExport(app),
+                  onSetAsDefault: (): void => appActions.onSetAsDefault(app),
+                  onDelete: (): void => appActions.onDelete(app),
+                  onMenuOpen: (isOpen: boolean): void =>
+                    setMenuOpenAppId(isOpen ? app.id || null : null),
+                  isAnimating: app.id === animatingAppId,
                 })}
               />
             </div>

@@ -114,6 +114,10 @@ export type TabMenuSection = DropdownMenuSectionType<
 
 export enum TabMenuItemIds {
   Close = 'Close',
+  CloseOthers = 'CloseOthers',
+  CloseToTheLeft = 'CloseToTheLeft',
+  CloseToTheRight = 'CloseToTheRight',
+  CloseAll = 'CloseAll',
   RenameFile = 'RenameFile',
   DeleteFile = 'DeleteFile',
 }

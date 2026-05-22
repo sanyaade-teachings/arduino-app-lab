@@ -3,9 +3,8 @@ import {
   AppLabEditorPanel,
   isFileNode,
   MultipleConsolePanel,
-  SplitPanel,
+  WorkspaceLayout,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import clsx from 'clsx';
 import { useCallback } from 'react';
 
 import styles from './app-lab-edit-section.module.scss';
@@ -58,6 +57,8 @@ const AppFilesSection: React.FC<AppEditSectionProps> = (
     renameAppCustomBrick,
     onDuplicateConflict,
     duplicateFileDialogLogic,
+    importFileDialogLogic,
+    openImportFileDialog,
   } = appLabEditSectionLogic();
 
   // REFACTOR: should split this in different logics
@@ -96,6 +97,8 @@ const AppFilesSection: React.FC<AppEditSectionProps> = (
       appLabEditorPanelLogic,
       onDuplicateConflict,
       duplicateFileDialogLogic,
+      importFileDialogLogic,
+      openImportFileDialog,
     }),
     [
       app,
@@ -131,84 +134,43 @@ const AppFilesSection: React.FC<AppEditSectionProps> = (
       appLabEditorPanelLogic,
       onDuplicateConflict,
       duplicateFileDialogLogic,
+      importFileDialogLogic,
+      openImportFileDialog,
     ],
   );
 
   return (
-    <SplitPanel
-      classes={{
-        container: styles['split'],
-        gutter: styles['gutter'],
-      }}
-      storageKey="arduino:editor-sidebar-sizes"
-      direction="horizontal"
-      minSizePx={300}
-      collapsedSizePx={44}
-      collapseThresholdPx={44}
-      initialSizes={[20, 80]}
-    >
-      {({
-        toggleCollapsed: toggleSidebarCollapsed,
-        isCollapsed: isSidebarCollapsed,
-      }): JSX.Element[] => [
-        // SIDE PANEL
+    <WorkspaceLayout
+      sideContent={(api): React.ReactNode => (
         <FilesManagerSection
-          key="sidebar"
-          isCollapsed={isSidebarCollapsed}
-          toggleCollapsed={toggleSidebarCollapsed}
+          isCollapsed={api.isCollapsed}
+          toggleCollapsed={api.toggleCollapsed}
           logic={filesManagerSectionLogic}
-        />,
-
-        // EDITOR + CONSOLE PANEL
-        <SplitPanel
-          key="editor-console"
-          classes={{
-            container: clsx(styles['split-item'], styles['split-item-right']),
-            gutter: clsx(styles['gutter'], styles['horizontal']),
-          }}
-          storageKey="arduino:editor-console-sizes"
-          direction="vertical"
-          collapsablePanelIndex={1}
-          minSizePx={250}
-          collapsedSizePx={36}
-          collapseThresholdPx={30}
-          maximizedThresholdPx={40}
-          initialSizes={[100, 0]}
-        >
-          {({
-            isCollapsed: isConsoleCollapsed,
-            toggleCollapsed: toggleConsoleCollapsed,
-            isMaximized: isConsoleMaximized,
-            toggleMaximize: toggleConsoleMaximize,
-            minimize: minimizeConsole,
-          }): JSX.Element[] => [
-            // EDITOR PANEL
-            <div className={styles['top-panel']} key="editor">
-              {(selectedNode && isFileNode(selectedNode)) ||
-              selectedFile?.fileExtension === 'brick' ? (
-                <AppLabEditorPanel appLabEditorLogic={appLabEditorPanelLogic} />
-              ) : (
-                <div className={styles['empty-editor']}>
-                  <ArduinoLogo />
-                </div>
-              )}
-            </div>,
-
-            // CONSOLE PANEL
-            <div className={styles['bottom-panel']} key={'console'}>
-              <MultipleConsolePanel
-                multipleConsolePanelLogic={multipleConsolePanelLogic}
-                isCollapsed={isConsoleCollapsed}
-                toggleCollapse={toggleConsoleCollapsed}
-                isMaximized={isConsoleMaximized}
-                onMaximize={toggleConsoleMaximize}
-                onMinimize={minimizeConsole}
-              />
-            </div>,
-          ]}
-        </SplitPanel>,
-      ]}
-    </SplitPanel>
+        />
+      )}
+      editorContent={
+        <div className={styles['editor']}>
+          {(selectedNode && isFileNode(selectedNode)) ||
+          selectedFile?.fileExtension === 'brick' ? (
+            <AppLabEditorPanel appLabEditorLogic={appLabEditorPanelLogic} />
+          ) : (
+            <div className={styles['empty-editor']}>
+              <ArduinoLogo />
+            </div>
+          )}
+        </div>
+      }
+      consoleContent={(api): React.ReactNode => (
+        <MultipleConsolePanel
+          multipleConsolePanelLogic={multipleConsolePanelLogic}
+          isCollapsed={api.isCollapsed}
+          toggleCollapse={api.toggleCollapsed}
+          isMaximized={api.isMaximized}
+          onMaximize={api.toggleMaximize}
+          onMinimize={api.toggleMaximize}
+        />
+      )}
+    />
   );
 };
 

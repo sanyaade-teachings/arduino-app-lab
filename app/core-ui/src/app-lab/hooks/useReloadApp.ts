@@ -23,11 +23,19 @@ export const useReloadApp: UseReloadApp = ({
   const navigate = useNavigate();
   const [hasNavigatedToSavedApp, setHasNavigatedToSavedApp] = useState(false);
 
-  const { lastAppInfo, saveAppId, resetAppId } = boardsProps;
+  const {
+    lastAppInfo,
+    saveAppId,
+    resetAppId,
+    selectedBoard,
+    connToBoardCompleted,
+    isAutoSelectingBoard,
+    couldNotAutoSelectBoard,
+  } = boardsProps;
 
   // save/reset app id base on route params
   useEffect(() => {
-    if (!boardsProps.selectedBoard) {
+    if (!selectedBoard) {
       return;
     }
 
@@ -37,25 +45,38 @@ export const useReloadApp: UseReloadApp = ({
       resetAppId().catch(console.error);
       // Don't reset hasNavigatedToSavedApp here, it should persist for the session
     }
-  }, [
-    currentAppId,
-    currentSection,
-    saveAppId,
-    resetAppId,
-    boardsProps.selectedBoard,
-  ]);
+  }, [currentAppId, currentSection, saveAppId, resetAppId, selectedBoard]);
 
   // navigate to saved app id after board selection, or fallback to my-apps/examples
   useEffect(() => {
     const navigateToSavedApp = async (): Promise<void> => {
-      // Reset isAutoNavigating
+      if (!showRoutes || hasNavigatedToSavedApp) return;
+
+      if (!selectedBoard) {
+        return;
+      }
+
+      if (currentAppId) {
+        return;
+      }
+
+      // Reset navigation flag when conditions become available
       if (
-        !showRoutes ||
-        hasNavigatedToSavedApp ||
-        !boardsProps.selectedBoard ||
-        currentAppId ||
-        boardsProps.isAutoSelectingBoard ||
-        !boardsProps.connToBoardCompleted
+        !isAutoSelectingBoard &&
+        connToBoardCompleted &&
+        selectedBoard &&
+        hasNavigatedToSavedApp &&
+        !currentAppId
+      ) {
+        setHasNavigatedToSavedApp(false);
+        return;
+      }
+
+      // Don't navigate if board is still being configured or auto-selection failed
+      if (
+        isAutoSelectingBoard ||
+        !connToBoardCompleted ||
+        couldNotAutoSelectBoard
       ) {
         return;
       }
@@ -90,8 +111,8 @@ export const useReloadApp: UseReloadApp = ({
     currentAppId,
     apps,
     navigate,
-    boardsProps.isAutoSelectingBoard,
-    boardsProps.connToBoardCompleted,
-    boardsProps.selectedBoard,
+    isAutoSelectingBoard,
+    connToBoardCompleted,
+    selectedBoard,
   ]);
 };

@@ -94,50 +94,50 @@ export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
     }
   }, []);
 
-  const { data: boardUpdates, refetch: checkBoardUpdateQuery } = useQuery(
-    ['board-update-check'],
-    () => checkBoardUpdate(true),
-    {
-      select: (data) => {
-        if (data.updates && data.updates.length > 0) {
-          return data.updates.map((update) => ({
-            name: update.name || 'Unknown',
-            toVersion: update.to_version || '',
-          }));
-        }
-        // null = no board updates available
-        return null;
-      },
-      onSuccess: (data) => {
-        const newAppVersion = data?.find(
-          (update) => update.name === 'arduino-app-lab',
-        )?.toVersion;
-        if (isBoard && newAppVersion) {
-          checkReleaseNotes(newAppVersion);
-        }
-      },
-      enabled: false,
-      staleTime: Infinity,
-      cacheTime: Infinity,
-      // linear retry for 2 minutes, 2 seconds delay
-      retry: (counter, error) =>
-        (error as Error | undefined)?.message.includes(UPDATE_IN_PROGRESS)
-          ? false
-          : counter < 60,
-      retryDelay: 2000,
+  const {
+    data: boardUpdates,
+    isFetching: isCheckingForBoardUpdates,
+    refetch: checkBoardUpdateQuery,
+  } = useQuery(['board-update-check'], () => checkBoardUpdate(true), {
+    select: (data) => {
+      if (data.updates && data.updates.length > 0) {
+        return data.updates.map((update) => ({
+          name: update.name || 'Unknown',
+          toVersion: update.to_version || '',
+        }));
+      }
+      // null = no board updates available
+      return null;
     },
-  );
+    onSuccess: (data) => {
+      const newAppVersion = data?.find(
+        (update) => update.name === 'arduino-app-lab',
+      )?.toVersion;
+      if (isBoard && newAppVersion) {
+        checkReleaseNotes(newAppVersion);
+      }
+    },
+    enabled: false,
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    // linear retry for 2 minutes, 2 seconds delay
+    retry: (counter, error) =>
+      (error as Error | undefined)?.message.includes(UPDATE_IN_PROGRESS)
+        ? false
+        : counter < 60,
+    retryDelay: 2000,
+  });
 
-  const { data: newAppVersion, refetch: checkAppUpdateQuery } = useQuery(
-    ['app-update-check'],
-    newVersion,
-    {
-      onSuccess: checkReleaseNotes,
-      enabled: false,
-      staleTime: Infinity,
-      cacheTime: Infinity,
-    },
-  );
+  const {
+    data: newAppVersion,
+    isFetching: isCheckingForAppUpdates,
+    refetch: checkAppUpdateQuery,
+  } = useQuery(['app-update-check'], newVersion, {
+    onSuccess: checkReleaseNotes,
+    enabled: false,
+    staleTime: Infinity,
+    cacheTime: Infinity,
+  });
 
   const pushBoardLog = useCallback((log: string | string[]): void => {
     _setBoardLogs((prev) => prev.concat(log));
@@ -352,6 +352,8 @@ export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
 
   const checkForUpdates = useCallback(
     async (silent = false): Promise<void> => {
+      if (isCheckingForBoardUpdates || isCheckingForAppUpdates) return;
+
       if (!silent && status === UpdaterStatus.Skipped) {
         return;
       }
@@ -420,6 +422,8 @@ export const useUpdater: UseUpdater = (): ReturnType<UseUpdater> => {
       checkBoardUpdateQuery,
       checkMandatoryUpdates,
       isBoard,
+      isCheckingForAppUpdates,
+      isCheckingForBoardUpdates,
       listenBoardUpdateLogs,
       pushBoardLog,
       status,

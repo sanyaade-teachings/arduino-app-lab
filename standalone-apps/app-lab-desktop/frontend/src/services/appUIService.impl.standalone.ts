@@ -1,19 +1,10 @@
 import {
   AppUIService,
+  ForwardPort,
   getAppPorts,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 
 import { ForwardNonUIPort, OpenUIWhenReady } from '../../wailsjs/go/app/App';
-
-export const findUIPort: AppUIService['findUIPort'] = async function (
-  appId: string,
-): Promise<number> {
-  const ports = await getAppPorts(appId);
-  const webview = ports.find((p) => p.serviceName === 'webview');
-  const port = webview?.port;
-  if (!port) throw new Error(`Webview port not found for app ${appId}`);
-  return parseInt(port, 10);
-};
 
 interface CompletePort {
   port: string;
@@ -21,19 +12,16 @@ interface CompletePort {
   source?: string | undefined;
 }
 
-export const findUIPorts: AppUIService['findUIPorts'] = async function (
+export const findPorts: AppUIService['findPorts'] = async function (
   appId: string,
-): Promise<number[]> {
-  const ports = await getAppPorts(appId);
-
-  const webviewPorts = ports.filter(
-    (p): p is CompletePort => p.serviceName === 'webview' && !!p.port,
-  );
-
-  if (webviewPorts.length === 0)
-    throw new Error(`Webview port not found for app ${appId}`);
-
-  return webviewPorts.map((p) => parseInt(p.port, 10));
+): Promise<ForwardPort[]> {
+  const res = await getAppPorts(appId);
+  return res
+    .filter((p): p is CompletePort => !!p.port)
+    .map((p) => ({
+      port: parseInt(p.port, 10),
+      type: p.serviceName === 'webview' ? 'webview' : 'other',
+    }));
 };
 
 export const openUIWhenReady: AppUIService['openUIWhenReady'] = async function (

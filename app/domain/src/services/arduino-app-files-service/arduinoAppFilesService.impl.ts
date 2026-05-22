@@ -474,6 +474,23 @@ export let createAppFolder: ArduinoAppFilesService['createAppFolder'] =
     throw new Error('createAppFolder method not implemented');
   };
 
+export let selectResourcePathToImport: ArduinoAppFilesService['selectResourcePathToImport'] =
+  async function () {
+    throw new Error('selectResourcePathToImport method not implemented');
+  };
+
+export let importResourceToAppFromPath: ArduinoAppFilesService['importResourceToAppFromPath'] =
+  async function () {
+    throw new Error('importResourceToAppFromPath method not implemented');
+  };
+
+export let importDroppedResourceToApp: ArduinoAppFilesService['importDroppedResourceToApp'] =
+  function () {
+    return () => {
+      throw new Error('importDroppedResourceToApp method not implemented');
+    };
+  };
+
 export const setArduinoAppFilesService = (
   service: ArduinoAppFilesService,
 ): void => {
@@ -486,4 +503,7 @@ export const setArduinoAppFilesService = (
   moveAppFile = service.moveAppFile;
   removeAppFile = service.removeAppFile;
   createAppFolder = service.createAppFolder;
+  selectResourcePathToImport = service.selectResourcePathToImport;
+  importResourceToAppFromPath = service.importResourceToAppFromPath;
+  importDroppedResourceToApp = service.importDroppedResourceToApp;
 };

@@ -7,8 +7,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
 import clsx from 'clsx';
-import { Key, useCallback, useEffect, useRef, useState } from 'react';
-import { MenuTriggerState } from 'react-stately';
+import { Key, useCallback, useEffect, useRef } from 'react';
 
 import DropdownMenuButton from '../essential/dropdown-menu/DropdownMenuButton';
 import FilterableListButton from '../essential/filterable-list/FilterableListButton';
@@ -67,8 +66,6 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollTabsRef = useRef<HTMLUListElement>(null);
   const renameTabRef = useRef<HTMLLIElement>(null);
-
-  const [, setOpenMenuMap] = useState<Map<string, MenuTriggerState>>(new Map());
 
   const {
     filePath,
@@ -139,7 +136,7 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={items}>
-          {items.map((item) => {
+          {items.map((item, index) => {
             const { id, ...tab } = item;
 
             return !isReadOnly && tab.fileId === renamingFileId ? (
@@ -169,13 +166,14 @@ const EditorTabsBar: React.FC<EditorTabsBarProps> = (
                 Icon={tab.Icon}
                 dataIsLoading={sketchDataIsLoading}
                 isMainFile={tab.fileId === selectableMainFile?.fileId}
+                tabIndex={index}
+                tabsCount={items.length}
                 isUnsaved={Boolean(
                   tab.fileId && unsavedFileIds?.has(tab.fileId),
                 )}
                 selectTab={onTabClick}
                 isReadOnly={isReadOnly || !!tab.isMetadataReadOnly}
                 tabAction={tabAction}
-                setOpenMenuMap={setOpenMenuMap}
                 dropIndicator={
                   dropIndicator?.tabId === tab.fileId
                     ? dropIndicator.direction

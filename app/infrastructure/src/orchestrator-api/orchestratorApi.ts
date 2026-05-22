@@ -379,7 +379,7 @@ export async function getAppLogsStreamV1Request(
   abortController?: AbortController,
   origin = Config.ORCHESTRATOR_API_URL,
 ): Promise<void> {
-  const endpoint = `/v1/apps/${id}/logs`;
+  const endpoint = `/v1/apps/${id}/logs?tail=1000`;
   const sseUrl = `${origin}${endpoint}`;
 
   return getEventSource(sseUrl, handlers, undefined, abortController);

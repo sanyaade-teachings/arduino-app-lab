@@ -1,5 +1,5 @@
 import {
-  findUIPorts,
+  findPorts,
   forwardNonUIPort,
   openUIWhenReady,
   startApp,
@@ -57,6 +57,62 @@ export const useRuntimeLogic: UseRuntimeLogic =
 
     const { defaultApp, runningApp, failedApp } = useAppsStatus();
 
+    const selectedBoard = useBoardLifecycleStore(
+      (state) => state.selectedConnectedBoard,
+    );
+
+    const openUIIfAvailable = useCallback(
+      async (app: AppDetailedInfo): Promise<void> => {
+        // Temp. work-around for video streaming in examples via port `4912`,
+        // the port is not currently exposed in app data by orchestrator
+        const requiresVideoStreamPortForward =
+          selectedBoard?.connectionType === 'USB' &&
+          app.bricks?.some((b) => b.id === 'arduino:video_object_detection');
+
+        if (requiresVideoStreamPortForward) {
+          const port = 4912;
+
+          try {
+            await forwardNonUIPort(port);
+          } catch {
+            console.warn(`Could not forward port ${port}`);
+          }
+        }
+
+        try {
+          const allPorts = await findPorts(app.id);
+          console.log('Found ports for app', { appId: app.id, allPorts });
+
+          for (const { port, type } of allPorts) {
+            try {
+              if (type === 'webview') {
+                await openUIWhenReady(port, 45);
+              } else {
+                await forwardNonUIPort(port);
+              }
+            } catch (error) {
+              console.warn(
+                `Failed to open/forward port ${port} for app ${app.id}:`,
+                error,
+              );
+            }
+          }
+
+          if (allPorts.length === 0) {
+            console.error(`No alternative ports found for app ${app.id}`);
+            return;
+          }
+        } catch (error) {
+          if (error instanceof AggregateError) {
+            console.error('All ports failed:', error.errors);
+          } else {
+            console.error('An unexpected error occurred:', error);
+          }
+        }
+      },
+      [selectedBoard?.connectionType],
+    );
+
     //On startup success if called after start/stop actions succeeded.
     const onStartupSuccess = useCallback(
       async (param?: { isStopped: boolean }): Promise<void> => {
@@ -72,6 +128,9 @@ export const useRuntimeLogic: UseRuntimeLogic =
             },
           );
         }
+        if (!param?.isStopped && activeApp) {
+          openUIIfAvailable(activeApp);
+        }
         sendCurrentAction({
           type: 'ACTION_SUCCEEDED',
         });
@@ -82,7 +141,7 @@ export const useRuntimeLogic: UseRuntimeLogic =
           variant: 'success',
         });
       },
-      [activeApp?.id, activeApp?.name, appendData, sendCurrentAction],
+      [activeApp, appendData, sendCurrentAction, openUIIfAvailable],
     );
 
     //On startup success if called after start/stop actions fail.
@@ -120,63 +179,6 @@ export const useRuntimeLogic: UseRuntimeLogic =
       [appendData],
     );
 
-    const selectedBoard = useBoardLifecycleStore(
-      (state) => state.selectedConnectedBoard,
-    );
-
-    const openUIIfAvailable = useCallback(
-      async (app: AppDetailedInfo): Promise<void> => {
-        // Temp. work-around for video streaming in examples via port `4912`,
-        // the port is not currently exposed in app data by orchestrator
-        const requiresVideoStreamPortForward =
-          selectedBoard?.connectionType === 'USB' &&
-          app.bricks?.some((b) => b.id === 'arduino:video_object_detection');
-
-        if (requiresVideoStreamPortForward) {
-          const port = 4912;
-
-          try {
-            await forwardNonUIPort(port);
-          } catch {
-            console.warn(`Could not forward port ${port}`);
-          }
-        }
-
-        try {
-          const allPorts = await findUIPorts(app.id);
-
-          const defaultPort = 7000;
-          const defaultPortFound = allPorts.includes(defaultPort);
-
-          if (defaultPortFound) {
-            try {
-              await openUIWhenReady(defaultPort, 45);
-              return;
-            } catch (error) {
-              console.error(
-                `Failed to open UI for app ${app.id} on default port (${defaultPort}): `,
-                error,
-              );
-            }
-          }
-
-          if (allPorts.length === 0) {
-            console.error(`No alternative ports found for app ${app.id}`);
-            return;
-          }
-
-          await Promise.any(allPorts.map((p) => openUIWhenReady(p, 300)));
-        } catch (error) {
-          if (error instanceof AggregateError) {
-            console.error('All ports failed:', error.errors);
-          } else {
-            console.error('An unexpected error occurred:', error);
-          }
-        }
-      },
-      [selectedBoard?.connectionType],
-    );
-
     const {
       connect: startAppStream,
       abort: startAppAbort,
@@ -199,7 +201,6 @@ export const useRuntimeLogic: UseRuntimeLogic =
           },
         });
         startAppStream(activeApp.id);
-        openUIIfAvailable(activeApp);
       } else {
         onStartupSuccess({ isStopped: true });
         setActiveApp(undefined);
@@ -210,7 +211,6 @@ export const useRuntimeLogic: UseRuntimeLogic =
       activeApp,
       isSwapping,
       onStartupSuccess,
-      openUIIfAvailable,
       sendCurrentAction,
       startAppStream,
     ]);
@@ -281,13 +281,10 @@ export const useRuntimeLogic: UseRuntimeLogic =
             currentAction: Action.Run,
           },
         });
-
-        openUIIfAvailable(app);
       },
       [
         addConsoleSource,
         cleanUp,
-        openUIIfAvailable,
         runningApp,
         sendCurrentAction,
         startAppStream,

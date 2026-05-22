@@ -22,6 +22,8 @@ import {
 } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 
+import { getDefaultFileContent } from '../../utils';
+
 export type FileWithContent = FileNode & {
   id: string;
   content: string;
@@ -193,7 +195,6 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
           if (!appPath || !file.path) {
             throw new Error('No file path provided');
           }
-
           const pendingFileIdsNotSyncd =
             !pendingFileIdWasRemoved &&
             files &&
@@ -246,11 +247,20 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
       })),
     });
 
-    const refreshAppFileContents = (paths?: string[]): void => {
-      const queries = paths
-        ? paths.map((path) => [GET_BATCH_FILE_CONTENT_QUERY_KEY, path])
-        : [GET_BATCH_FILE_CONTENT_QUERY_KEY];
-      queryClient.invalidateQueries(queries);
+    const refreshAppFileContents = (paths: string[] = []): void => {
+      if (paths.length === 0) {
+        // Invalidate all files
+        queryClient.invalidateQueries([GET_BATCH_FILE_CONTENT_QUERY_KEY]);
+        return;
+      }
+
+      paths.forEach((path) => {
+        const queryKey = [
+          GET_BATCH_FILE_CONTENT_QUERY_KEY,
+          appPath + '/' + path,
+        ];
+        queryClient.invalidateQueries({ queryKey });
+      });
     };
 
     const renameAppFile = useCallback(
@@ -368,11 +378,13 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
         fileExtension: string,
         content?: string,
       ) => {
+        const defaultContent = getDefaultFileContent(fileExtension);
+
         const newFile: FileWithContent = {
           id: fileId,
           fullName: `${fileName}.${fileExtension}`,
           name: fileName,
-          content: '',
+          content: content ?? defaultContent,
           path: fileId,
           extension: fileExtension ?? '',
           type: 'file',
@@ -410,7 +422,7 @@ export const useRetrieveBatchArduinoAppFileContents: UseRetrieveBatchArduinoAppF
           return await deleteAppFileMutate(path);
         } catch (error) {
           const err = error as Error;
-          if (err.cause !== 404) {
+          if (err.cause !== 404 && file) {
             setFilesContents((prev) => {
               const items = [
                 ...prev.items.slice(0, fileIndex),

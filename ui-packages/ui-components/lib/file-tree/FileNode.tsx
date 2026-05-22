@@ -83,7 +83,11 @@ const FileNode: React.FC<FileNodeProps> = ({
         />
       )}
 
-      <div className={styles['tree-node-icon']}>
+      <div
+        className={clsx(styles['tree-node-icon'], {
+          [styles['tree-node-icon--file']]: !node.isInternal,
+        })}
+      >
         {renderNodeIcon(node.data)}
       </div>
 

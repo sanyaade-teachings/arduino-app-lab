@@ -176,18 +176,14 @@ export let deleteAppSketchLibrary: OrchestratorService['deleteAppSketchLibrary']
     throw new Error('deleteAppSketchLibrary service not implemented');
   };
 
-export let importApp: OrchestratorService['importApp'] = async function () {
-  throw new Error('importApp service not implemented');
-};
+export let selectAppPathToImport: OrchestratorService['selectAppPathToImport'] =
+  async function () {
+    throw new Error('selectAppPathToImport service not implemented');
+  };
 
 export let importAppFromPath: OrchestratorService['importAppFromPath'] =
   async function () {
     throw new Error('importAppFromPath service not implemented');
-  };
-
-export let importAppFromFile: OrchestratorService['importAppFromFile'] =
-  async function () {
-    throw new Error('importAppFromFile service not implemented');
   };
 
 export let getAIModels: OrchestratorService['getAIModels'] = async function () {
@@ -243,9 +239,8 @@ export const setOrchestratorService = (service: OrchestratorService): void => {
   getAppSketchLibraries = service.getAppSketchLibraries;
   addAppSketchLibrary = service.addAppSketchLibrary;
   deleteAppSketchLibrary = service.deleteAppSketchLibrary;
-  importApp = service.importApp;
+  selectAppPathToImport = service.selectAppPathToImport;
   importAppFromPath = service.importAppFromPath;
-  importAppFromFile = service.importAppFromFile;
   installEIModel = service.installEIModel;
   getAIModels = service.getAIModels;
   deleteAIModel = service.deleteAIModel;

@@ -4,8 +4,8 @@ go 1.26.1
 
 require (
 	github.com/adrg/frontmatter v0.2.0
-	github.com/arduino/arduino-app-cli v0.8.5-0.20260330132937-e2dda18b3830
-	github.com/arduino/arduino-cli v1.4.2-rc.1
+	github.com/arduino/arduino-app-cli v0.11.0-rc.1.0.20260521084642-af3d137da04a
+	github.com/arduino/arduino-cli v1.4.2-rc.1.0.20260414124140-c0d2d070289c
 	github.com/arduino/arduino-flasher-cli v0.5.0-rc.8
 	github.com/arduino/go-paths-helper v1.14.0
 	github.com/arduino/go-updater v0.3.0
@@ -19,7 +19,7 @@ require (
 	github.com/zalando/go-keyring v0.2.6
 	go.bug.st/f v0.5.0
 	go.bug.st/relaxed-semver v0.15.0
-	google.golang.org/grpc v1.79.3
+	google.golang.org/grpc v1.80.0
 )
 
 require (
@@ -29,7 +29,7 @@ require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/ProtonMail/go-crypto v1.3.0 // indirect
+	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/arduino/go-properties-orderedmap v1.8.1 // indirect
 	github.com/arduino/go-serial-utils v0.1.2 // indirect
 	github.com/arduino/go-timeutils v0.0.0-20171220113728-d1dd9e313b1b // indirect
@@ -49,8 +49,8 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.7.0 // indirect
-	github.com/go-git/go-git/v5 v5.16.5 // indirect
+	github.com/go-git/go-billy/v5 v5.8.0 // indirect
+	github.com/go-git/go-git/v5 v5.17.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
@@ -65,8 +65,8 @@ require (
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/juju/errors v1.0.0 // indirect
-	github.com/kevinburke/ssh_config v1.5.0 // indirect
-	github.com/klauspost/compress v1.18.4 // indirect
+	github.com/kevinburke/ssh_config v1.6.0 // indirect
+	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/labstack/echo/v4 v4.13.3 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
@@ -75,12 +75,12 @@ require (
 	github.com/leaanthony/slicer v1.6.0 // indirect
 	github.com/leaanthony/u v1.1.1 // indirect
 	github.com/leonelquinteros/gotext v1.7.2 // indirect
-	github.com/mailru/easyjson v0.9.1 // indirect
-	github.com/marcinbor85/gohex v0.0.0-20210308104911-55fb1c624d84 // indirect
+	github.com/mailru/easyjson v0.9.2 // indirect
+	github.com/marcinbor85/gohex v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.20 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/mattn/go-isatty v0.0.21 // indirect
+	github.com/mattn/go-runewidth v0.0.23 // indirect
+	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
 	github.com/pjbgf/sha1cd v0.5.0 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -108,12 +108,12 @@ require (
 	go.bug.st/downloader/v3 v3.0.0 // indirect
 	go.bug.st/serial v1.6.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/net v0.50.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/term v0.40.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260209200024-4cfbd4190f57 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/term v0.42.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260406210006-6f92a3bedf2d // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

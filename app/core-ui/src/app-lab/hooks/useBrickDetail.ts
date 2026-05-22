@@ -411,9 +411,17 @@ export const useBrickDetailLogic: BrickDetailLogic = (
             logic: configureDialogLogic,
             open: configureDialogOpen,
             setOpen: setConfigureDialogOpen,
+            onOpenExternal: openExternalLink,
           }
         : undefined,
-    [appId, brickInstance, configureDialogLogic, configureDialogOpen, readOnly],
+    [
+      appId,
+      brickInstance,
+      configureDialogLogic,
+      configureDialogOpen,
+      openExternalLink,
+      readOnly,
+    ],
   );
 
   const [trainNewModelDialogOpen, setTrainNewModelDialogOpen] = useState(false);

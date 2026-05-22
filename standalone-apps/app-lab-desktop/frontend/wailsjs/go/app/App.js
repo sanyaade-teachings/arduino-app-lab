@@ -6,6 +6,22 @@ export function ApplyBoardUpdate(arg1, arg2) {
   return window['go']['app']['App']['ApplyBoardUpdate'](arg1, arg2);
 }
 
+export function CarrierDisable(arg1, arg2) {
+  return window['go']['app']['App']['CarrierDisable'](arg1, arg2);
+}
+
+export function CarrierEnable(arg1, arg2, arg3) {
+  return window['go']['app']['App']['CarrierEnable'](arg1, arg2, arg3);
+}
+
+export function CarrierList() {
+  return window['go']['app']['App']['CarrierList']();
+}
+
+export function CarrierShow(arg1) {
+  return window['go']['app']['App']['CarrierShow'](arg1);
+}
+
 export function CheckAndApplyUpdate(arg1) {
   return window['go']['app']['App']['CheckAndApplyUpdate'](arg1);
 }
@@ -162,12 +178,16 @@ export function HandleSecondInstanceLaunch(arg1) {
   return window['go']['app']['App']['HandleSecondInstanceLaunch'](arg1);
 }
 
-export function ImportApp() {
-  return window['go']['app']['App']['ImportApp']();
-}
-
 export function ImportAppFromPath(arg1) {
   return window['go']['app']['App']['ImportAppFromPath'](arg1);
+}
+
+export function ImportFileToAppFromPath(arg1, arg2, arg3) {
+  return window['go']['app']['App']['ImportFileToAppFromPath'](arg1, arg2, arg3);
+}
+
+export function ImportFolderToAppFromPath(arg1, arg2, arg3) {
+  return window['go']['app']['App']['ImportFolderToAppFromPath'](arg1, arg2, arg3);
 }
 
 export function InferOrchestratorURL() {
@@ -226,6 +246,10 @@ export function OpenUIWhenReady(arg1, arg2) {
   return window['go']['app']['App']['OpenUIWhenReady'](arg1, arg2);
 }
 
+export function RebootBoard(arg1) {
+  return window['go']['app']['App']['RebootBoard'](arg1);
+}
+
 export function RemoveFile(arg1) {
   return window['go']['app']['App']['RemoveFile'](arg1);
 }
@@ -238,12 +262,20 @@ export function RenameFolder(arg1, arg2) {
   return window['go']['app']['App']['RenameFolder'](arg1, arg2);
 }
 
-export function SaveTempFile(arg1, arg2) {
-  return window['go']['app']['App']['SaveTempFile'](arg1, arg2);
+export function SelectAppDialog() {
+  return window['go']['app']['App']['SelectAppDialog']();
 }
 
 export function SelectBoard(arg1, arg2) {
   return window['go']['app']['App']['SelectBoard'](arg1, arg2);
+}
+
+export function SelectFilesDialog(arg1) {
+  return window['go']['app']['App']['SelectFilesDialog'](arg1);
+}
+
+export function SelectFolderDialog(arg1) {
+  return window['go']['app']['App']['SelectFolderDialog'](arg1);
 }
 
 export function SetBoardName(arg1) {

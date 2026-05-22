@@ -1,25 +1,51 @@
 .root {
-  width: 80%;
-  height: 80%;
-
   .body,
   .content {
-    width: 100%;
-    height: 100%;
+    box-sizing: border-box;
+    overflow: visible;
   }
 }
 
 .container {
   flex: 1;
   display: flex;
-  overflow: auto;
-  gap: 16px;
+  overflow: visible;
+  gap: 24px;
   flex-direction: column;
+  width: fit-content;
+  max-width: 590px;
+  box-sizing: border-box;
+  padding: 0;
 
   .param-row {
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .field-description {
+    line-height: 1.5;
+    color: white;
+  }
+
+  .link {
+    color: #25c2c7;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover {
+      color: #1fa8ad;
+    }
+  }
+
+  .brick-description {
+    margin-top: 8px;
+    color: #a0a0a0;
+  }
+
+  .input {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .brick-subtitle {

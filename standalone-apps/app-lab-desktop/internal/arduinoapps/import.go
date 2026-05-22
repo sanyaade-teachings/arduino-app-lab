@@ -18,18 +18,6 @@ type ImportAppResponse struct {
 	Name string `json:"name"`
 }
 
-func SaveTempFile(fileName string, data []byte) (string, error) {
-	tempDir := os.TempDir()
-	tempFile := filepath.Join(tempDir, fileName)
-
-	err := os.WriteFile(tempFile, data, 0644)
-	if err != nil {
-		return "", fmt.Errorf("failed to write temp file: %w", err)
-	}
-
-	return tempFile, nil
-}
-
 func uploadAppFile(ctx context.Context, orchestratorURL string, filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -124,7 +112,7 @@ func uploadAppFile(ctx context.Context, orchestratorURL string, filePath string)
 	}
 }
 
-func ImportApp(ctx context.Context, orchestratorURL string) (string, error) {
+func SelectAppDialog(ctx context.Context, orchestratorURL string) (string, error) {
 	filePath, err := runtime.OpenFileDialog(ctx, runtime.OpenDialogOptions{
 		Title: "Select App to Import",
 		Filters: []runtime.FileFilter{
@@ -144,7 +132,7 @@ func ImportApp(ctx context.Context, orchestratorURL string) (string, error) {
 		return "", nil
 	}
 
-	return uploadAppFile(ctx, orchestratorURL, filePath)
+	return filePath, err
 }
 
 func ImportAppFromPath(ctx context.Context, orchestratorURL string, filePath string) (string, error) {

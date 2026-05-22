@@ -29,4 +29,5 @@ export type FileTreeApi = {
     parentNode: NodeApi<TreeNode> | null;
     index: number;
   }) => void;
+  handleResourceImport: (params: { isFolder?: boolean }) => void;
 };

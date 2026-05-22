@@ -1,19 +1,25 @@
 import { Ai as AiIcon } from '@cloud-editor-mono/images/assets/icons';
 
 import { useI18n } from '../../../../../i18n/useI18n';
-import { XXXSmall } from '../../../../../typography';
+import {
+  Badge,
+  BadgeSize,
+  BadgeStyle,
+  BadgeVariant,
+} from '../../../essential/badge';
 import { messages } from '../../messages';
-import styles from './ai-badge.module.scss';
 
 export const AiBadge: React.FC = () => {
   const { formatMessage } = useI18n();
 
   return (
-    <div className={styles['ai-badge']}>
-      <AiIcon />
-      <XXXSmall className={styles['ai-badge-text']}>
-        {formatMessage(messages.aiModelBadge)}
-      </XXXSmall>
-    </div>
+    <Badge
+      style={BadgeStyle.Light}
+      variant={BadgeVariant.Neutral}
+      size={BadgeSize.Small}
+      icon={<AiIcon />}
+    >
+      {formatMessage(messages.aiModelBadge)}
+    </Badge>
   );
 };

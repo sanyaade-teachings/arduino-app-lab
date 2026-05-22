@@ -1,5 +1,7 @@
 import {
   Board,
+  Carrier,
+  CarriersStatus,
   KeyboardLayout,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
@@ -21,4 +23,9 @@ export interface BoardService {
   setNetworkMode(enabled: boolean, password: string): Promise<boolean>;
   getKernelVersion(): Promise<string>;
   getLinuxDistribution(): Promise<string>;
+  getCarriers(): Promise<Carrier[]>;
+  getCarriersStatus(): Promise<CarriersStatus>;
+  enableCarriers(status: CarriersStatus, password: string): Promise<void>;
+  disableCarriers(carriers: Carrier[], password: string): Promise<void>;
+  rebootBoard(password: string): Promise<void>;
 }

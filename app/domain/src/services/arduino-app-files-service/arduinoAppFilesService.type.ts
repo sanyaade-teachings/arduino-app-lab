@@ -1,6 +1,7 @@
 import {
   CodeEditorText,
   FileNode,
+  ImportResourceResult,
   TreeNode,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -24,6 +25,19 @@ export interface ArduinoAppFilesService {
   getAppFileTree(path: string): Promise<TreeNode[]>;
 
   getAppFileContent(path: string): Promise<string>;
+  selectResourcePathToImport: (
+    remoteDir: string,
+    isFolder?: boolean,
+  ) => Promise<string | string[] | null>;
+  importResourceToAppFromPath(
+    remoteDir: string,
+    filePath: string,
+    isFolder?: boolean,
+    newFileName?: string,
+  ): Promise<ImportResourceResult>;
+  importDroppedResourceToApp: (
+    callback: (paths: string[]) => void,
+  ) => () => void;
 }
 
 export interface BaseCodeChange {

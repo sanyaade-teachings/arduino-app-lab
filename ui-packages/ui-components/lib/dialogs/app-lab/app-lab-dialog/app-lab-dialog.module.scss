@@ -6,6 +6,7 @@
   background: var(--surface-bg-baseline, #232b2e);
   color: var(--text-default, #fff);
   z-index: shared.$zIndex5 !important;
+  outline: none !important;
 
   &-header {
     display: flex;

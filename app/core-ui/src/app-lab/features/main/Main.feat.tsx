@@ -2,6 +2,8 @@ import {
   AppLabWelcomeDialog,
   BoardUpdateDialog,
   FlashBoardDialog,
+  NetworkSettingsDialog,
+  OfflineWarningDialog,
   SidePanel,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import { Outlet } from '@tanstack/react-router';
@@ -18,6 +20,8 @@ const AppLabMain: React.FC = () => {
     boardUpdateDialogLogic,
     flashBoardDialogLogic,
     appLabWelcomeDialogLogic,
+    offlineWarningDialogLogic,
+    networkSettingsDialogLogic,
     boardsProps,
     boardIsFlashing,
     showRoutes,
@@ -31,6 +35,8 @@ const AppLabMain: React.FC = () => {
       <BoardUpdateDialog logic={boardUpdateDialogLogic} />
       <FlashBoardDialog logic={flashBoardDialogLogic} />
       <AppLabWelcomeDialog logic={appLabWelcomeDialogLogic} />
+      <OfflineWarningDialog logic={offlineWarningDialogLogic} />
+      <NetworkSettingsDialog logic={networkSettingsDialogLogic} />
       {showRoutes ? (
         <>
           <div className={styles['container']}>

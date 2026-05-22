@@ -9,6 +9,7 @@ import {
   AppLabWelcomeDialogLogic,
   BoardUpdateDialogLogic,
   FlashBoardDialogLogic,
+  OfflineWarningDialogLogic,
   SidePanelItemId,
   SidePanelItemInterface,
   sidePanelItems,
@@ -42,9 +43,6 @@ import { UpdaterContext } from '../../providers/updater/updaterContext';
 import { useBoardLifecycleStore } from '../../store/boardLifecycle';
 import { useSystemPropsStore } from '../../store/systemProps';
 import { UseMainLogic } from './main.type';
-
-export const DIALOG_SKIPPED_KEY = 'arduino:app-lab:skipped-image-warning';
-export type DialogSkippedStore = { [key: string]: boolean };
 
 const FLASHER_TOOL_URL = 'https://www.arduino.cc/en/software/#flasher-tool';
 const ARDUINO_SUPPORT_URL = 'https://www.arduino.cc/en/contact-us/';
@@ -338,6 +336,138 @@ export const useMainLogic: UseMainLogic =
       [],
     );
 
+    const useNetworkSettingsDialogLogic = () => {
+      const [open, setOpen] = useState(false);
+      const networkContext = useContext(NetworkContext);
+
+      useEffect(() => {
+        networkContext.setManualNetworkSetup(false);
+        networkContext.setSelectedNetwork(undefined);
+        networkContext.setScanningIsEnabled(open);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [open]);
+
+      useEffect(() => {
+        if (networkContext.connectRequestIsSuccess) {
+          setOpen(false);
+        }
+      }, [networkContext.connectRequestIsSuccess]);
+
+      return {
+        ...networkContext,
+        open,
+        onOpenChange: setOpen,
+      };
+    };
+
+    const useOfflineWarningDialogLogic = (
+      openNetworkSettings: () => void,
+    ): OfflineWarningDialogLogic => {
+      const [open, setOpen] = useState(false);
+      const [wasClosedByUser, setWasClosedByUser] = useState(false);
+      const { networkStatusChecked, isConnected, isScanning, isConnecting } =
+        useContext(NetworkContext);
+      const {
+        setupCompleted,
+        networkStepSkipped,
+        setOfflineWarningOpen,
+        offlineWarningOpen,
+      } = useContext(SetupContext);
+      const { boardIsReachable } = useBoardLifecycleStore(
+        useShallow((state) => ({
+          boardIsReachable: state.boardIsReachable,
+        })),
+      );
+
+      // Check if user has already made a choice about offline warning (reset on app restart if not connected)
+      const [offlineWarningChoiceMade, setOfflineWarningChoiceMade] =
+        useState(offlineWarningOpen);
+
+      // Show dialog when there's a connected board, network is determined to be offline, and no scanning/connection operations
+      useEffect(() => {
+        const isNetworkOperationInProgress = isScanning || isConnecting;
+
+        // Don't show modal if any blocking condition is met
+        if (!setupCompleted || networkStepSkipped || offlineWarningChoiceMade) {
+          setOpen(false);
+          return;
+        }
+
+        if (
+          boardIsReachable &&
+          networkStatusChecked &&
+          !isConnected &&
+          !isNetworkOperationInProgress &&
+          !wasClosedByUser
+        ) {
+          const timeoutId = setTimeout(() => {
+            setOpen(true);
+            setOfflineWarningOpen(true);
+          }, 10000); // Wait 10 seconds for WiFi automatic connection
+
+          return () => clearTimeout(timeoutId);
+        } else if (isConnected) {
+          setOpen(false);
+          setWasClosedByUser(false);
+          setOfflineWarningOpen(false);
+        } else if (!boardIsReachable || isNetworkOperationInProgress) {
+          setOpen(false);
+          setWasClosedByUser(false);
+          setOfflineWarningOpen(false);
+          setOfflineWarningChoiceMade(false);
+        }
+      }, [
+        boardIsReachable,
+        networkStatusChecked,
+        isConnected,
+        isScanning,
+        isConnecting,
+        wasClosedByUser,
+        setOfflineWarningOpen,
+      ]);
+
+      const onContinue = useCallback(() => {
+        setOpen(false);
+        setWasClosedByUser(true);
+        setOfflineWarningOpen(false);
+        setOfflineWarningChoiceMade(true);
+      }, [setOfflineWarningOpen]);
+
+      const onNetworkSettings = useCallback(() => {
+        setOpen(false);
+        setWasClosedByUser(true);
+        setOfflineWarningOpen(false);
+        setOfflineWarningChoiceMade(true);
+        openNetworkSettings();
+      }, [setOfflineWarningOpen, openNetworkSettings]);
+
+      const handleOnOpenChange = useCallback(
+        (isOpen: boolean) => {
+          // If user is closing the modal (not opening it), save their choice
+          if (!isOpen && open) {
+            setOfflineWarningChoiceMade(true);
+            setWasClosedByUser(true);
+            setOfflineWarningOpen(false);
+          }
+          setOpen(isOpen);
+        },
+        [open, setOfflineWarningOpen],
+      );
+
+      return {
+        open,
+        onOpenChange: handleOnOpenChange,
+        onContinue,
+        onNetworkSettings,
+      };
+    };
+
+    const networkSettingsDialogLogic = useNetworkSettingsDialogLogic();
+
+    const offlineWarningDialogLogic = useOfflineWarningDialogLogic(() =>
+      networkSettingsDialogLogic.onOpenChange(true),
+    );
+
     const boardsProps = useBoards();
 
     // get app params to undestand if we are in details or not
@@ -389,6 +519,8 @@ export const useMainLogic: UseMainLogic =
       boardUpdateDialogLogic,
       flashBoardDialogLogic,
       appLabWelcomeDialogLogic,
+      offlineWarningDialogLogic,
+      networkSettingsDialogLogic,
       boardsProps,
       boardIsFlashing,
       showRoutes,

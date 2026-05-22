@@ -16,4 +16,36 @@ export const messages = defineMessages({
     defaultMessage: 'Date Modified',
     description: 'Label for the date column of the file tree',
   },
+  createFile: {
+    id: 'fileTree.createFile',
+    defaultMessage: 'Create file',
+    description: 'Context menu item for creating a new file in the file tree',
+  },
+  createFolder: {
+    id: 'fileTree.createFolder',
+    defaultMessage: 'Create new folder',
+    description: 'Context menu item for creating a new folder in the file tree',
+  },
+  importFile: {
+    id: 'fileTree.importFile',
+    defaultMessage: 'Import File',
+    description: 'Context menu item for importing a file in the file tree',
+  },
+  importFolder: {
+    id: 'fileTree.importFolder',
+    defaultMessage: 'Import Folder',
+    description: 'Context menu item for importing a folder in the file tree',
+  },
+  rename: {
+    id: 'fileTree.rename',
+    defaultMessage: 'Rename',
+    description:
+      'Context menu item for renaming a file or folder in the file tree',
+  },
+  delete: {
+    id: 'fileTree.delete',
+    defaultMessage: 'Delete',
+    description:
+      'Context menu item for deleting a file or folder in the file tree',
+  },
 });

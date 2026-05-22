@@ -69,3 +69,7 @@ func (c *noopConnection) Forward(context.Context, int, int) error {
 func (c *noopConnection) ForwardKillAll(context.Context) error {
 	return ErrNoConn
 }
+
+func (c *noopConnection) Push(context.Context, string, string) error {
+	return ErrNoConn
+}

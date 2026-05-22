@@ -8,6 +8,7 @@ import {
 import {
   AddSketchLibraryDialogLogic,
   ConfigureAppBrickDialogLogic,
+  ImportResourceLogic,
 } from '../../../dialogs';
 import {
   DuplicateFileDialogLogic,
@@ -77,6 +78,8 @@ export type AppLabEditSectionLogic = () => {
   multipleConsolePanelLogic: MultipleConsolePanelLogic;
   onDuplicateConflict?: (params: OnDuplicateConflictParams) => void;
   duplicateFileDialogLogic?: DuplicateFileDialogLogic;
+  importFileDialogLogic: ImportResourceLogic;
+  openImportFileDialog: (params: { path?: string; isFolder?: boolean }) => void;
 };
 
 export type FilesManagerSectionLogic = () => {
@@ -130,4 +133,6 @@ export type FilesManagerSectionLogic = () => {
   appLabEditorPanelLogic: AppLabEditorPanelLogic;
   onDuplicateConflict?: (params: OnDuplicateConflictParams) => void;
   duplicateFileDialogLogic?: DuplicateFileDialogLogic;
+  importFileDialogLogic: ImportResourceLogic;
+  openImportFileDialog: (params: { path?: string; isFolder?: boolean }) => void;
 };

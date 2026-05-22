@@ -127,7 +127,7 @@ export const addAppBrickDialogMessages = defineMessages({
 export const configureAppBrickDialogMessages = defineMessages({
   dialogTitle: {
     id: 'configureAppBrick.title',
-    defaultMessage: 'Configure',
+    defaultMessage: 'Action required',
     description: 'Title of configure app brick dialog',
   },
   dialogBodyDescription: {
@@ -141,14 +141,41 @@ export const configureAppBrickDialogMessages = defineMessages({
     defaultMessage: 'Compatible AI Models',
     description: 'Subtitle message shown in the configure app brick dialog',
   },
-  cancelButton: {
-    id: 'configureAppBrick.cancelButton',
-    defaultMessage: 'Cancel',
-    description: 'Text for cancel button in configure app brick dialog',
+  deviceIdLabel: {
+    id: 'configureAppBrick.deviceIdLabel',
+    defaultMessage: 'Arduino Cloud Device ID',
+    description: 'Label for the device ID input field',
+  },
+  deviceIdDescription: {
+    id: 'configureAppBrick.deviceIdDescription',
+    defaultMessage:
+      'Unique identifier assigned to your physical Arduino board. You receive it during the device provisioning/setup process in the Cloud web interface.',
+    description: 'Description for the device ID field',
+  },
+  deviceIdLink: {
+    id: 'configureAppBrick.deviceIdLink',
+    defaultMessage: 'Setup your Board',
+    description: 'Link text for device setup instructions',
+  },
+  secretLabel: {
+    id: 'configureAppBrick.secretLabel',
+    defaultMessage: 'Arduino Cloud Secret',
+    description: 'Label for the secret input field',
+  },
+  secretDescription: {
+    id: 'configureAppBrick.secretDescription',
+    defaultMessage:
+      'A crucial security credential used to authenticate Arduino boards with the Arduino Cloud.',
+    description: 'Description for the secret field',
+  },
+  secretLink: {
+    id: 'configureAppBrick.secretLink',
+    defaultMessage: 'Follow these instructions',
+    description: 'Link text for secret setup instructions',
   },
   confirmButton: {
     id: 'configureAppBrick.confirmButton',
-    defaultMessage: 'Save',
+    defaultMessage: 'Save configuration',
     description: 'Text for confirm button in configure app brick dialog',
   },
   trainNewModelButton: {
@@ -496,77 +523,158 @@ export const exportAppDialogMessages = defineMessages({
   },
 });
 
-export const importAppDialogMessages = defineMessages({
-  title: {
-    id: 'app-lab.import-app-dialog.title',
+export const importResourceDialogMessages = defineMessages({
+  titleApp: {
+    id: 'app-lab.import-resource-dialog.title-app',
     defaultMessage: 'Import an App',
     description: 'Title of the import app dialog',
   },
-  uploadTitle: {
-    id: 'app-lab.import-app-dialog.upload-title',
+  titleFile: {
+    id: 'app-lab.import-resource-dialog.title-file',
+    defaultMessage: 'Import a File',
+    description: 'Title of the import file dialog',
+  },
+  titleFolder: {
+    id: 'app-lab.import-resource-dialog.title-folder',
+    defaultMessage: 'Import a Folder',
+    description: 'Title of the import folder dialog',
+  },
+  uploadTitleApp: {
+    id: 'app-lab.import-resource-dialog.upload-title-app',
     defaultMessage: 'Upload local App files',
     description: 'Title for the upload section',
   },
-  uploadDescriptionLine1: {
-    id: 'app-lab.import-app-dialog.upload-description-line1',
-    defaultMessage: 'Import an App Lab project.',
+  uploadTitleFile: {
+    id: 'app-lab.import-resource-dialog.upload-title-file',
+    defaultMessage: 'Import files to your app',
+    description: 'Title for the upload section',
+  },
+  uploadTitleFolder: {
+    id: 'app-lab.import-resource-dialog.upload-title-folder',
+    defaultMessage: 'Import folders to your app',
+    description: 'Title for the upload section',
+  },
+  uploadDescriptionApp: {
+    id: 'app-lab.import-resource-dialog.upload-description-app',
+    defaultMessage:
+      'Import an App Lab project. The app will be added to your workspace with its files, Bricks, and libraries.',
     description: 'First line of import description',
   },
-  uploadDescriptionLine2: {
-    id: 'app-lab.import-app-dialog.upload-description-line2',
+  uploadDescriptionFile: {
+    id: 'app-lab.import-resource-dialog.upload-description-file',
     defaultMessage:
-      'The app will be added to your workspace with its files, Bricks, and libraries.',
-    description: 'Second line of import description',
+      'Upload files from your computer to use in this app. This is useful for assets, documentation, or generated files. A file with the same name already exists. It will be replaced.',
+    description: 'Description shown in the import file dialog',
   },
-  dragDrop: {
-    id: 'app-lab.import-app-dialog.drag-drop',
+  uploadDescriptionFolder: {
+    id: 'app-lab.import-resource-dialog.upload-description-folder',
+    defaultMessage:
+      'Upload folders from your computer to use in this app. This is useful for assets, documentation, or generated folders. A folder with the same name already exists. It will be replaced.',
+    description: 'Description shown in the import folder dialog',
+  },
+  dragDropApp: {
+    id: 'app-lab.import-resource-dialog.drag-drop-app',
+    defaultMessage: 'Drag & drop your app here',
+    description: 'Text for drag and drop area',
+  },
+  dragDropFile: {
+    id: 'app-lab.import-resource-dialog.drag-drop-file',
     defaultMessage: 'Drag & drop your file here',
     description: 'Text for drag and drop area',
   },
+  dragDropFolder: {
+    id: 'app-lab.import-resource-dialog.drag-drop-folder',
+    defaultMessage: 'Drag & drop your folder here',
+    description: 'Text for drag and drop area',
+  },
   or: {
-    id: 'app-lab.import-app-dialog.or',
+    id: 'app-lab.import-resource-dialog.or',
     defaultMessage: 'or',
     description: 'Text between drag drop and button',
   },
   importFromComputer: {
-    id: 'app-lab.import-app-dialog.import-from-computer',
+    id: 'app-lab.import-resource-dialog.import-from-computer',
     defaultMessage: 'Import from computer',
     description: 'Button text to open file picker',
   },
   supportZip: {
-    id: 'app-lab.import-app-dialog.support-zip',
+    id: 'app-lab.import-resource-dialog.support-zip',
     defaultMessage: 'Only .zip files supported',
     description: 'Text indicating supported file types',
   },
+  supportAnyFile: {
+    id: 'app-lab.import-resource-dialog.support-any-file',
+    defaultMessage: 'Any file type is supported',
+    description:
+      'Text indicating supported file types in the import file dialog',
+  },
+  supportAnyFolder: {
+    id: 'app-lab.import-resource-dialog.support-any-folder',
+    defaultMessage: 'Select only folder type',
+    description:
+      'Text indicating supported folder types in the import folder dialog',
+  },
   uploadingFile: {
-    id: 'app-lab.import-app-dialog.uploading-file',
+    id: 'app-lab.import-resource-dialog.uploading-file',
     defaultMessage: 'Uploading file',
     description: 'Text shown during upload',
   },
+  uploadingFolder: {
+    id: 'app-lab.import-resource-dialog.uploading-folder',
+    defaultMessage: 'Uploading folder',
+    description: 'Text shown during upload',
+  },
   processTakesTime: {
-    id: 'app-lab.import-app-dialog.process-takes-time',
+    id: 'app-lab.import-resource-dialog.process-takes-time',
     defaultMessage: 'just few seconds...',
     description: 'Text shown during upload process',
   },
-  uploadFailed: {
-    id: 'app-lab.import-app-dialog.upload-failed',
+  uploadFailedApp: {
+    id: 'app-lab.import-resource-dialog.upload-failed-app',
     defaultMessage: 'This App is invalid',
-    description: 'Title shown when upload fails',
+    description: 'Title shown when upload fails for an app',
   },
-  uploadFailedDescription: {
-    id: 'app-lab.import-app-dialog.upload-failed-description',
+  uploadFailedFile: {
+    id: 'app-lab.import-resource-dialog.upload-failed-file',
+    defaultMessage: 'Upload failed',
+    description: 'Title shown when upload fails for a file',
+  },
+  uploadFailedFolder: {
+    id: 'app-lab.import-resource-dialog.upload-failed-folder',
+    defaultMessage: 'Upload failed',
+    description: 'Title shown when upload fails for a folder',
+  },
+  uploadFailedDescriptionApp: {
+    id: 'app-lab.import-resource-dialog.upload-failed-description-app',
     defaultMessage: 'This app is broken or misconfigured.',
-    description: 'Description shown when upload fails',
+    description: 'Description shown when upload fails for an app',
+  },
+  uploadFailedDescriptionFile: {
+    id: 'app-lab.import-resource-dialog.upload-failed-description-file',
+    defaultMessage:
+      'We couldn’t upload the file. Check the file and try again.',
+    description: 'Description shown when upload fails for a file',
+  },
+  uploadFailedDescriptionFolder: {
+    id: 'app-lab.import-resource-dialog.upload-failed-description-folder',
+    defaultMessage:
+      'We couldn’t upload the folder. Check the folder and try again.',
+    description: 'Description shown when upload fails for a folder',
   },
   errorLabel: {
-    id: 'app-lab.import-app-dialog.error-label',
+    id: 'app-lab.import-resource-dialog.error-label',
     defaultMessage: 'Error:',
     description: 'Label for error details',
   },
   goToMyApp: {
-    id: 'app-lab.import-app-dialog.go-to-my-app',
+    id: 'app-lab.import-resource-dialog.go-to-my-app',
     defaultMessage: 'Go back to Apps',
     description: 'Button text to close error dialog',
+  },
+  retry: {
+    id: 'app-lab.import-resource-dialog.retry',
+    defaultMessage: 'Retry',
+    description: 'Button text to retry upload after failure',
   },
 });
 
@@ -826,6 +934,65 @@ export const disableNetworkModeDialogMessages = defineMessages({
   },
 });
 
+export const offlineWarningDialogMessages = defineMessages({
+  dialogTitle: {
+    id: 'offlineWarningDialog.title',
+    defaultMessage: 'Network Connection',
+    description: 'Title of the offline warning dialog',
+  },
+  dialogBodyTitle: {
+    id: 'offlineWarningDialog.bodyTitle',
+    defaultMessage: 'No internet connection detected',
+    description: 'Main title shown in the offline warning dialog',
+  },
+  dialogBodyDescription: {
+    id: 'offlineWarningDialog.bodyDescription',
+    defaultMessage:
+      "App Lab will still run, but some features won't be available:",
+    description: 'Description shown in the offline warning dialog',
+  },
+  dialogBodyFooter: {
+    id: 'offlineWarningDialog.bodyFooter',
+    defaultMessage: 'You can connect to network now or continue offline.',
+    description: 'Footer message shown in the offline warning dialog',
+  },
+  feature1: {
+    id: 'offlineWarningDialog.feature1',
+    defaultMessage: 'Updates and downloads',
+    description: 'First unavailable feature',
+  },
+  feature2: {
+    id: 'offlineWarningDialog.feature2',
+    defaultMessage: 'AI models Import',
+    description: 'Second unavailable feature',
+  },
+  feature3: {
+    id: 'offlineWarningDialog.feature3',
+    defaultMessage: 'Sketch libraries',
+    description: 'Third unavailable feature',
+  },
+  feature4: {
+    id: 'offlineWarningDialog.feature4',
+    defaultMessage: 'Apps or Examples that requires internet connection',
+    description: 'Fourth unavailable feature',
+  },
+  feature5: {
+    id: 'offlineWarningDialog.feature5',
+    defaultMessage: 'Open External links (only in SBC mode)',
+    description: 'Fifth unavailable feature',
+  },
+  continueButton: {
+    id: 'offlineWarningDialog.continueButton',
+    defaultMessage: 'Continue Offline',
+    description: 'Button to continue using the app offline',
+  },
+  networkSettingsButton: {
+    id: 'offlineWarningDialog.networkSettingsButton',
+    defaultMessage: 'Connect Wi-Fi',
+    description: 'Button to open network settings',
+  },
+});
+
 export const duplicateFileDialogMessages = defineMessages({
   fileConflictTitle: {
     id: 'duplicateFileDialog.fileConflictTitle',
@@ -861,8 +1028,7 @@ export const duplicateFileDialogMessages = defineMessages({
   },
   fileBodyDescription: {
     id: 'duplicateFileDialog.fileBodyDescription',
-    defaultMessage:
-      'Do you want to overwrite the existing file or keep both?',
+    defaultMessage: 'Do you want to overwrite the existing file or keep both?',
     description: 'Description shown when a file conflict is detected',
   },
   folderBodyDescription: {
@@ -925,5 +1091,67 @@ export const duplicateFileDialogMessages = defineMessages({
     id: 'duplicateFileDialog.keepBothButton',
     defaultMessage: 'Keep both',
     description: 'Label for the keep both button',
+  },
+});
+
+export const attachCarrierDialogMessages = defineMessages({
+  dialogTitle: {
+    id: 'attachMediaCarrierDialog.title',
+    defaultMessage: 'Attach carrier board',
+    description: 'Title of the attach carrier board dialog',
+  },
+  dialogBodyTitle: {
+    id: 'attachMediaCarrierDialog.bodyTitle',
+    defaultMessage: 'Hey, before you continue...',
+    description: 'Message shown in the attach media carrier board dialog',
+  },
+  dialogBodyDescription1: {
+    id: 'attachMediaCarrierDialog.bodyDescription1',
+    defaultMessage:
+      'To avoid issues, connect the carrier <bold>while the board is powered off.</bold>',
+    description: 'Description shown in the attach media carrier board dialog',
+  },
+  dialogBodyDescription2: {
+    id: 'attachMediaCarrierDialog.bodyDescription2',
+    defaultMessage:
+      'If it’s not connected, unplug the board, attach the carrier, then come back here.',
+    description: 'Description shown in the attach media carrier board dialog',
+  },
+  rememberButton: {
+    id: 'attachMediaCarrierDialog.rememberButton',
+    defaultMessage: 'Do not show it again',
+    description:
+      'Label for the remember button in the attach media carrier board dialog',
+  },
+  confirmButton: {
+    id: 'attachMediaCarrierDialog.confirmButton',
+    defaultMessage: 'Ok, Got it',
+    description:
+      'Label for the confirm button in the attach media carrier board dialog',
+  },
+});
+
+export const unsupportedCarrierDialogMessages = defineMessages({
+  dialogTitle: {
+    id: 'unsupportedCarrierDialog.title',
+    defaultMessage: 'Attention needed',
+    description: 'Title of the unsupported carrier board dialog',
+  },
+  dialogBodyTitle: {
+    id: 'unsupportedCarrierDialog.bodyTitle',
+    defaultMessage: 'Update required',
+    description: 'Message shown in the unsupported carrier board dialog',
+  },
+  dialogBodyDescription: {
+    id: 'unsupportedCarrierDialog.bodyDescription',
+    defaultMessage:
+      'This system version doesn’t support the Media Carrier. Update your board to continue.',
+    description: 'Description shown in the unsupported carrier board dialog',
+  },
+  confirmButton: {
+    id: 'unsupportedCarrierDialog.confirmButton',
+    defaultMessage: 'Update Board',
+    description:
+      'Label for the confirm button in the unsupported carrier board dialog',
   },
 });

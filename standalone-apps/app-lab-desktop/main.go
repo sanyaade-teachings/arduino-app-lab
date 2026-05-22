@@ -5,6 +5,7 @@ import (
 	"app-lab-desktop/internal/learn"
 	"embed"
 	"fmt"
+	"os"
 	"runtime"
 
 	"github.com/wailsapp/wails/v2"
@@ -21,6 +22,12 @@ var (
 )
 
 func main() {
+
+	if runtime.GOOS == "linux" {
+		// prevent WebKitGTK DMA-BUF renderer issue which cause black square on Linux
+		_ = os.Setenv("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
+	}
+
 	learnSvc := learn.New()
 
 	app := app.New(version, learnSvc)
@@ -56,6 +63,9 @@ func main() {
 			OnUrlOpen:  app.OnUrlOpen,
 		},
 		SingleInstanceLock: getInstanceLockOptions(app),
+		DragAndDrop: &options.DragAndDrop{
+			EnableFileDrop: true,
+		},
 	})
 
 	if err != nil {

@@ -1,6 +1,5 @@
 /* eslint-disable no-empty */
 import { assertNonNull, Config } from '@cloud-editor-mono/common';
-import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app/app-list/importAppDialog.type';
 import {
   applyBoardUpdateWailsFallback,
   checkBoardUpdateWailsFallback,
@@ -54,15 +53,15 @@ import {
   upsertSystemPropertyV1Request,
   WebSocketHandlers,
 } from '@cloud-editor-mono/infrastructure';
+import { ImportResourceResult } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 import {
   ExportApp,
   GetFileContent,
   GetFileTree,
   GetOrchestratorURL,
-  ImportApp,
   ImportAppFromPath,
-  SaveTempFile,
+  SelectAppDialog,
 } from '../../wailsjs/go/app/App';
 import { mapFSNode } from './orchestratorService.mapper';
 
@@ -418,8 +417,8 @@ export const exportApp = async (
   return result !== '';
 };
 
-export const importApp = async (): Promise<ImportAppResult | null> => {
-  const response = await ImportApp();
+export const importApp = async (): Promise<ImportResourceResult | null> => {
+  const response = await SelectAppDialog();
 
   if (!response) {
     return null;
@@ -437,9 +436,20 @@ export const importApp = async (): Promise<ImportAppResult | null> => {
   };
 };
 
+export const selectAppPathToImport: OrchestratorService['selectAppPathToImport'] =
+  async function () {
+    try {
+      const result = await SelectAppDialog();
+      return result && result.length > 0 ? result : null;
+    } catch (error) {
+      console.error('Error opening dialog:', error);
+      return null;
+    }
+  };
+
 export const importAppFromPath = async (
   filePath: string,
-): Promise<ImportAppResult> => {
+): Promise<ImportResourceResult> => {
   const response = await ImportAppFromPath(filePath);
 
   const parsed = JSON.parse(response);
@@ -452,17 +462,6 @@ export const importAppFromPath = async (
     id: appId,
     name: appDetail.name,
   };
-};
-
-export const importAppFromFile = async (
-  file: File,
-): Promise<ImportAppResult> => {
-  const arrayBuffer = await file.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
-
-  const tempFilePath = await SaveTempFile(file.name, Array.from(uint8Array));
-
-  return importAppFromPath(tempFilePath);
 };
 
 export const getAIModels: OrchestratorService['getAIModels'] =

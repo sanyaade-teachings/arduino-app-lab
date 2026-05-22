@@ -23,7 +23,6 @@ import { useTerminal } from '../../hooks/useTerminal';
 import { BoardResourcesContext } from '../../providers/board-resources/boardResourcesContext';
 import { NetworkContext } from '../../providers/network/networkContext';
 import { RuntimeContext } from '../../providers/runtime/runtimeContext';
-import { SetupContext } from '../../providers/setup/setupContext';
 import { useBoardLifecycleStore } from '../../store/boardLifecycle';
 import { messages } from './messages';
 
@@ -166,9 +165,6 @@ export const createUseFooterBarLogic = function (
       });
     }, [boardIsReachable, selectedBoard?.address, formatMessage]);
 
-    const { setSetupCompleted, setNetworkStepSkipped } =
-      useContext(SetupContext);
-
     useEffect(() => {
       if (boardIsReachable) {
         setSystemResources((prev) => {
@@ -182,24 +178,21 @@ export const createUseFooterBarLogic = function (
                 navigate({
                   to: '/settings',
                   hash: 'network',
+                  search: { openNetworkDialog: false },
                 });
               } else {
-                setSetupCompleted(false);
-                setNetworkStepSkipped(false);
+                navigate({
+                  to: '/settings',
+                  hash: 'network',
+                  search: { openNetworkDialog: true },
+                });
               }
             },
           };
           return newItems;
         });
       }
-    }, [
-      boardIsReachable,
-      isConnected,
-      connectingName,
-      navigate,
-      setSetupCompleted,
-      setNetworkStepSkipped,
-    ]);
+    }, [boardIsReachable, isConnected, connectingName, navigate]);
 
     const onOpenApp = (app: AppDetailedInfo): void => {
       navigate({

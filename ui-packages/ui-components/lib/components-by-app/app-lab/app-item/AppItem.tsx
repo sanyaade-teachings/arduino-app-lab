@@ -40,6 +40,8 @@ const AppItem: React.FC<AppItemProps> = (props: AppItemProps) => {
     onExport,
     onSetAsDefault,
     onDelete,
+    onMenuOpen,
+    isAnimating,
   } = props;
 
   const { formatMessage } = useI18n();
@@ -47,6 +49,14 @@ const AppItem: React.FC<AppItemProps> = (props: AppItemProps) => {
     onRename || onDuplicate || onExport || onSetAsDefault || onDelete;
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
+
+  const handleMenuOpen = React.useCallback(
+    (isOpen: boolean) => {
+      setMenuOpen(isOpen);
+      onMenuOpen?.(isOpen);
+    },
+    [onMenuOpen],
+  );
 
   const isDefault = defaultApp?.id === props.id;
 
@@ -91,7 +101,7 @@ const AppItem: React.FC<AppItemProps> = (props: AppItemProps) => {
     <ContextMenu.Root>
       <ContextMenu.Trigger
         className={styles['context-menu-trigger']}
-        disabled={!hasActions}
+        disabled={!hasActions && !isAnimating}
       >
         <div
           className={styles['container']}
@@ -139,7 +149,7 @@ const AppItem: React.FC<AppItemProps> = (props: AppItemProps) => {
                     {formatMessage(appItemMessages.appRunning)}
                   </div>
                 )}
-                {hasActions && isHovered && (
+                {hasActions && isHovered && !isAnimating && (
                   <div
                     role="presentation"
                     onClick={(e): void => {
@@ -288,7 +298,7 @@ const AppItem: React.FC<AppItemProps> = (props: AppItemProps) => {
                         dropdownMenuList: styles['dropdownMenuList'],
                       }}
                       onAction={(key): void => handleAction(key as AppAction)}
-                      onOpen={setMenuOpen}
+                      onOpen={handleMenuOpen}
                       buttonChildren={<ThreeDots width={14} height={14} />}
                       //this prop enables automatic positioning to prevent menu overflow and clipping
                       useStaticPosition={false}

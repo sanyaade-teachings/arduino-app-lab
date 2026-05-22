@@ -1,6 +1,7 @@
 import {
   FileNode,
   FolderNode,
+  ImportResourceResult,
   TreeNode,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
@@ -432,5 +433,98 @@ export const MockArduinoAppFilesService: ArduinoAppFilesService = {
 
     parent.children.push(newFolder);
     parent.modifiedAt = getNowIso();
+  },
+
+  async importResourceToAppFromPath(
+    remoteDir: string,
+    filePath: string,
+    isFolder?: boolean,
+    customName?: string,
+  ): Promise<ImportResourceResult> {
+    const originalName =
+      filePath.split(/[/\\]/).pop() ||
+      (isFolder ? 'imported_folder' : 'imported_file.txt');
+    const finalName = customName || originalName;
+
+    const relativeTargetDir = stripAppRoot(remoteDir);
+    const targetRelativePath = relativeTargetDir
+      ? `${relativeTargetDir}/${finalName}`
+      : finalName;
+    const targetFullPath = `${APP_ROOT}/${targetRelativePath}`;
+
+    const parent = findFolderNode(mockRoot, relativeTargetDir);
+    if (!parent) {
+      console.warn('[MockArduinoAppFilesService] parent folder not found', {
+        remoteDir,
+      });
+      return { id: targetFullPath, name: finalName };
+    }
+
+    if (isFolder) {
+      const newNode: FolderNode = {
+        name: finalName,
+        path: targetRelativePath,
+        type: 'folder',
+        createdAt: getNowIso(),
+        modifiedAt: getNowIso(),
+        children: [],
+      };
+      parent.children.push(newNode);
+    } else {
+      const ext = finalName.includes('.')
+        ? `.${finalName.split('.').pop()}`
+        : '';
+      const newNode: FileNode = {
+        name: finalName,
+        path: targetRelativePath,
+        type: 'file',
+        extension: ext,
+        mimeType: 'text/plain',
+        size: 2048,
+        createdAt: getNowIso(),
+        modifiedAt: getNowIso(),
+      };
+      parent.children.push(newNode);
+      fileContents.set(
+        targetFullPath,
+        `Mock content imported from path: ${filePath}`,
+      );
+    }
+
+    parent.modifiedAt = getNowIso();
+    return { id: targetFullPath, name: finalName };
+  },
+
+  importDroppedResourceToApp: function (
+    callback: (paths: string[]) => void,
+  ): () => void {
+    const timer = setTimeout(() => {
+      callback([
+        '/Users/mock/Desktop/MockFile1.txt',
+        '/Users/mock/Desktop/README.md',
+      ]);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  },
+
+  async selectResourcePathToImport(
+    _remoteDir,
+    isFolder = false,
+  ): Promise<string[] | null> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (isFolder) {
+          resolve(['/Users/mock/Desktop/MyImportedFolder']);
+        } else {
+          resolve([
+            '/Users/mock/Desktop/MockFile1.txt',
+            '/Users/mock/Desktop/MockFile2.csv',
+          ]);
+        }
+      }, 300);
+    });
   },
 };

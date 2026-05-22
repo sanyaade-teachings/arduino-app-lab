@@ -1,7 +1,7 @@
 import { getCSSVariable, setCSSVariable } from '@cloud-editor-mono/common';
+import * as ContextMenu from '@radix-ui/react-context-menu';
 import clsx from 'clsx';
-import { ReactElement, useEffect, useMemo, useRef } from 'react';
-import { Item, Section } from 'react-stately';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { KeywordMap } from '../code-mirror';
 import {
@@ -9,11 +9,6 @@ import {
   viewInstances,
 } from '../code-mirror/codeMirrorViewInstances';
 import { FileExt } from '../code-mirror/extensions/language/setup';
-import ContextMenu from '../context-menu/ContextMenu';
-import {
-  ContextMenuItemIds,
-  ContextMenuItemType,
-} from '../context-menu/contextMenu.type';
 import { contextMenuSections } from '../context-menu/contextMenuSpec';
 import { useI18n } from '../i18n/useI18n';
 import { Skeleton } from '../skeleton';
@@ -101,19 +96,8 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
     return gutter && { ...gutter, fontSize };
   }, [fontSize, gutter]);
 
-  const {
-    clickPosition,
-    containerRef,
-    menuRef,
-    menuProps,
-    clickHandlers,
-    disabledKeys,
-    state,
-  } = useContextMenu(
-    viewInstances[ViewInstances.Editor].instance,
-    setCode,
-    code,
-  );
+  const { containerRef, clickHandlers, disabledKeys, setIsOpen } =
+    useContextMenu(viewInstances[ViewInstances.Editor].instance, setCode, code);
 
   const { formatMessage } = useI18n();
 
@@ -128,56 +112,66 @@ const CodeEditor: React.FC<CodeEditorProps> = (props: CodeEditorProps) => {
       ref={containerRef}
       className={clsx(styles['code-editor'], classes?.container)}
     >
-      <CodeEditorElement
-        viewInstanceId={ViewInstances.Editor}
-        valueInstanceIds={codeInstanceIds}
-        getValueInstanceId={getCodeInstanceId}
-        getValue={getCode}
-        getExt={getCodeExt}
-        getCodeLastInjectionLine={getCodeLastInjectionLine}
-        getFileId={getFileId}
-        onChange={setCode}
-        // ** if the two below are not sorted highlighting will not work
-        // ** given we rely on codemirror "ranges"
-        errorLines={sortedErrorLines}
-        highlightLines={sortedHighlightLines}
-        keywords={keywords}
-        keywordsExt={FileExt.Ino}
-        onReceiveViewInstance={onReceiveViewInstance}
-        readOnly={readOnly}
-        gutter={gutterWithFontSize}
-        hasHeader={hasHeader}
-        useScrollPastEnd={useScrollPastEnd}
-        classes={{ container: styles['code-editor-element'] }}
-      />
-      {state.isOpen && !readOnly ? (
-        <div ref={menuRef}>
-          <ContextMenu
-            {...menuProps}
-            clickPosX={clickPosition?.clickPosX}
-            clickPosY={clickPosition?.clickPosY}
-            onAction={(key): void => clickHandlers[key as ContextMenuItemIds]()}
-            disabledKeys={disabledKeys}
-          >
-            {contextMenuSections.map((section) => (
-              <Section key={section.name} items={section.items}>
-                {(item: ContextMenuItemType): ReactElement => {
-                  const label =
-                    typeof item.label === 'string'
-                      ? item.label
-                      : formatMessage(item.label);
-                  return (
-                    <Item key={item.id} textValue={label}>
-                      {label}
-                      <kbd>{item.shortcut}</kbd>
-                    </Item>
-                  );
-                }}
-              </Section>
-            ))}
-          </ContextMenu>
-        </div>
-      ) : null}
+      <ContextMenu.Root onOpenChange={setIsOpen}>
+        <ContextMenu.Trigger asChild disabled={readOnly}>
+          <div className={styles['context-menu-trigger']}>
+            <CodeEditorElement
+              viewInstanceId={ViewInstances.Editor}
+              valueInstanceIds={codeInstanceIds}
+              getValueInstanceId={getCodeInstanceId}
+              getValue={getCode}
+              getExt={getCodeExt}
+              getCodeLastInjectionLine={getCodeLastInjectionLine}
+              getFileId={getFileId}
+              onChange={setCode}
+              // ** if the two below are not sorted highlighting will not work
+              // ** given we rely on codemirror "ranges"
+              errorLines={sortedErrorLines}
+              highlightLines={sortedHighlightLines}
+              keywords={keywords}
+              keywordsExt={FileExt.Ino}
+              onReceiveViewInstance={onReceiveViewInstance}
+              readOnly={readOnly}
+              gutter={gutterWithFontSize}
+              hasHeader={hasHeader}
+              useScrollPastEnd={useScrollPastEnd}
+              classes={{ container: styles['code-editor-element'] }}
+            />
+          </div>
+        </ContextMenu.Trigger>
+        {!readOnly ? (
+          <ContextMenu.Portal>
+            <ContextMenu.Content className={styles['context-menu']}>
+              {contextMenuSections.map((section, sectionIndex) => (
+                <ContextMenu.Group key={section.name}>
+                  {sectionIndex > 0 && (
+                    <ContextMenu.Separator
+                      className={styles['context-menu-separator']}
+                    />
+                  )}
+                  {section.items.map((item) => {
+                    const label =
+                      typeof item.label === 'string'
+                        ? item.label
+                        : formatMessage(item.label);
+                    return (
+                      <ContextMenu.Item
+                        key={item.id}
+                        className={styles['context-menu-item']}
+                        disabled={disabledKeys.includes(item.id)}
+                        onSelect={(): void => clickHandlers[item.id]()}
+                      >
+                        {label}
+                        <kbd>{item.shortcut}</kbd>
+                      </ContextMenu.Item>
+                    );
+                  })}
+                </ContextMenu.Group>
+              ))}
+            </ContextMenu.Content>
+          </ContextMenu.Portal>
+        ) : null}
+      </ContextMenu.Root>
       {showReadOnlyBanner && readOnlyBannerContents && (
         <div className={styles['code-editor-banner']} ref={readOnlyBannerRef}>
           {readOnlyBannerContents}

@@ -1,5 +1,6 @@
 @use "../../toolbar.module.scss";
 @use "../../../../public/shared.module.scss";
+@use "../../../typography/typography.module.scss";
 
 .container {
     position: relative;
@@ -34,7 +35,8 @@
     background-color: rgba(218, 91, 74, 1);
     color: #fff;
     font-size: 12px;
-    font-weight: bold;
+    font-family: typography.$roboto-mono-font-family;
+    font-weight: 500;
     padding: 8px;
     z-index: shared.$zIndex1;
 }

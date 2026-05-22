@@ -79,6 +79,28 @@ export let getLinuxDistribution: BoardService['getLinuxDistribution'] =
     throw new Error('getLinuxDistribution service not implemented');
   };
 
+export let getCarriers: BoardService['getCarriers'] = async function () {
+  throw new Error('getCarriers service not implemented');
+};
+
+export let getCarriersStatus: BoardService['getCarriersStatus'] =
+  async function () {
+    throw new Error('getCarriersStatus service not implemented');
+  };
+
+export let enableCarriers: BoardService['enableCarriers'] = async function () {
+  throw new Error('enableCarriers service not implemented');
+};
+
+export let disableCarriers: BoardService['disableCarriers'] =
+  async function () {
+    throw new Error('disableCarriers service not implemented');
+  };
+
+export let rebootBoard: BoardService['rebootBoard'] = async function () {
+  throw new Error('rebootBoard service not implemented');
+};
+
 export const setBoardService = (service: BoardService): void => {
   isBoard = service.isBoard;
   getBoards = service.getBoards;
@@ -97,4 +119,9 @@ export const setBoardService = (service: BoardService): void => {
   setNetworkMode = service.setNetworkMode;
   getKernelVersion = service.getKernelVersion;
   getLinuxDistribution = service.getLinuxDistribution;
+  getCarriers = service.getCarriers;
+  getCarriersStatus = service.getCarriersStatus;
+  enableCarriers = service.enableCarriers;
+  disableCarriers = service.disableCarriers;
+  rebootBoard = service.rebootBoard;
 };

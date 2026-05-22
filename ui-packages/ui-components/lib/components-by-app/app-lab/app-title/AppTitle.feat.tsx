@@ -28,6 +28,7 @@ import { Input, InputStyle } from '../../../essential/input';
 import { useI18n } from '../../../i18n/useI18n';
 import { XSmall, XXSmall, XXXSmall } from '../../../typography';
 import { EmojiPicker } from '../emoji-picker';
+import { Badge, BadgeStyle, BadgeVariant } from '../essential/badge';
 import { useTooltip } from '../essential/tooltip';
 import styles from './app-title.module.scss';
 import { AppAction, AppTitleLogic } from './AppTitle.type';
@@ -294,9 +295,13 @@ const AppTitle: React.FC<AppTitleProps> = (props: AppTitleProps) => {
         />
       )}
       {app?.default && (
-        <div className={styles['default-badge']}>
-          <XXSmall>{formatMessage(appTitleMessages.appDefault)}</XXSmall>
-        </div>
+        <Badge
+          style={BadgeStyle.Light}
+          variant={BadgeVariant.Neutral}
+          classes={{ container: styles['default-badge'] }}
+        >
+          {formatMessage(appTitleMessages.appDefault)}
+        </Badge>
       )}
     </div>
   );

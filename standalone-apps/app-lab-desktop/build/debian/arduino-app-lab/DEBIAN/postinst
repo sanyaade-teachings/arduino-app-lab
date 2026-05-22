@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# TODO: xdg-mime default ArduinoAppLab.desktop x-scheme-handler/arduino-app-lab
+update-desktop-database

@@ -139,7 +139,10 @@ export const Select = forwardRef(
               dropdownMenuPopover: styles['dropdown-menu-popover'],
             }}
             useStaticPosition={false}
-            onAction={onChange}
+            onAction={(key): void => {
+              setOpen(false);
+              onChange(key);
+            }}
             buttonChildren={
               <CaretDown
                 className={clsx(

@@ -12,6 +12,22 @@ const tabMenuItems: TabMenuItemDictionary = {
     id: TabMenuItemIds.Close,
     label: commandMessages[TabMenuItemIds.Close],
   },
+  [TabMenuItemIds.CloseOthers]: {
+    id: TabMenuItemIds.CloseOthers,
+    label: commandMessages[TabMenuItemIds.CloseOthers],
+  },
+  [TabMenuItemIds.CloseToTheLeft]: {
+    id: TabMenuItemIds.CloseToTheLeft,
+    label: commandMessages[TabMenuItemIds.CloseToTheLeft],
+  },
+  [TabMenuItemIds.CloseToTheRight]: {
+    id: TabMenuItemIds.CloseToTheRight,
+    label: commandMessages[TabMenuItemIds.CloseToTheRight],
+  },
+  [TabMenuItemIds.CloseAll]: {
+    id: TabMenuItemIds.CloseAll,
+    label: commandMessages[TabMenuItemIds.CloseAll],
+  },
   [TabMenuItemIds.RenameFile]: {
     id: TabMenuItemIds.RenameFile,
     label: commandMessages[TabMenuItemIds.RenameFile],
@@ -51,11 +67,17 @@ const newTabMenuItems: NewTabMenuItemDictionary = {
 export const tabMenuSections: TabMenuSection[] = [
   {
     name: 'First Group',
-    items: [tabMenuItems.Close, tabMenuItems.RenameFile],
+    items: [
+      tabMenuItems.Close,
+      tabMenuItems.CloseOthers,
+      tabMenuItems.CloseToTheLeft,
+      tabMenuItems.CloseToTheRight,
+      tabMenuItems.CloseAll,
+    ],
   },
   {
     name: 'Second Group',
-    items: [tabMenuItems.DeleteFile],
+    items: [tabMenuItems.RenameFile, tabMenuItems.DeleteFile],
   },
 ];
 

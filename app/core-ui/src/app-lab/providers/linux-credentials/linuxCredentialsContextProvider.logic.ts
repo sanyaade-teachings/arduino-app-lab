@@ -5,6 +5,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useReducer } from 'react';
 
+import { useBoards } from '../../hooks/useBoards';
 import { useBoardLifecycleStore } from '../../store/boardLifecycle';
 import { LinuxCredentialsContextValue } from './linuxCredentialsContext';
 
@@ -60,6 +61,10 @@ function setUserPasswordReducer(
 
 export function useLinuxCredentials(): LinuxCredentialsContextValue {
   const queryClient = useQueryClient();
+
+  const boardsProps = useBoards();
+  const isVentunoQ =
+    boardsProps.selectedBoard?.fqbn === 'arduino:zephyr:ventunoq';
 
   const boardIsReachable = useBoardLifecycleStore(
     (state) => state.boardIsReachable,
@@ -119,6 +124,7 @@ export function useLinuxCredentials(): LinuxCredentialsContextValue {
   );
 
   return {
+    isVentunoQ,
     userPasswordChecked,
     userPasswordIsSet: userPasswordIsSet ?? false,
     setUserPassword: handleSetUserPassword,

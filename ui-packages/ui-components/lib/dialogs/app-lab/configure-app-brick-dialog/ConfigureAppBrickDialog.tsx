@@ -8,12 +8,16 @@ import { useEffect, useState } from 'react';
 
 import { Button, ButtonVariant } from '../../../components-by-app/app-lab';
 import { Input } from '../../../essential/input';
-import { InputStyle } from '../../../essential/input/input.type';
+import { InputStyle } from '../../../essential/input';
 import { useI18n } from '../../../i18n/useI18n';
-import { XXSmall, XXXSmall } from '../../../typography';
+import { XSmall, XXXSmall } from '../../../typography';
 import { AppLabDialog } from '../app-lab-dialog/AppLabDialog';
 import { configureAppBrickDialogMessages as messages } from '../messages';
 import styles from './configure-app-brick-dialog.module.scss';
+
+const SETUP_BOARD_URL = 'https://app.arduino.cc/devices/new?type=unoq';
+const FOLLOW_INSTRUCTIONS_URL =
+  'https://docs.arduino.cc/arduino-cloud/features/manual-device/';
 
 export type ConfigureAppBrickDialogLogic = (params: {
   appId: string;
@@ -31,6 +35,7 @@ type ConfigureAppBrickDialogProps = {
   isCustomBrick?: boolean;
   setOpen: (open: boolean) => void;
   logic: ConfigureAppBrickDialogLogic;
+  onOpenExternal: (url: string) => void;
 };
 
 interface BrickVariable extends Omit<BrickConfigVariable, 'value'> {
@@ -45,6 +50,7 @@ export const ConfigureAppBrickDialog: React.FC<
   appId,
   brickId,
   logic,
+  onOpenExternal,
 }: ConfigureAppBrickDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [variables, setVariables] = useState<BrickVariable[]>([]);
@@ -54,13 +60,15 @@ export const ConfigureAppBrickDialog: React.FC<
   const { formatMessage } = useI18n();
 
   useEffect(() => {
-    setVariables(
-      (brickInstance?.config_variables ?? []).map((config) => ({
-        ...config,
-        value: config.value ?? '',
-      })),
-    );
-  }, [brickInstance?.config_variables]);
+    if (open && brickInstance?.config_variables) {
+      setVariables(
+        brickInstance.config_variables.map((config) => ({
+          ...config,
+          value: config.value ?? '',
+        })),
+      );
+    }
+  }, [open, brickInstance?.config_variables]);
 
   const handleConfirm = async (): Promise<void> => {
     if (!brickId) return;
@@ -88,34 +96,21 @@ export const ConfigureAppBrickDialog: React.FC<
       title={formatMessage(messages.dialogTitle)}
       onSubmit={handleConfirm}
       footer={
-        <>
-          <Button
-            variant={ButtonVariant.Secondary}
-            onClick={(): void => setOpen(false)}
-            uppercase={false}
-            classes={{
-              button: styles['action-button'],
-              textButtonText: styles['action-button-text'],
-            }}
-          >
-            {formatMessage(messages.cancelButton)}
-          </Button>
-          <Button
-            variant={ButtonVariant.Primary}
-            uppercase={false}
-            loading={loading}
-            disabled={variables.some(
-              (variable) => variable.required && !variable.value.trim().length,
-            )}
-            type="submit"
-            classes={{
-              button: styles['action-button'],
-              textButtonText: styles['action-button-text'],
-            }}
-          >
-            {formatMessage(messages.confirmButton)}
-          </Button>
-        </>
+        <Button
+          variant={ButtonVariant.Primary}
+          uppercase={false}
+          loading={loading}
+          disabled={variables.some(
+            (variable) => variable.required && !variable.value.trim().length,
+          )}
+          type="submit"
+          classes={{
+            button: styles['action-button'],
+            textButtonText: styles['action-button-text'],
+          }}
+        >
+          {formatMessage(messages.confirmButton)}
+        </Button>
       }
       classes={{
         root: styles['root'],
@@ -124,33 +119,76 @@ export const ConfigureAppBrickDialog: React.FC<
       }}
     >
       <div className={styles['container']}>
-        {variables.map((variable, index) => (
-          <div key={variable.name} className={styles['param-row']}>
-            <Input
-              inputStyle={InputStyle.AppLab}
-              type="text"
-              value={variable.value}
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck="false"
-              /* eslint-disable-next-line jsx-a11y/no-autofocus */
-              autoFocus={index === 0}
-              onChange={(value: string): void =>
-                setVariables((prev) =>
-                  prev.map((v) =>
-                    v.name === variable.name ? { ...v, value } : v,
-                  ),
-                )
-              }
-              label={variable.name?.split('_').map(capitalize).join(' ')}
-              required={variable.required}
-              classes={{
-                input: styles['input'],
-              }}
-            />
-            <XXSmall>{variable.description}</XXSmall>
-          </div>
-        ))}
+        {variables.map((variable, index) => {
+          const isDeviceId = variable.name === 'arduino_device_id';
+          const isSecret = variable.name === 'arduino_secret';
+
+          return (
+            <div key={variable.name} className={styles['param-row']}>
+              <Input
+                inputStyle={InputStyle.AppLab}
+                type="text"
+                value={variable.value}
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck="false"
+                /* eslint-disable-next-line jsx-a11y/no-autofocus */
+                autoFocus={index === 0}
+                onChange={(value: string): void =>
+                  setVariables((prev) =>
+                    prev.map((v) =>
+                      v.name === variable.name ? { ...v, value } : v,
+                    ),
+                  )
+                }
+                label={
+                  isDeviceId
+                    ? formatMessage(messages.deviceIdLabel)
+                    : isSecret
+                    ? formatMessage(messages.secretLabel)
+                    : variable.name?.split('_').map(capitalize).join(' ')
+                }
+                required={variable.required}
+                classes={{
+                  input: styles['input'],
+                }}
+              />
+              <XSmall className={styles['field-description']}>
+                {isDeviceId ? (
+                  <>
+                    {formatMessage(messages.deviceIdDescription)}{' '}
+                    <a
+                      href={SETUP_BOARD_URL}
+                      onClick={(e): void => {
+                        e.preventDefault();
+                        onOpenExternal(SETUP_BOARD_URL);
+                      }}
+                      className={styles['link']}
+                    >
+                      {formatMessage(messages.deviceIdLink)}
+                    </a>
+                  </>
+                ) : isSecret ? (
+                  <>
+                    {formatMessage(messages.secretDescription)}{' '}
+                    <a
+                      href={FOLLOW_INSTRUCTIONS_URL}
+                      onClick={(e): void => {
+                        e.preventDefault();
+                        onOpenExternal(FOLLOW_INSTRUCTIONS_URL);
+                      }}
+                      className={styles['link']}
+                    >
+                      {formatMessage(messages.secretLink)}
+                    </a>
+                  </>
+                ) : (
+                  variable.description
+                )}
+              </XSmall>
+            </div>
+          );
+        })}
         {variables.length !== 0 && (
           <XXXSmall className={styles['brick-description']}>
             {formatMessage(messages.dialogBodyDescription)}

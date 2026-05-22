@@ -8,6 +8,26 @@ export const commandMessages = defineMessages<keyof typeof TabMenuItemIds>({
     defaultMessage: 'Close',
     description: 'Close',
   },
+  [TabMenuItemIds.CloseOthers]: {
+    id: 'tabMenu.closeOthers',
+    defaultMessage: 'Close Others',
+    description: 'Close Others',
+  },
+  [TabMenuItemIds.CloseToTheLeft]: {
+    id: 'tabMenu.closeToTheLeft',
+    defaultMessage: 'Close to the Left',
+    description: 'Close to the Left',
+  },
+  [TabMenuItemIds.CloseToTheRight]: {
+    id: 'tabMenu.closeToTheRight',
+    defaultMessage: 'Close to the Right',
+    description: 'Close to the Right',
+  },
+  [TabMenuItemIds.CloseAll]: {
+    id: 'tabMenu.closeAll',
+    defaultMessage: 'Close All',
+    description: 'Close All',
+  },
   [TabMenuItemIds.RenameFile]: {
     id: 'tabMenu.rename',
     defaultMessage: 'Rename',

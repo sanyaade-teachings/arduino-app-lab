@@ -57,6 +57,7 @@ export type InputProps = BasicInputProps & {
   styles?: {
     inputError?: React.CSSProperties;
   };
+  inputRef?: React.Ref<HTMLInputElement>;
 };
 
 // eslint-disable-next-line react/display-name
@@ -97,8 +98,25 @@ export const Input = forwardRef(
       inputStyle = InputStyle.CloudEditor,
       classes,
       styles: _styles,
+      inputRef: externalInputRef,
       ...other
     } = props;
+
+    const setInputRef = useCallback(
+      (node: HTMLInputElement | null) => {
+        (inputRef as React.MutableRefObject<HTMLInputElement | null>).current =
+          node;
+
+        if (typeof externalInputRef === 'function') {
+          externalInputRef(node);
+        } else if (externalInputRef) {
+          (
+            externalInputRef as React.MutableRefObject<HTMLInputElement | null>
+          ).current = node;
+        }
+      },
+      [externalInputRef],
+    );
 
     const resizeInputContent = useCallback(
       (v = '') => {
@@ -218,7 +236,7 @@ export const Input = forwardRef(
             />
           ) : (
             <BasicInput
-              ref={inputRef}
+              ref={setInputRef}
               value={value}
               onBlur={onInputBlur}
               onFocus={onInputFocus}

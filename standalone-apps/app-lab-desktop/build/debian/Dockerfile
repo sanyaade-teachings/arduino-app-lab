@@ -50,6 +50,7 @@ RUN apt-get update && apt-get install -y sed
 
 COPY ./standalone-apps/app-lab-desktop/build/debian/${DEB_NAME} /${DEB_NAME}/
 COPY --from=go /app/standalone-apps/app-lab-desktop/build/bin/${BINARY_NAME} /${DEB_NAME}/usr/bin/${BINARY_NAME}
+COPY --from=go /app/standalone-apps/app-lab-desktop/internal/app/ArduinoAppLab.desktop /${DEB_NAME}/usr/share/applications/ArduinoAppLab.desktop
 
 # # Go application are tagged with `v` prefix, this remove the first v if present
 RUN export VERSION=$(echo "${VERSION}" | sed -e "s/^v\(.*\)/\1/") && \
@@ -57,7 +58,9 @@ RUN export VERSION=$(echo "${VERSION}" | sed -e "s/^v\(.*\)/\1/") && \
   sed -i "s/\$VERSION/${VERSION}/" /${DEB_NAME}/DEBIAN/control && \
   sed -i "s/\$VERSION/${VERSION}/" /${DEB_NAME}/usr/share/applications/ArduinoAppLab.desktop && \
   sed -i "s/\$BINARY_PATH/\/usr\/bin\/${BINARY_NAME}/" /${DEB_NAME}/usr/share/applications/ArduinoAppLab.desktop && \
-  sed -i "s/\$BINARY_PATH/\/usr\/bin\/${BINARY_NAME}/" /${DEB_NAME}/etc/xdg/autostart/ArduinoAppLab.desktop && \
+  sed -i "s/\$WM_CLASS/${BINARY_NAME}/" /${DEB_NAME}/usr/share/applications/ArduinoAppLab.desktop && \
+  sed -i "s/\$ICON/arduino-app-lab/" /${DEB_NAME}/usr/share/applications/ArduinoAppLab.desktop && \
+  cp /${DEB_NAME}/usr/share/applications/ArduinoAppLab.desktop /${DEB_NAME}/etc/xdg/autostart/ArduinoAppLab.desktop && \
   dpkg-deb --build --root-owner-group /${DEB_NAME} && \
   mv /${DEB_NAME}.deb "/${DEB_NAME}_${VERSION}-${REVISION}_${ARCH}.deb"
 

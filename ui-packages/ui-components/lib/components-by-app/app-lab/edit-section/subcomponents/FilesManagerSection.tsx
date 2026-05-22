@@ -5,6 +5,8 @@ import {
   FileAdd as FileAddIcon,
   FolderAdd as FolderAddIcon,
   Sidebar as SidebarIcon,
+  UploadFolder,
+  UploadLight,
 } from '@cloud-editor-mono/images/assets/icons';
 import {
   AddAppBrickDialog,
@@ -20,6 +22,7 @@ import {
   FileTreeApi,
   FolderNode,
   IconButton,
+  ImportResourceDialog,
   LibraryItem,
   useI18n,
   XXSmall,
@@ -79,6 +82,8 @@ export const FilesManagerSection = ({
     appLabEditorPanelLogic,
     onDuplicateConflict,
     duplicateFileDialogLogic,
+    importFileDialogLogic,
+    openImportFileDialog,
   } = logic();
   const { openFiles } = appLabEditorPanelLogic();
 
@@ -130,9 +135,10 @@ export const FilesManagerSection = ({
       <DeleteAppBrickDialog logic={deleteAppBrickDialogLogic} />
       <AddSketchLibraryDialog logic={addSketchLibraryDialogLogic} />
       <CustomBrickDialog logic={renameAppBrickDialogLogic} />
+      <ImportResourceDialog logic={importFileDialogLogic} />
 
       <div
-        className={clsx(styles['split-item-left'], {
+        className={clsx(styles['sidebar'], {
           [styles['collapsed']]: isCollapsed,
         })}
       >
@@ -171,7 +177,7 @@ export const FilesManagerSection = ({
           <DropdownMenuButton
             sections={[
               {
-                name: 'File actions',
+                name: 'Create Actions',
                 items: [
                   {
                     id: 'create-file',
@@ -182,6 +188,21 @@ export const FilesManagerSection = ({
                     id: 'create-folder',
                     label: 'Create new folder',
                     labelPrefix: <FolderAddIcon />,
+                  },
+                ],
+              },
+              {
+                name: 'Import  Actions',
+                items: [
+                  {
+                    id: 'import-file',
+                    label: 'Import file',
+                    labelPrefix: <UploadLight />,
+                  },
+                  {
+                    id: 'import-folder',
+                    label: 'Import folder',
+                    labelPrefix: <UploadFolder />,
                   },
                 ],
               },
@@ -210,7 +231,11 @@ export const FilesManagerSection = ({
             onAction={(key): void => {
               key === 'create-file'
                 ? fileTreeRef.current?.handleFileCreate()
-                : fileTreeRef.current?.handleFolderCreate();
+                : key === 'create-folder'
+                ? fileTreeRef.current?.handleFolderCreate()
+                : fileTreeRef.current?.handleResourceImport({
+                    isFolder: key === 'import-folder',
+                  });
             }}
             onOpen={(isOpen): void => {
               if (isCollapsed && isOpen) {
@@ -377,6 +402,7 @@ export const FilesManagerSection = ({
                       onFileDelete={deleteFileHandler}
                       onFileMove={moveFileHandler}
                       onFolderCreate={addFolderHandler}
+                      onResourceImport={openImportFileDialog}
                       isReadOnly={section !== 'my-apps'}
                       isBricksSelected={selectedFile?.fileExtension === 'brick'}
                       renderNodeIcon={renderIcon}

@@ -60,6 +60,11 @@
     position: relative;
     overflow: hidden;
 
+    // Remove overflow when dropdown menu is open to allow menu to escape
+    &.menu-open {
+      overflow: visible;
+    }
+
     &::before {
       content: '';
       position: absolute;
@@ -73,6 +78,7 @@
       animation: ripple 3s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
       pointer-events: none;
       z-index: 1;
+      overflow: hidden;
     }
   }
 }

@@ -1,6 +1,14 @@
 import { BoardService } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
+import {
+  Carrier,
+  CarriersStatus,
+} from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 import {
+  CarrierDisable,
+  CarrierEnable,
+  CarrierList,
+  CarrierShow,
   DisableNetworkMode,
   EnableNetworkMode,
   GetBoardList,
@@ -15,12 +23,17 @@ import {
   ListKeyboardLayouts,
   NeedsImageUpdate,
   OpenBoardTerminal,
+  RebootBoard,
   SelectBoard,
   SetBoardName,
   SetKeyboardLayout,
   SetUserPassword,
 } from '../../wailsjs/go/app/App';
-import { mapGetBoards } from './boardService.mapper';
+import {
+  mapCarrier,
+  mapCarriersStatus,
+  mapGetBoards,
+} from './boardService.mapper';
 import { filterBoards } from './boardService.utils';
 
 export const isBoard: BoardService['isBoard'] = async function () {
@@ -181,3 +194,67 @@ export const getLinuxDistribution: BoardService['getLinuxDistribution'] =
     }
     return '';
   };
+
+export const getCarriers: BoardService['getCarriers'] = async function () {
+  try {
+    const result = await CarrierList();
+    return result.map(mapCarrier);
+  } catch (e) {
+    throw new Error(`${e}`);
+  }
+};
+
+export const getCarriersStatus: BoardService['getCarriersStatus'] =
+  async function () {
+    try {
+      const result = await CarrierShow('');
+      return mapCarriersStatus(result);
+    } catch (e) {
+      throw new Error(`${e}`);
+    }
+  };
+
+export const enableCarriers: BoardService['enableCarriers'] = async function (
+  status: CarriersStatus,
+  password: string,
+) {
+  try {
+    await Promise.all(
+      status.carriers.map((carrier) =>
+        CarrierEnable(
+          password,
+          carrier.carrierName,
+          carrier.next.map((it) => ({
+            Device: it.device,
+            Option: it.option,
+          })),
+        ),
+      ),
+    );
+  } catch (e) {
+    throw new Error(`${e}`);
+  }
+};
+
+export const disableCarriers: BoardService['disableCarriers'] = async function (
+  carriers: Carrier[],
+  password: string,
+) {
+  try {
+    await Promise.all(
+      carriers.map((carrier) => CarrierDisable(password, carrier.name)),
+    );
+  } catch (e) {
+    throw new Error(`${e}`);
+  }
+};
+
+export const rebootBoard: BoardService['rebootBoard'] = async function (
+  password: string,
+) {
+  try {
+    await RebootBoard(password);
+  } catch (e) {
+    throw new Error(`${e}`);
+  }
+};

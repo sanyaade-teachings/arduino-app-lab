@@ -1,5 +1,7 @@
 import {
   Board,
+  Carrier,
+  CarriersStatus,
   KeyboardLayout,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
@@ -132,6 +134,42 @@ export const MockBoardService: BoardService = {
 
   async getLinuxDistribution(): Promise<string> {
     return linuxDistribution;
+  },
+
+  async getCarriers(): Promise<Carrier[]> {
+    return [];
+  },
+
+  async getCarriersStatus(): Promise<CarriersStatus> {
+    return {
+      carriers: [
+        {
+          carrierName: '',
+          current: [],
+          currentEnabled: false,
+          next: [],
+          nextEnabled: false,
+        },
+      ],
+    };
+  },
+
+  async enableCarriers(
+    _status: CarriersStatus,
+    _password: string,
+  ): Promise<void> {
+    return Promise.resolve();
+  },
+
+  async disableCarriers(
+    _carriers: Carrier[],
+    _password: string,
+  ): Promise<void> {
+    return Promise.resolve();
+  },
+
+  async rebootBoard(_password: string): Promise<void> {
+    return Promise.resolve();
   },
 };
 
