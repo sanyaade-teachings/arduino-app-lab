@@ -10,6 +10,10 @@ import {
 } from '@cloud-editor-mono/images/assets/icons';
 import { AIModelItem } from '@cloud-editor-mono/infrastructure';
 import {
+  Badge,
+  BadgeSize,
+  BadgeStyle,
+  BadgeVariant,
   Button,
   ButtonSize,
   ButtonVariant,
@@ -97,10 +101,12 @@ export const AiModel: React.FC<AiModelProps> = (props: AiModelProps) => {
       ? "Models can't be changed in examples"
       : 'Download the model to enable',
     direction: 'right',
-    timeout: 200,
+    timeout: 0,
   });
   const showTooltip =
-    readOnly || (!model.isBuiltIn && !selectedImpulse?.isInstalled);
+    hideEdgeImpulse ||
+    readOnly ||
+    (!model.isBuiltIn && !selectedImpulse?.isInstalled);
 
   return (
     <div
@@ -125,14 +131,24 @@ export const AiModel: React.FC<AiModelProps> = (props: AiModelProps) => {
         <div className={styles['ai-model-card-header']}>
           <XSmall className={styles['ai-model-name']}>{model.name}</XSmall>
           {isModelInUse && (
-            <div className={styles['ai-model-in-use']}>
+            <Badge
+              size={BadgeSize.Small}
+              style={BadgeStyle.Solid}
+              variant={BadgeVariant.Positive}
+              classes={{ container: styles['ai-model-in-use'] }}
+            >
               {formatMessage(messages.aiModelInUse)}
-            </div>
+            </Badge>
           )}
           {isModelInUse && !!impulseInUse && (
-            <div className={styles['ai-impulse-in-use']}>
+            <Badge
+              size={BadgeSize.Small}
+              style={BadgeStyle.Light}
+              variant={BadgeVariant.Neutral}
+              classes={{ container: styles['ai-impulse-in-use'] }}
+            >
               {impulseInUse.name}
-            </div>
+            </Badge>
           )}
           {model.edgeImpulseProps && (
             <DropdownMenuButton

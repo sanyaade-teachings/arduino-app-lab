@@ -72,6 +72,158 @@ export namespace board {
 
 }
 
+export namespace carrier {
+	
+	export class DeviceResult {
+	    name: string;
+	    device_type: string;
+	    available_devices: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new DeviceResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.device_type = source["device_type"];
+	        this.available_devices = source["available_devices"];
+	    }
+	}
+	export class Carrier {
+	    name: string;
+	    devices: DeviceResult[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Carrier(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.devices = this.convertValues(source["devices"], DeviceResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	export class EnableDeviceConfig {
+	    Device: string;
+	    Option: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new EnableDeviceConfig(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Device = source["Device"];
+	        this.Option = source["Option"];
+	    }
+	}
+	export class StatusDeviceResult {
+	    device: string;
+	    option: string;
+	    device_type: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new StatusDeviceResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.device = source["device"];
+	        this.option = source["option"];
+	        this.device_type = source["device_type"];
+	    }
+	}
+	export class ShowCarrierResult {
+	    carrier_name: string;
+	    current_enabled: boolean;
+	    next_enabled: boolean;
+	    current: StatusDeviceResult[];
+	    next: StatusDeviceResult[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ShowCarrierResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.carrier_name = source["carrier_name"];
+	        this.current_enabled = source["current_enabled"];
+	        this.next_enabled = source["next_enabled"];
+	        this.current = this.convertValues(source["current"], StatusDeviceResult);
+	        this.next = this.convertValues(source["next"], StatusDeviceResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ShowResult {
+	    carriers: ShowCarrierResult[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ShowResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.carriers = this.convertValues(source["carriers"], ShowCarrierResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace flasher {
 	
 	export class OSImageRelease {

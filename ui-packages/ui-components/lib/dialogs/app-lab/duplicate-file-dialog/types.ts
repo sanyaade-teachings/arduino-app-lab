@@ -10,6 +10,8 @@ export interface OnDuplicateConflictParams {
   sourcePath: string;
   targetPath: string;
   conflictType: ConflictType;
+  isExternalImport?: boolean;
+  file?: File;
 }
 
 export interface DuplicateFileDialogState {
@@ -18,6 +20,7 @@ export interface DuplicateFileDialogState {
   sourcePath?: string;
   targetPath?: string;
   conflictType: ConflictType;
+  isExternalImport?: boolean;
 }
 
 export type DuplicateFileDialogLogic = () => {

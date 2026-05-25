@@ -8,9 +8,11 @@ import {
   openFileExternal,
   openLinkExternal,
   renameAppCustomBrick as renameAppCustomBrickRequest,
+  selectResourcePathToImport,
   updateAppBrick as updateAppBrickRequest,
   updateAppDetail,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
+import { importResourceToAppFromPath } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import {
   AppDetailedInfo,
   BrickCreateUpdateRequest,
@@ -21,7 +23,6 @@ import {
   AppLabEditorPanelLogic,
   AppLabEditSectionLogic,
   AppsSection,
-  FileNode,
   isFileNode,
   isFolderNode,
   TreeNode,
@@ -29,7 +30,6 @@ import {
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 import {
   DuplicateFileDialogLogic,
-  DuplicateFileDialogState,
   OnDuplicateConflictParams,
 } from '@cloud-editor-mono/ui-components/lib/dialogs/app-lab/duplicate-file-dialog/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -42,10 +42,12 @@ import { useFiles } from '../../../../common/hooks/files';
 import { useKeywords } from '../../../../common/hooks/keywords';
 import { queryClient } from '../../../../common/providers/data-fetching/QueryProvider';
 import { getAppLabFileIcon } from '../../../../common/utils';
+import { useBoards } from '../../../hooks/useBoards';
 import {
   makeAppBrickDetailLogic,
   useConfigureAppBrickDialog,
 } from '../../../hooks/useBrickDetail';
+import { useImportResource } from '../../../hooks/useImportResource';
 import { useIsBoard } from '../../../hooks/useIsBoard';
 import { useNotFound } from '../../../hooks/useNotFound';
 import { DETAIL_PATH_BY_SECTION } from '../../../routes/__root';
@@ -55,13 +57,7 @@ import { useAddSketchLibraryDialog } from './hooks/useSketchLibrariesDialogs';
 import { messages } from './messages';
 import { useCreateEditorPanelLogic } from './sub-components/editor-panel/appLabEditorPanel';
 import { EditorPanelLogicParams } from './sub-components/editor-panel/appLabEditorPanel.type';
-import {
-  APP_YAML_PATH,
-  MAIN_PYTHON_PATH,
-  MAIN_SKETCH_PATH,
-  README_PATH,
-  useAppDetailFiles,
-} from './sub-components/files/appDetailFiles';
+import { useAppDetailFiles } from './sub-components/files/appDetailFiles';
 import { useAppDetailRuntimeLogic } from './sub-components/runtime/appDetailRuntime';
 import { useCreateAppTitleLogic } from './sub-components/title/appDetailTitle';
 
@@ -121,26 +117,16 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
   const [initialAppBrickTab, setInitialAppBrickTab] = useState<string>();
   const [selectedNode, setSelectedNode] = useState<TreeNode>();
   const [selectedFolder, setSelectedFolderState] = useState<TreeNode>();
-  const [firstSelectedFile, setFirstSelectedFile] = useState<FileNode>();
 
-  const [duplicateDialog, setDuplicateDialog] =
-    useState<DuplicateFileDialogState>({
-      open: false,
-      fileName: '',
-      sourcePath: '',
-      targetPath: '',
-      conflictType: null,
-    });
+  const [conflictQueue, setConflictQueue] = useState<
+    Array<OnDuplicateConflictParams>
+  >([]);
+
+  const duplicateDialog = conflictQueue[0];
 
   const handleDuplicateConflict = useCallback(
     (params: OnDuplicateConflictParams) => {
-      setDuplicateDialog({
-        open: true,
-        fileName: params.fileName,
-        sourcePath: params.sourcePath,
-        targetPath: params.targetPath,
-        conflictType: params.conflictType,
-      });
+      setConflictQueue((prev) => [...prev, params]);
     },
     [],
   );
@@ -156,9 +142,8 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
     appDetail: app,
     appDetailIsLoading,
     appBricks,
-    mainFile,
     filesList,
-    filesListIsLoaded,
+    defaultFile,
     filesContents,
     filesContentsAreLoading,
     allContentsRetrieved,
@@ -175,12 +160,25 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
     refetchAppBricks,
     refetchAppFiles,
     removeFileFromPending,
-  } = useAppDetailFiles(appId, firstSelectedFile, updateOpenFile);
+  } = useAppDetailFiles(appId, updateOpenFile);
 
   // Redirect to the correct section if app is not found
   const isAppDetailLoaded = !appDetailIsLoading;
   const shouldRedirect = isAppDetailLoaded && !app?.id;
   useNotFound(shouldRedirect, section);
+
+  const { selectedBoard } = useBoards();
+  const storeEntityId = useMemo(() => {
+    if (!app) return undefined;
+
+    // For examples, keep same persistence across boards
+    if (app.example) return `${app.id}-example`;
+
+    if (selectedBoard?.serial) return `${app.id}-${selectedBoard.serial}`;
+    // Fallback
+    return app.id;
+  }, [app, selectedBoard?.serial]);
+
   const useFilesPayload = useMemo(() => {
     return {
       bricks: appBricks?.map((brick) => ({
@@ -188,25 +186,23 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
         name: brick.name ?? '',
         category: brick.category ?? '',
       })),
-      mainFile,
+      defaultFilePath: defaultFile?.path,
       files: filesContents,
       filesAreLoading: filesContentsAreLoading,
       filesContentLoaded: allContentsRetrieved,
-      autoOpenedFiles: firstSelectedFile ? [firstSelectedFile.path] : [],
       isClassicSketch: false,
       isLibraryRoute: false,
       showSketchSecretsFile: false,
-      storeEntityId: appId,
+      storeEntityId,
       getUnsavedFilesSubject,
     };
   }, [
     allContentsRetrieved,
     appBricks,
-    appId,
+    defaultFile,
     filesContents,
     filesContentsAreLoading,
-    firstSelectedFile,
-    mainFile,
+    storeEntityId,
   ]);
 
   const {
@@ -218,6 +214,7 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
     updateOpenFile: actualUpdateOpenFile,
     updateOpenFilesOrder,
     closeFile,
+    onAppRename,
   } = useFiles(useFilesPayload);
 
   // Update the updateOpenFile function once we have the actual one
@@ -227,10 +224,14 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
 
   const duplicateFileDialogLogic: DuplicateFileDialogLogic = useCallback(
     () => ({
-      open: duplicateDialog.open,
-      fileName: duplicateDialog.fileName,
-      conflictType: duplicateDialog.conflictType,
-      onOverwrite: async () => {
+      open: conflictQueue.length > 0,
+      fileName: duplicateDialog?.fileName || '',
+      conflictType: duplicateDialog?.conflictType || null,
+
+      onOverwrite: async (): Promise<boolean> => {
+        if (!duplicateDialog) {
+          return false;
+        }
         try {
           if (!duplicateDialog.sourcePath || !duplicateDialog.targetPath) {
             console.error('Source or target path is missing');
@@ -254,17 +255,45 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
               closeFile(duplicateDialog.targetPath);
             }
           }
-          await moveFileHandler(
-            duplicateDialog.sourcePath,
-            duplicateDialog.targetPath,
-          );
-          return true;
+
+          if (duplicateDialog.isExternalImport) {
+            const isFolder = duplicateDialog.conflictType?.startsWith('folder');
+            const targetDir = duplicateDialog.targetPath.includes('/')
+              ? duplicateDialog.targetPath.substring(
+                  0,
+                  duplicateDialog.targetPath.lastIndexOf('/'),
+                )
+              : '';
+            const remoteDir = targetDir
+              ? `${app?.path}/${targetDir}`
+              : app?.path ?? '';
+
+            await importResourceToAppFromPath(
+              remoteDir,
+              duplicateDialog.sourcePath,
+              isFolder,
+            );
+            queryClient.invalidateQueries({ queryKey: ['app-files'] });
+            queryClient.invalidateQueries({
+              queryKey: ['get-batch-app-file-content'],
+            });
+          } else {
+            await moveFileHandler(
+              duplicateDialog.sourcePath,
+              duplicateDialog.targetPath,
+            );
+          }
+          const isLastItem = conflictQueue.length <= 1;
+          setConflictQueue((prev) => prev.slice(1));
+
+          return isLastItem;
         } catch (error) {
           console.error('Failed to overwrite duplicate:', error);
           return false;
         }
       },
-      onKeepBoth: async () => {
+
+      onKeepBoth: async (): Promise<boolean> => {
         try {
           if (!duplicateDialog.sourcePath || !duplicateDialog.targetPath) {
             console.error('Source or target path is missing');
@@ -320,18 +349,50 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
             counter++;
           }
 
-          await moveFileHandler(duplicateDialog.sourcePath, newPath);
-          return true;
+          if (duplicateDialog.isExternalImport) {
+            const isFolder = duplicateDialog.conflictType?.startsWith('folder');
+            const targetDir = duplicateDialog.targetPath.includes('/')
+              ? duplicateDialog.targetPath.substring(
+                  0,
+                  duplicateDialog.targetPath.lastIndexOf('/'),
+                )
+              : '';
+            const remoteDir = targetDir
+              ? `${app?.path}/${targetDir}`
+              : app?.path ?? '';
+            const newFileName = newPath.split('/').pop() || '';
+
+            await importResourceToAppFromPath(
+              remoteDir,
+              duplicateDialog.sourcePath,
+              isFolder,
+              newFileName,
+            );
+            queryClient.invalidateQueries({ queryKey: ['app-files'] });
+            queryClient.invalidateQueries({
+              queryKey: ['get-batch-app-file-content'],
+            });
+          } else {
+            await moveFileHandler(duplicateDialog.sourcePath, newPath);
+          }
+
+          const isLastItem = conflictQueue.length <= 1;
+          setConflictQueue((prev) => prev.slice(1));
+          return isLastItem;
         } catch (error) {
           console.error('Failed to keep both:', error);
           return false;
         }
       },
-      onOpenChange: (open: boolean) => {
-        setDuplicateDialog((prev) => ({ ...prev, open }));
+
+      onOpenChange: (open: boolean): void => {
+        if (!open) {
+          setConflictQueue([]);
+        }
       },
     }),
     [
+      conflictQueue,
       duplicateDialog,
       moveFileHandler,
       deleteAppFile,
@@ -342,12 +403,6 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
       closeFile,
     ],
   );
-
-  useEffect(() => {
-    if (firstSelectedFile) {
-      selectFile(firstSelectedFile.path);
-    }
-  }, [firstSelectedFile, selectFile]);
 
   useEffect(() => {
     if (selectedFile?.fileId) {
@@ -831,41 +886,6 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
     }
   }, [selectedFile?.fileId, filesList, selectedFile, selectedNode]);
 
-  useEffect(() => {
-    if (
-      !firstSelectedFile &&
-      !selectedFile &&
-      !selectedNode &&
-      filesListIsLoaded &&
-      filesList
-    ) {
-      const priorityFiles = [
-        README_PATH,
-        MAIN_PYTHON_PATH,
-        MAIN_SKETCH_PATH,
-        APP_YAML_PATH,
-      ];
-      let nodeToSelect = filesList[0];
-
-      for (const fileName of priorityFiles) {
-        const foundNode = filesList.find((file) => file.path === fileName);
-        if (foundNode) {
-          nodeToSelect = foundNode;
-          break;
-        }
-      }
-
-      setFirstSelectedFile(nodeToSelect);
-      setSelectedNode(nodeToSelect);
-    }
-  }, [
-    filesList,
-    filesListIsLoaded,
-    firstSelectedFile,
-    selectedFile,
-    selectedNode,
-  ]);
-
   const openExternal = useCallback(() => {
     if (!selectedNode) {
       console.warn('No file selected to open externally');
@@ -900,6 +920,7 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
           });
         }
       } else if (result !== undefined) {
+        onAppRename(result || '');
         navigate({
           to: `/${section}/${result}`,
         });
@@ -1069,7 +1090,16 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
 
   const useAppLabEditSectionLogic: AppLabEditSectionLogic =
     (): ReturnType<AppLabEditSectionLogic> => {
-      const renderIcon = (node: TreeNode): JSX.Element => {
+      const [importFileDialogOpen, setImportFileDialogOpen] = useState(false);
+      const [_importedFileId, setImportedFileId] = useState<
+        string | undefined
+      >();
+      const [importTarget, setImportTarget] = useState({
+        path: '',
+        isFolder: false,
+      });
+
+      const renderIcon = useCallback((node: TreeNode): JSX.Element => {
         if (isFolderNode(node)) {
           return <></>; // No icon for folders, only caret will be shown
         }
@@ -1077,7 +1107,47 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
         const Icon = getAppLabFileIcon(node.extension.slice(1));
 
         return <Icon />;
-      };
+      }, []);
+
+      const handleOpenImportFileDialog = useCallback(
+        ({ path = '', isFolder = false }) => {
+          setImportTarget({ path, isFolder });
+          setImportFileDialogOpen(true);
+        },
+        [],
+      );
+
+      const importFileDialogLogic = useImportResource({
+        importResourceDialogOpen: importFileDialogOpen,
+        setImportResourceDialogOpen: setImportFileDialogOpen,
+        setImportedResourceId: setImportedFileId,
+        selectResourcePath: () =>
+          selectResourcePathToImport(
+            importTarget.path
+              ? `${app?.path}/${importTarget.path}`
+              : app?.path ?? '',
+            importTarget.isFolder,
+          ),
+        importResourceFromPath: (filePath: string, newFileName?: string) =>
+          importResourceToAppFromPath(
+            importTarget.path
+              ? `${app?.path}/${importTarget.path}`
+              : app?.path ?? '',
+            filePath,
+            importTarget.isFolder,
+            newFileName,
+          ),
+        type: importTarget.isFolder ? 'folder' : 'file',
+        invalidateQueries: () => {
+          queryClient.invalidateQueries({ queryKey: ['app-files'] });
+          queryClient.invalidateQueries({
+            queryKey: ['get-batch-app-file-content'],
+          });
+        },
+        nodes: fileTree,
+        targetFolderPath: importTarget.path,
+        onDuplicateConflict: handleDuplicateConflict,
+      });
 
       return {
         app,
@@ -1116,6 +1186,8 @@ export const useAppDetailLogic: AppLabAppDetailLogic = function (
         renameAppCustomBrick,
         onDuplicateConflict: handleDuplicateConflict,
         duplicateFileDialogLogic,
+        importFileDialogLogic,
+        openImportFileDialog: handleOpenImportFileDialog,
       };
     };
 

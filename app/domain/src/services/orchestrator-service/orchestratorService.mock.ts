@@ -1,4 +1,3 @@
-import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app/app-list/importAppDialog.type';
 import {
   AIModel,
   AIModelItem,
@@ -21,7 +20,10 @@ import {
   UpdateCheckResult,
   WebSocketHandlers,
 } from '@cloud-editor-mono/infrastructure';
-import { TreeNode } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
+import {
+  ImportResourceResult,
+  TreeNode,
+} from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 import { OrchestratorService } from './orchestrator-service.type';
 
@@ -1072,15 +1074,11 @@ export const MockOrchestratorService: OrchestratorService = {
     }
   },
 
-  importApp(): Promise<ImportAppResult | null> {
+  selectAppPathToImport(): Promise<string | null> {
     return Promise.resolve(null);
   },
 
-  importAppFromPath(_filePath: string): Promise<ImportAppResult> {
-    return Promise.resolve({ id: '1', name: 'app' });
-  },
-
-  importAppFromFile(_file: File): Promise<ImportAppResult> {
+  importAppFromPath(_filePath: string): Promise<ImportResourceResult> {
     return Promise.resolve({ id: '1', name: 'app' });
   },
 

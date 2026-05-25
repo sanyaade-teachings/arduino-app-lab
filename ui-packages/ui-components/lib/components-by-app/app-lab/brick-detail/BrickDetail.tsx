@@ -4,7 +4,6 @@ import {
   InfoIconOutline,
   OpenInNewTab,
 } from '@cloud-editor-mono/images/assets/icons';
-import {} from '@cloud-editor-mono/images/assets/icons';
 import {
   AiModel,
   Button,
@@ -19,7 +18,8 @@ import {
   XSmall,
   XXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
-import { Key, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { Key, useEffect, useState } from 'react';
 import { Item } from 'react-stately';
 
 import { Tabs } from '../../../essential/tab-list/Tabs';
@@ -32,6 +32,29 @@ import { messages } from './messages';
 import { AiBadge } from './sub-components/ai-badge/AiBadge';
 
 const DEFAULT_ICON = '⚪'; // Default icon if none is provided
+
+const UsedByAppLinkIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M12.5012 4V10.5C12.5012 10.6326 12.4486 10.7598 12.3548 10.8536C12.261 10.9473 12.1339 11 12.0012 11C11.8686 11 11.7415 10.9473 11.6477 10.8536C11.5539 10.7598 11.5012 10.6326 11.5012 10.5V5.21L4.35624 12.355C4.26145 12.4479 4.13399 12.5 4.00124 12.5C3.86849 12.5 3.74103 12.4479 3.64624 12.355C3.55257 12.2606 3.5 12.133 3.5 12C3.5 11.867 3.55257 11.7394 3.64624 11.645L10.7912 4.5H5.50124C5.36863 4.5 5.24146 4.44732 5.14769 4.35355C5.05392 4.25979 5.00124 4.13261 5.00124 4C5.00124 3.86739 5.05392 3.74021 5.14769 3.64645C5.24146 3.55268 5.36863 3.5 5.50124 3.5H12.0012C12.1337 3.50038 12.2607 3.55318 12.3544 3.64687C12.4481 3.74055 12.5009 3.86751 12.5012 4Z"
+      fill="#C9D2D2"
+    />
+  </svg>
+);
+
+const getUsedByAppPath = (appId: string): string => {
+  const decodedAppId = window.atob(appId);
+  const section = decodedAppId.startsWith('examples:') ? 'examples' : 'my-apps';
+
+  return `/${section}/${appId}`;
+};
 
 const tabs = [
   { id: 'overview', label: messages.overviewTab },
@@ -54,6 +77,7 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
   preSelectedModelChange,
 }: BrickDetailProps) => {
   const { formatMessage } = useI18n();
+  const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('overview');
   const {
     board,
@@ -78,6 +102,36 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
     openExternalLink,
     updateModelInUse,
   } = brickDetailLogic(brickId);
+
+  // Auto-select default model when no model is pre-selected and models are available
+  useEffect(() => {
+    if (!readOnly && !preSelectedModelId && models && models.length > 0) {
+      // Use same logic as AiModel component for default selection
+      let defaultModelId: string | undefined;
+
+      // Look for first model with an installed impulse
+      for (const model of models) {
+        if (model.edgeImpulseProps?.impulses) {
+          const installedImpulse = model.edgeImpulseProps.impulses.find(
+            (i) => i.isInstalled,
+          );
+          if (installedImpulse?.installedModelId) {
+            defaultModelId = installedImpulse.installedModelId;
+            break;
+          }
+        }
+      }
+
+      // If no installed impulse, use first model's ID
+      if (!defaultModelId && models.length > 0) {
+        defaultModelId = models[0].id;
+      }
+
+      if (defaultModelId && preSelectedModelChange) {
+        preSelectedModelChange(defaultModelId);
+      }
+    }
+  }, [models, preSelectedModelId, preSelectedModelChange, readOnly]);
 
   return (
     <div className={styles['container']}>
@@ -230,25 +284,32 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                       </XSmall>
                       <div className={styles['brick-usages-cards']}>
                         {brick.used_by_apps.map((usage) => (
-                          <div
+                          <button
                             key={usage.id}
+                            type="button"
                             className={styles['brick-usage-card']}
+                            onClick={async (): Promise<void> => {
+                              if (usage.id) {
+                                await navigate({
+                                  to: getUsedByAppPath(usage.id),
+                                });
+                              }
+                            }}
                           >
                             <div className={styles['brick-usage-header']}>
                               <div
                                 className={styles['brick-usage-header-bg']}
                                 style={{
-                                  background: getBackgroundIcon(
+                                  backgroundImage: getBackgroundIcon(
                                     usage.icon || DEFAULT_ICON,
                                   ),
                                 }}
                               ></div>
-
                               <span
                                 className={styles['brick-usage-header-icon']}
                               >
                                 <EmojiPreview
-                                  size={32}
+                                  size={16}
                                   value={usage.icon || DEFAULT_ICON}
                                 />
                               </span>
@@ -256,7 +317,10 @@ const BrickDetail: React.FC<BrickDetailProps> = ({
                             <div className={styles['brick-usage-content']}>
                               {usage.name}
                             </div>
-                          </div>
+                            <UsedByAppLinkIcon
+                              className={styles['brick-usage-link-icon']}
+                            />
+                          </button>
                         ))}
                       </div>
                     </div>

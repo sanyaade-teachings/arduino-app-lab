@@ -1,6 +1,10 @@
+export interface ForwardPort {
+  port: number;
+  type: 'webview' | 'other';
+}
+
 export interface AppUIService {
-  findUIPort: (appId: string) => Promise<number>;
-  findUIPorts: (appId: string) => Promise<number[]>;
+  findPorts: (appId: string) => Promise<ForwardPort[]>;
   openUIWhenReady: (port: number, timeout: number) => Promise<void>;
   forwardNonUIPort: (port: number) => Promise<void>;
 }

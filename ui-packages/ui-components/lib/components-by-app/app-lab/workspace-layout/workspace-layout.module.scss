@@ -1,0 +1,35 @@
+@use "@cloud-editor-mono/ui-components/public/shared.module.scss";
+
+.group {
+  height: 100%;
+
+  &-root {
+    border-top: 1px solid var(--border-inverted, #232b2e);
+  }
+}
+
+.panel {
+  &-left {
+    height: 100%;
+    z-index: 1;
+  }
+  &-editor {
+    overflow: hidden !important;
+  }
+}
+
+.separator {
+  background-color: var(--border-inverted, #232b2e);
+  transition: background-color 0.2s ease;
+  outline: none;
+
+  &[aria-orientation="vertical"] {
+    width: 1px;
+  }
+  &[aria-orientation="horizontal"] {
+    height: 1px
+  }
+  &[data-separator="active"], &[data-separator="hover"] {
+    background-color: var(--border-accent, #25c2c7);
+  }
+}

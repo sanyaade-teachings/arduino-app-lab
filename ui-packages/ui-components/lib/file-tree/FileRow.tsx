@@ -17,6 +17,7 @@ type FileRowProps = RowRendererProps<TreeNode> & {
   onRename: () => void;
   onDelete: () => void;
   onCreate: (type: TreeNode['type'], path: string) => void;
+  onResourceImport: (params: { path?: string; isFolder?: boolean }) => void;
   isProjectReadOnly: boolean;
   isBricksSelected?: boolean;
   onDragStart?: () => void;
@@ -30,6 +31,7 @@ const FileRow: React.FC<FileRowProps> = ({
   onSelect,
   onRename,
   onDelete,
+  onResourceImport,
   isProjectReadOnly,
   onCreate,
   isBricksSelected = false,
@@ -100,6 +102,7 @@ const FileRow: React.FC<FileRowProps> = ({
           onRename={onRename}
           onDelete={onDelete}
           onCreate={openFolderAndCreate}
+          onResourceImport={onResourceImport}
         />
       </ContextMenu.Root>
     </div>

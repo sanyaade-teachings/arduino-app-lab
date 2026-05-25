@@ -4,7 +4,6 @@
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
-  
 
   &--drag-over {
     border-radius: 6px;
@@ -17,6 +16,7 @@
   overflow: unset;
   box-sizing: border-box;
   color: var(--text-subtle, #c9d2d2);
+  padding-bottom: 50px;
   &::-webkit-scrollbar-thumb {
     border: 4px solid #171e21;
   }
@@ -30,7 +30,6 @@
   padding: 0;
   box-sizing: border-box;
 
-  
   &--drag-over {
     border-radius: 6px;
     background-color: var(--component-bg-flexible, #aeb8b826);
@@ -99,7 +98,14 @@
 
   &-icon {
     display: flex;
+    align-items: center;
     margin-left: 2px;
+  }
+
+  &-icon--file {
+    width: 20px;
+    height: 20px;
+    justify-content: center;
   }
 
   &-name {
@@ -165,13 +171,30 @@
 
   &.danger {
     color: var(--feedback-error-default, #ff8878);
+
+    svg {
+      path {
+        fill: var(--feedback-error-default, #ff8878);
+      }
+    }
   }
 }
 
 .tree-row-context-icon-container {
   width: 18px;
   text-align: center;
-  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 16px;
+    height: 16px;
+
+    path {
+      fill: var(--text-default, #ffffff);
+    }
+  }
 }
 
 .file-tree-skeleton {

@@ -46,6 +46,7 @@ export type BrickDetailLogic = (
     appId: string;
     setOpen: (open: boolean) => void;
     logic: ConfigureAppBrickDialogLogic;
+    onOpenExternal: (url: string) => void;
   };
   trainNewModelDialogProps?: {
     open: boolean;

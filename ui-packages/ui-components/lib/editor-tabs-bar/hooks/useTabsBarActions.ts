@@ -38,7 +38,7 @@ type UseTabsBarActions = (
 ) => {
   filePath?: string;
   newTabMenuAction: (key: Key) => void;
-  tabAction: (key: Key, fileId: string) => void;
+  tabAction: (key: Key, fileId: string, tabIndex?: number) => void;
   addNewTab: (fileName: string, fileExtension: string) => void;
   renameTab: (fileId: string, newFileName: string) => void;
   handleImportedFile: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
@@ -116,7 +116,11 @@ export const useTabsBarActions: UseTabsBarActions = function (
     }
   };
 
-  const tabAction = (key: Key, fileId: string): void => {
+  const closeTabs = (tabsToClose: SelectableFileData[]): void => {
+    tabsToClose.forEach((tab) => closeTab(tab.fileId));
+  };
+
+  const tabAction = (key: Key, fileId: string, tabIndex?: number): void => {
     const onActionResult =
       key !== TabMenuItemIds.Close &&
       onBeforeFileAction &&
@@ -126,6 +130,22 @@ export const useTabsBarActions: UseTabsBarActions = function (
     switch (key) {
       case TabMenuItemIds.Close:
         closeTab(fileId);
+        break;
+      case TabMenuItemIds.CloseOthers:
+        closeTabs(tabs.filter((tab) => tab.fileId !== fileId));
+        break;
+      case TabMenuItemIds.CloseToTheLeft:
+        if (tabIndex !== undefined) {
+          closeTabs(tabs.slice(0, tabIndex));
+        }
+        break;
+      case TabMenuItemIds.CloseToTheRight:
+        if (tabIndex !== undefined) {
+          closeTabs(tabs.slice(tabIndex + 1));
+        }
+        break;
+      case TabMenuItemIds.CloseAll:
+        closeTabs(tabs);
         break;
       case TabMenuItemIds.DeleteFile:
         deleteFile(fileId);

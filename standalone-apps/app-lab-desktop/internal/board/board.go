@@ -267,3 +267,15 @@ func (b *Board) GetLinuxDistribution() (string, error) {
 
 	return "", fmt.Errorf("PRETTY_NAME not found in os-release file")
 }
+
+func (b *Board) RebootBoard(conn remote.RemoteConn, password string) error {
+	_, err := board.ExecAsRoot(conn, password, "reboot")
+	if err != nil {
+		// reboot kills the connection before clean exit, tolerate exit errors
+		if strings.Contains(err.Error(), "exit") {
+			return nil
+		}
+		return fmt.Errorf("reboot failed: %w", err)
+	}
+	return nil
+}

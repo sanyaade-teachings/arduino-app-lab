@@ -1,30 +1,26 @@
 package app
 
 import (
-	"app-lab-desktop/internal/auth"
-	"app-lab-desktop/internal/board"
-	"app-lab-desktop/internal/update"
-	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-
 	stdruntime "runtime"
 	"strings"
 
-	"github.com/wailsapp/wails/v2/pkg/runtime"
-
+	"app-lab-desktop/internal/auth"
+	"app-lab-desktop/internal/board"
 	"app-lab-desktop/internal/flasher"
+	"app-lab-desktop/internal/update"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 func (a *App) Startup(ctx context.Context) {
-
-	if stdruntime.GOOS == "linux" {
-		if err := registerProtocol(); err != nil {
-			runtime.LogErrorf(ctx, "failed to register protocol: %v", err)
-		}
+	if err := a.registerOSFileHandler(); err != nil {
+		runtime.LogErrorf(ctx, "failed to register protocol: %v", err)
 	}
 
 	a.ctxHolder.Set(ctx)
@@ -103,66 +99,72 @@ func (a *App) selectBoard(serial string, password string) error {
 	return fmt.Errorf("failed to select board: board with serial %s not found", serial)
 }
 
-func isProtocolRegistered(
-	execPath string, mimeType string, desktopPath string,
-) bool {
-	data, err := os.ReadFile(desktopPath)
-	if err != nil {
-		return false
+//go:embed ArduinoAppLab.desktop
+var appLabDesktopFile string
+
+//go:embed arduino-app-lab.png
+var appLabDesktopIcon []byte
+
+func (a *App) registerOSFileHandler() error {
+	// Only linux supported for now, as this relies on xdg-mime and .desktop files
+	if stdruntime.GOOS != "linux" {
+		return nil
 	}
 
-	hasMimeType := bytes.Contains(data, []byte("MimeType="+mimeType+";"))
-	hasCorrectPath := bytes.Contains(data, []byte(execPath))
-
-	return hasMimeType && hasCorrectPath
-}
-
-func isDefaultProtocolHandler(
-	mimeType string, desktopFileName string,
-) bool {
-	out, err := exec.Command("xdg-mime", "query", "default", mimeType).Output()
-	if err != nil {
-		return false
+	// Check if the package has been installed via a .deb or .rpm, in that case we
+	// assume the installer has taken care of registering the protocol handler.
+	if _, err := os.Stat("/usr/share/applications/ArduinoAppLab.desktop"); err == nil {
+		return nil
 	}
-	return strings.Contains(string(out), desktopFileName)
-}
 
-func registerProtocol() error {
-	desktopFileName := "arduino-app-lab.desktop"
-	if board.IsSBC() {
-		desktopFileName = "ArduinoAppLab.desktop"
-	}
 	mimeType := "x-scheme-handler/arduino-app-lab"
 
+	// Drop a .desktop file in the user's home directory to register the protocol handler.
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
-
 	execPath, err := os.Executable()
 	if err != nil {
 		return err
 	}
-
+	execFileName := filepath.Base(execPath)
+	desktopFileName := execFileName + ".desktop"
 	desktopDir := filepath.Join(home, ".local", "share", "applications")
 	desktopPath := filepath.Join(desktopDir, desktopFileName)
+	iconDir := filepath.Join(home, ".local", "share", "icons")
+	iconPath := filepath.Join(iconDir, "arduino-app-lab.png")
+	desktopFileContent := strings.ReplaceAll(appLabDesktopFile, "$BINARY_PATH", execPath)
+	desktopFileContent = strings.ReplaceAll(desktopFileContent, "$WM_CLASS", execFileName)
+	desktopFileContent = strings.ReplaceAll(desktopFileContent, "$ICON", iconPath)
+	desktopFileContent = strings.ReplaceAll(desktopFileContent, "$VERSION", a.version)
 
-	if !isProtocolRegistered(execPath, mimeType, desktopPath) {
-		os.MkdirAll(desktopDir, 0755)
+	// Check if the .desktop file already exists and has the correct content, if not create/update it.
+	fileNeedsUpdate := true
+	if _, err := os.Stat(desktopPath); err == nil {
+		existingContent, err := os.ReadFile(desktopPath)
+		if err == nil && string(existingContent) == desktopFileContent {
+			fileNeedsUpdate = false
+		}
+	}
 
-		content := fmt.Sprintf(`[Desktop Entry]
-Type=Application
-Name=Arduino App Lab
-Exec="%s" %%u
-Terminal=false
-MimeType=%s;
-Categories=Development;
-`, execPath, mimeType)
-
-		if err := os.WriteFile(desktopPath, []byte(content), 0644); err != nil {
+	if fileNeedsUpdate {
+		// Write/update the .desktop file
+		if err := os.MkdirAll(desktopDir, 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(desktopPath, []byte(desktopFileContent), 0644); err != nil {
+			return err
+		}
+		// Write the icon file
+		if err := os.MkdirAll(iconDir, 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(iconPath, appLabDesktopIcon, 0644); err != nil {
 			return err
 		}
 
+		// Update the desktop database to register the new .desktop file, if the tool is available.
 		if cmdPath, err := exec.LookPath("update-desktop-database"); err == nil {
 			_ = exec.Command(cmdPath, desktopDir).Run()
 		} else {
@@ -170,11 +172,6 @@ Categories=Development;
 		}
 	}
 
-	if isDefaultProtocolHandler(mimeType, desktopFileName) {
-		return nil
-	}
-
-	err = exec.Command("xdg-mime", "default", desktopFileName, mimeType).Run()
-
-	return err
+	// Register the protocol handler for the current user using xdg-mime.
+	return exec.Command("xdg-mime", "default", desktopFileName, mimeType).Run()
 }

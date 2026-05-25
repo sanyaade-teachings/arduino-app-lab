@@ -3,8 +3,10 @@ import {
   deleteApp,
   exportApp,
   getApps,
+  selectAppPathToImport,
   updateAppDetail,
 } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
+import { importAppFromPath } from '@cloud-editor-mono/domain/src/services/services-by-app/app-lab';
 import { AppDetailedInfo, AppInfo } from '@cloud-editor-mono/infrastructure';
 import {
   AppsSection,
@@ -19,13 +21,12 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCallback, useMemo, useState } from 'react';
 
 import { queryClient } from '../../../../common/providers/data-fetching/QueryProvider';
+import { useImportResource } from '../../../hooks/useImportResource';
 import { useBoardLifecycleStore } from '../../../store/boardLifecycle';
 import { sendAppLabNotification } from '../../notifications';
 import { UseAppListLogic } from './appList.type';
-import { ImportStatus } from './importAppDialog.type';
 import { appListMessages } from './messages';
 import { useCreateAppDialogLogic } from './useCreateAppDialogLogic';
-import { useImportAppDialogLogic } from './useImportAppDialogLogic';
 
 export const useAppListLogic = function (
   section: AppsSection,
@@ -35,12 +36,6 @@ export const useAppListLogic = function (
 
   const [createAppDialogOpen, setCreateAppDialogOpen] = useState(false);
   const [importAppDialogOpen, setImportAppDialogOpen] = useState(false);
-  const [importStatus, setImportStatus] = useState<ImportStatus>(
-    ImportStatus.Idle,
-  );
-  const [importErrorMessage, setImportErrorMessage] = useState<
-    string | undefined
-  >();
   const [importedAppId, setImportedAppId] = useState<string | undefined>();
   const [deleteAppDialogOpen, setDeleteAppDialogOpen] = useState(false);
   const [duplicateAppDialogOpen, setDuplicateAppDialogOpen] = useState(false);
@@ -71,25 +66,40 @@ export const useAppListLogic = function (
     setImportAppDialogOpen(true);
   }, []);
 
-  const handleRename = useCallback((app: AppInfo) => {
-    setSelectedApp(app);
-    setRenameAppDialogOpen(true);
+  const resetImportedAppId = useCallback(() => {
+    setImportedAppId(undefined); // Reset importedAppId to prevent ripple retrigger
   }, []);
 
-  const handleDuplicate = useCallback((app: AppInfo) => {
-    setSelectedApp(app);
-    setDuplicateAppDialogOpen(true);
-  }, []);
+  const createAppActionHandler = useCallback(
+    (dialogSetter: (open: boolean) => void, action?: () => void) =>
+      (app: AppInfo) => {
+        setSelectedApp(app);
+        dialogSetter(true);
+        resetImportedAppId();
+        action?.();
+      },
+    [resetImportedAppId],
+  );
 
-  const handleDelete = useCallback((app: AppInfo) => {
-    setSelectedApp(app);
-    setDeleteAppDialogOpen(true);
-  }, []);
+  const handleRename = useCallback(
+    (app: AppInfo) => createAppActionHandler(setRenameAppDialogOpen)(app),
+    [createAppActionHandler],
+  );
 
-  const handleExport = useCallback((app: AppInfo) => {
-    setSelectedApp(app);
-    setExportAppDialogOpen(true);
-  }, []);
+  const handleDuplicate = useCallback(
+    (app: AppInfo) => createAppActionHandler(setDuplicateAppDialogOpen)(app),
+    [createAppActionHandler],
+  );
+
+  const handleDelete = useCallback(
+    (app: AppInfo) => createAppActionHandler(setDeleteAppDialogOpen)(app),
+    [createAppActionHandler],
+  );
+
+  const handleExport = useCallback(
+    (app: AppInfo) => createAppActionHandler(setExportAppDialogOpen)(app),
+    [createAppActionHandler],
+  );
 
   const { mutateAsync: handleSetAsDefault } = useMutation({
     mutationFn: async (app: AppInfo) => {
@@ -154,15 +164,17 @@ export const useAppListLogic = function (
     setCreateAppDialogOpen,
   );
 
-  const importAppDialogLogic = useImportAppDialogLogic(
-    importAppDialogOpen,
-    setImportAppDialogOpen,
-    importStatus,
-    setImportStatus,
-    importErrorMessage,
-    setImportErrorMessage,
-    setImportedAppId,
-  );
+  const importAppDialogLogic = useImportResource({
+    importResourceDialogOpen: importAppDialogOpen,
+    setImportResourceDialogOpen: setImportAppDialogOpen,
+    setImportedResourceId: setImportedAppId,
+    selectResourcePath: selectAppPathToImport,
+    importResourceFromPath: importAppFromPath,
+    type: 'app',
+    invalidateQueries: () => {
+      queryClient.invalidateQueries(['list-my-apps']);
+    },
+  });
 
   const { mutateAsync: handleDeleteApp } = useMutation({
     mutationFn: async (): Promise<boolean> => {

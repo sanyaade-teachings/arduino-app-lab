@@ -238,3 +238,34 @@
   color: var(--text-inverted-subtle, #5d6a6b);
   text-align: center;
 }
+
+.carrier-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: capitalize;
+}
+
+.carrier-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.carrier-banner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+
+  &-container {
+    padding: 8px;
+    margin-top: 16px;
+  }
+
+  &-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;  
+  }
+}

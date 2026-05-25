@@ -66,6 +66,7 @@ export const useAppFilesSectionLogic: UseAppFilesSectionLogic = function (
     configureAppBrickDialogLogic,
     brickDetailLogic,
     renameAppCustomBrick,
+    openExternalLink,
   } = params;
 
   const [addAppBrickDialogOpen, setAddAppBrickDialogOpen] = useState(false);
@@ -132,6 +133,7 @@ export const useAppFilesSectionLogic: UseAppFilesSectionLogic = function (
       openCreateAppBrickDialog,
       createAppBrickDialogLogic,
       createAppBrickDialogOpen,
+      onOpenExternal: openExternalLink,
     };
   };
   const addAppBrickDialogLogic = useCallback(useAddAppBrickDialogLogic, [
@@ -145,6 +147,7 @@ export const useAppFilesSectionLogic: UseAppFilesSectionLogic = function (
     createAppBrickDialogLogic,
     createAppBrickDialogOpen,
     addAppBrick,
+    openExternalLink,
   ]);
 
   const openAddAppBrickDialog = useCallback(() => {

@@ -503,19 +503,21 @@ export const useAppDetailRuntimeLogic: UseAppDetailRuntimeLogic = function (
       runApp,
       stopApp,
       showStop: isActiveApp,
-      isBannerEnabled: isActiveApp,
+      isBannerEnabled: activeApp?.id === app?.id,
     };
   }, [
     app?.id,
     app?.name,
     app?.status,
-    runningApp,
     currentAction,
     currentActionStatus,
-    isActiveApp,
     openApp,
     runApp,
     stopApp,
+    isActiveApp,
+    activeApp?.id,
+    runningApp?.id,
+    runningApp?.status,
   ]);
 
   return {

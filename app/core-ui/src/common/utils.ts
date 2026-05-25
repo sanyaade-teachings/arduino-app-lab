@@ -27,6 +27,13 @@ import { FunctionComponent, SVGProps, useCallback } from 'react';
 import { BasicFileData, BasicFilesData } from './hooks/files.type';
 import { useRetrieveSketches } from './hooks/queries/createShared';
 
+export const DEFAULT_EXTENSIONLESS_FILE_CONTENT =
+  'Switch the .txt extension to something like .py or .ino to unlock syntax highlighting.';
+
+export function getDefaultFileContent(fileExtension: string): string {
+  return !fileExtension ? DEFAULT_EXTENSIONLESS_FILE_CONTENT : '';
+}
+
 export function getMainLibraryFile<
   T extends
     | RetrieveFileContentsResult[]

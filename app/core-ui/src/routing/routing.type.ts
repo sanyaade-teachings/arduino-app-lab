@@ -100,5 +100,6 @@ export type SearchGenerics = MakeGenerics<{
     [NOT_FOUND_PARAM]: NotFoundType;
     [BYPASS_IOT_REDIRECT]: boolean;
     [GEN_AI_POC]: boolean;
+    openNetworkDialog: boolean;
   };
 }>;

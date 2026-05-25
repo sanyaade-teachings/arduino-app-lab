@@ -1,6 +1,10 @@
 package fs
 
 import (
+	"context"
+	"errors"
+	"path/filepath"
+
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -10,117 +14,10 @@ import (
 	"path"
 	"strings"
 
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+
 	"github.com/arduino/arduino-app-cli/pkg/board/remote"
 )
-
-// ExtendedRemoteConn extends the base interface with directory operations
-type ExtendedRemoteConn struct {
-	remote.RemoteConn
-}
-
-// ReadDir reads the contents of a directory
-func (c *ExtendedRemoteConn) ReadDir(path string) ([]remote.FileInfo, error) {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var fileInfos []remote.FileInfo
-	for _, entry := range entries {
-		fileInfos = append(fileInfos, remote.FileInfo{
-			Name: entry.Name(),
-		})
-	}
-
-	return fileInfos, nil
-}
-
-// MoveDir moves a directory from oldPath to newPath with improved remote support
-func (c *ExtendedRemoteConn) MoveDir(oldPath string, newPath string) error {
-	// Try os.Rename first for local filesystem compatibility only
-	err := os.Rename(oldPath, newPath)
-	if err == nil {
-		return nil
-	}
-	
-	// If os.Rename fails, we're likely dealing with remote filesystem
-	// Use the remote connection methods instead of local filesystem
-	
-	// 1. Create target directory using remote connection
-	err = c.MkDirAll(newPath)
-	if err != nil {
-		return fmt.Errorf("failed to create target directory: %w", err)
-	}
-	
-	// 2. Copy contents using remote connection
-	err = c.copyDirectoryContentsRemote(oldPath, newPath)
-	if err != nil {
-		// Clean up on failure
-		c.Remove(newPath)
-		return fmt.Errorf("failed to copy directory contents: %w", err)
-	}
-	
-	// 3. Remove source directory using remote connection
-	err = c.Remove(oldPath)
-	if err != nil {
-		return fmt.Errorf("failed to remove source directory: %w", err)
-	}
-	
-	return nil
-}
-
-// Helper method to copy directory contents using remote connection
-func (c *ExtendedRemoteConn) copyDirectoryContentsRemote(srcPath string, dstPath string) error {
-	entries, err := c.List(srcPath)
-	if err != nil {
-		return fmt.Errorf("failed to read source directory: %w", err)
-	}
-	
-	for _, entry := range entries {
-		srcEntry := path.Join(srcPath, entry.Name)
-		dstEntry := path.Join(dstPath, entry.Name)
-
-		subEntries, listErr := c.List(srcEntry)
-		if listErr == nil && len(subEntries) > 0 {
-			// directory
-			err = c.MkDirAll(dstEntry)
-			if err != nil {
-				return fmt.Errorf("failed to create subdirectory: %w", err)
-			}
-			err = c.copyDirectoryContentsRemote(srcEntry, dstEntry)
-			if err != nil {
-				return err
-			}
-		} else {
-			// file
-			
-			// Verify file actually exists before copying
-			_, err := c.Stats(srcEntry)
-			if err != nil {
-				// File doesn't exist, skip it (phantom file)
-				continue
-			}
-			
-			sourceFile, err := c.ReadFile(srcEntry)
-			if err != nil {
-				return fmt.Errorf("failed to read source file: %w", err)
-			}
-			defer sourceFile.Close()
-			
-			err = c.WriteFile(sourceFile, dstEntry)
-			if err != nil {
-				return fmt.Errorf("failed to write destination file: %w", err)
-			}
-		}
-	}
-	
-	return nil
-}
-
-// NewExtendedRemoteConn creates an extended connection
-func NewExtendedRemoteConn(baseConn remote.RemoteConn) *ExtendedRemoteConn {
-	return &ExtendedRemoteConn{RemoteConn: baseConn}
-}
 
 func ReadFileContent(fss fs.FS, path string) (string, error) {
 	f, err := fss.Open(path)
@@ -165,44 +62,20 @@ func GetFileContent(p string, conn remote.RemoteConn) (string, error) {
 	return fmt.Sprintf("data:%s;base64,%s", mime, encoded), nil
 }
 
-
 func RenameFolder(conn remote.RemoteConn, oldPath string, newPath string) error {
 	if path.Clean(oldPath) == path.Clean(newPath) {
 		return nil
 	}
 
-	fmt.Printf("DEBUG: RenameFolder %s -> %s\n", oldPath, newPath)
-
-	// Create extended connection for directory operations
-	extConn := NewExtendedRemoteConn(conn)
-
-	// Try to use MoveDir first (simpler approach)
-	err := extConn.MoveDir(oldPath, newPath)
-	if err == nil {
-		fmt.Printf("DEBUG: MoveDir succeeded\n")
-		return nil
-	}
-	
-	// MoveDir failed, use copy/delete approach
-	fmt.Printf("DEBUG: MoveDir failed, falling back to copy/delete approach\n")
-
-	// Fallback to create/copy/delete approach
 	// 1. Create new directory
-	err = extConn.MkDirAll(newPath)
+	err := conn.MkDirAll(newPath)
 	if err != nil {
 		fmt.Printf("DEBUG: Failed to create new directory with remote conn: %v\n", err)
-
-		// Fallback: try local filesystem if remote fails
-		fmt.Printf("DEBUG: Trying fallback to local filesystem\n")
-		err = os.MkdirAll(newPath, 0755)
-		if err != nil {
-			fmt.Printf("DEBUG: Failed to create new directory locally: %v\n", err)
-			return fmt.Errorf("failed to create new directory: %w", err)
-		}
+		return fmt.Errorf("failed to create new directory: %w", err)
 	}
 
 	// 2. Copy all contents from old to new directory
-	err = copyDirectory(extConn, oldPath, newPath)
+	err = copyDirectory(conn, oldPath, newPath)
 	if err != nil {
 		fmt.Printf("DEBUG: Failed to copy directory contents: %v\n", err)
 		// Clean up the created directory if copy failed
@@ -236,24 +109,24 @@ func copyDirectory(conn remote.RemoteConn, srcPath string, dstPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to list directory: %w", err)
 	}
-	
+
 	// Copy each entry
 	for _, entry := range entries {
 		srcEntryPath := path.Join(srcPath, entry.Name)
 		dstEntryPath := path.Join(dstPath, entry.Name)
-		
+
 		// Try to determine if it's a directory by listing its contents
 		// If conn.List() succeeds and returns entries, it's a directory
 		subEntries, err := conn.List(srcEntryPath)
 		if err == nil && len(subEntries) > 0 {
 			// It's a directory (we can list its contents)
-			
+
 			// Create directory
 			err = conn.MkDirAll(dstEntryPath)
 			if err != nil {
 				return fmt.Errorf("failed to create subdirectory %s: %w", dstEntryPath, err)
 			}
-			
+
 			// Recursively copy directory contents
 			err = copyDirectory(conn, srcEntryPath, dstEntryPath)
 			if err != nil {
@@ -261,27 +134,27 @@ func copyDirectory(conn remote.RemoteConn, srcPath string, dstPath string) error
 			}
 		} else {
 			// It's likely a file (either List failed or returned no entries)
-			
+
 			// Verify file actually exists before copying
 			_, err := conn.Stats(srcEntryPath)
 			if err != nil {
 				// File doesn't exist, skip it (phantom file)
 				continue
 			}
-			
+
 			sourceFile, err := conn.ReadFile(srcEntryPath)
 			if err != nil {
 				return fmt.Errorf("failed to read file %s: %w", entry.Name, err)
 			}
 			defer sourceFile.Close()
-			
+
 			err = conn.WriteFile(sourceFile, dstEntryPath)
 			if err != nil {
 				return fmt.Errorf("failed to write file %s: %w", dstEntryPath, err)
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -323,4 +196,87 @@ func IsDirectory(conn remote.RemoteConn, path string) (bool, error) {
 		return false, err
 	}
 	return info.IsDir, nil
+}
+
+func SelectFilesDialog(ctx context.Context, conn remote.RemoteConn, remoteDir string) ([]string, error) {
+	filePaths, err := runtime.OpenMultipleFilesDialog(ctx, runtime.OpenDialogOptions{
+		Title: "Select Files to Import",
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(filePaths) == 0 {
+		return nil, nil
+	}
+
+	return filePaths, nil
+}
+
+func ImportFileToAppFromPath(ctx context.Context, conn remote.RemoteConn, remoteDir string, localPath string, newFileName string) (string, error) {
+	ctx, cancelCtx := context.WithCancel(ctx)
+	defer cancelCtx()
+	cancelEvents := runtime.EventsOnce(ctx, "import-cancel", func(_ ...any) { cancelCtx() })
+	defer cancelEvents()
+
+	fileName := filepath.Base(localPath)
+	if newFileName != "" {
+		fileName = newFileName
+	}
+	remotePath := path.Join(remoteDir, fileName)
+	if err := conn.Push(ctx, localPath, remotePath); err != nil {
+		if errors.Is(err, context.Canceled) {
+			_ = conn.Remove(remotePath)
+			return "", fmt.Errorf("import-cancelled: %w", err)
+		}
+		return "", fmt.Errorf("failed to import file: %w", err)
+	}
+	return remotePath, nil
+}
+
+func SelectFolderDialog(ctx context.Context, conn remote.RemoteConn, remoteDir string) (string, error) {
+	folderPath, err := runtime.OpenDirectoryDialog(ctx, runtime.OpenDialogOptions{
+		Title: "Select Folder to Import",
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if folderPath == "" {
+		return "", nil
+	}
+
+	return folderPath, nil
+}
+
+func ImportFolderToAppFromPath(ctx context.Context, conn remote.RemoteConn, remoteDir string, localPath string, newFolderName string) (string, error) {
+	ctx, cancelCtx := context.WithCancel(ctx)
+	defer cancelCtx()
+
+	cancelEvents := runtime.EventsOnce(ctx, "import-cancel", func(_ ...any) { cancelCtx() })
+	defer cancelEvents()
+
+	fileInfo, err := os.Stat(localPath)
+	if err != nil {
+		return "", err
+	}
+	if !fileInfo.IsDir() {
+		return "", fmt.Errorf("cannot import file as a folder: %s", localPath)
+	}
+
+	folderName := filepath.Base(localPath)
+	if newFolderName != "" {
+		folderName = newFolderName
+	}
+	targetBaseDir := path.Join(remoteDir, folderName)
+	if err := conn.Push(ctx, localPath, targetBaseDir); err != nil {
+		if errors.Is(err, context.Canceled) {
+			_ = conn.Remove(targetBaseDir)
+			return "", fmt.Errorf("import-cancelled: %w", err)
+		}
+		return "", fmt.Errorf("failed to import folder: %w", err)
+	}
+	return targetBaseDir, nil
 }

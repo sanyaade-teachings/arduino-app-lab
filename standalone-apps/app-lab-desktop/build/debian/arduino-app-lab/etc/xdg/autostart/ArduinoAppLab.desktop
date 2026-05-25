@@ -1,13 +1,1 @@
-[Desktop Entry]
-Encoding=UTF-8
-Type=Application
-Name=Arduino App Lab
-Comment=
-Exec=$BINARY_PATH
-OnlyShowIn=XFCE;
-RunHook=0
-StartupNotify=false
-Terminal=false
-MimeType=x-scheme-handler/arduino-app-lab;
-Hidden=false
-Categories=Development;Utility;
+# placeholder, it will be overwritten during the build

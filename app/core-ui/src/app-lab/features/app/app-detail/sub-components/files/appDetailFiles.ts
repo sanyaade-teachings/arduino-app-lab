@@ -16,7 +16,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   FileWithContent,
-  useRetrieveArduinoAppFileContents,
   useRetrieveBatchArduinoAppFileContents,
 } from '../../../../../../common/hooks/queries/arduinoAppFiles';
 
@@ -28,14 +27,13 @@ export const MAIN_PYTHON_PATH = 'python/main.py';
 
 type UseAppDetailFiles = (
   appId: string,
-  firstSelectedFile?: FileNode,
   updateOpenFile?: (currFileId: string, nextFileId: string) => void,
 ) => {
   appDetail?: AppDetailedInfo;
   appDetailIsLoading: boolean;
   appBricks?: BrickInstance[];
   appBricksAreLoading: boolean;
-  mainFile?: FileWithContent;
+  defaultFile?: FileNode;
   filesList?: FileNode[];
   filesListIsLoading: boolean;
   filesListIsLoaded: boolean;
@@ -71,7 +69,6 @@ type UseAppDetailFiles = (
 
 export const useAppDetailFiles: UseAppDetailFiles = function (
   appId: string,
-  firstSelectedFile?: FileNode,
   updateOpenFile?: (currFileId: string, nextFileId: string) => void,
 ): ReturnType<UseAppDetailFiles> {
   const {
@@ -103,80 +100,30 @@ export const useAppDetailFiles: UseAppDetailFiles = function (
     },
   );
 
-  const {
-    fileData: firstSelectedFileData,
-    isLoading: firstSelectedFileDataIsLoading,
-    refetch: refetchFirstSelectedFileData,
-  } = useRetrieveArduinoAppFileContents(
-    !!filesList && !!firstSelectedFile,
-    appDetail?.path,
-    firstSelectedFile,
-  );
+  const defaultFile = useMemo(() => {
+    const priorityFiles = [
+      README_PATH,
+      MAIN_PYTHON_PATH,
+      MAIN_SKETCH_PATH,
+      APP_YAML_PATH,
+    ];
 
-  const firstSelectedFileIsSketchIno =
-    !!firstSelectedFile && firstSelectedFile.path === MAIN_SKETCH_PATH;
-  const sketchIno = filesList?.find((file) => file.path === MAIN_SKETCH_PATH);
-  const { fileData: sketchInoFileData } = useRetrieveArduinoAppFileContents(
-    !!filesList &&
-      !!firstSelectedFileData &&
-      !firstSelectedFileIsSketchIno &&
-      !!sketchIno,
-    appDetail?.path,
-    sketchIno,
-  );
-
-  const firstSelectedFileIsAppYaml =
-    !!firstSelectedFile && firstSelectedFile.path === APP_YAML_PATH;
-  const appYaml = filesList?.find((file) => file.path === APP_YAML_PATH);
-  const { fileData: appYamlFileData, refetch: refetchAppYamlFileData } =
-    useRetrieveArduinoAppFileContents(
-      !firstSelectedFileIsAppYaml && !!filesList && !!firstSelectedFileData,
-      appDetail?.path,
-      appYaml,
-    );
-
-  const refetchAppYaml = useMemo(
-    () =>
-      firstSelectedFileIsAppYaml
-        ? refetchFirstSelectedFileData
-        : refetchAppYamlFileData,
-    [
-      firstSelectedFileIsAppYaml,
-      refetchFirstSelectedFileData,
-      refetchAppYamlFileData,
-    ],
-  );
-
-  const sketchYaml = filesList?.find((file) => file.path === SKETCH_YAML_PATH);
-  const { fileData: sketchYamlFileData, refetch: refetchSketchYamlFileData } =
-    useRetrieveArduinoAppFileContents(
-      !!filesList && !!firstSelectedFileData && !!sketchYaml,
-      appDetail?.path,
-      sketchYaml,
-    );
-
-  const filteredFiles = useMemo(() => {
-    return (
-      firstSelectedFileData &&
-      appYamlFileData &&
-      filesList?.filter(
-        (f) =>
-          f.path !== APP_YAML_PATH &&
-          f.path !== SKETCH_YAML_PATH &&
-          f.path !== MAIN_SKETCH_PATH &&
-          f.path !== firstSelectedFileData.path,
-      )
-    );
-  }, [firstSelectedFileData, appYamlFileData, filesList]);
+    for (const filePath of priorityFiles) {
+      const foundNode = filesList?.find((file) => file.path === filePath);
+      if (foundNode) {
+        return foundNode;
+      }
+    }
+  }, [filesList]);
 
   const [pendingFileIds, setPendingFileIds] = useState<string[]>([]);
   const [pendingFileIdWasRemoved, setPendingFileIdWasRemoved] = useState(false);
 
   useEffect(() => {
-    if (filteredFiles) {
-      setPendingFileIds(filteredFiles.map((f) => f.path));
+    if (filesList) {
+      setPendingFileIds(filesList.map((f) => f.path));
     }
-  }, [filteredFiles]);
+  }, [filesList]);
 
   const filesListKey = useMemo(() => ['app-files', appId], [appId]);
   const {
@@ -188,54 +135,24 @@ export const useAppDetailFiles: UseAppDetailFiles = function (
     addAppFile,
     createAppFolder,
     moveFileHandler,
+    refreshFileContents,
   } = useRetrieveBatchArduinoAppFileContents(
-    !!filesList && !!firstSelectedFileData && !!appYamlFileData,
+    !!filesList,
     filesListKey,
-    filteredFiles,
+    filesList,
     appDetail?.path,
     pendingFileIds,
     pendingFileIdWasRemoved,
     updateOpenFile,
   );
 
-  const _filesContents = useMemo(() => {
-    const files = [...(filesContents ?? [])];
+  const refetchAppYaml = useCallback(async (): Promise<void> => {
+    refreshFileContents([APP_YAML_PATH]);
+  }, [refreshFileContents]);
 
-    if (firstSelectedFileData && !firstSelectedFileIsSketchIno) {
-      const alreadyIncluded = files.some(
-        (file) => file.path === firstSelectedFileData.path,
-      );
-      if (!alreadyIncluded) {
-        files.push(firstSelectedFileData);
-      }
-    }
-
-    if (appYamlFileData) {
-      const alreadyIncluded = files.some(
-        (file) => file.path === appYamlFileData.path,
-      );
-      if (!alreadyIncluded) {
-        files.push(appYamlFileData);
-      }
-    }
-
-    if (sketchYamlFileData) {
-      const alreadyIncluded = files.some(
-        (file) => file.path === sketchYamlFileData.path,
-      );
-      if (!alreadyIncluded) {
-        files.push(sketchYamlFileData);
-      }
-    }
-
-    return files;
-  }, [
-    appYamlFileData,
-    filesContents,
-    firstSelectedFileData,
-    firstSelectedFileIsSketchIno,
-    sketchYamlFileData,
-  ]);
+  const refetchSketchYaml = useCallback(async (): Promise<void> => {
+    refreshFileContents([SKETCH_YAML_PATH]);
+  }, [refreshFileContents]);
 
   const removeFileFromPending = useCallback((path: string) => {
     setPendingFileIdWasRemoved(true);
@@ -250,21 +167,18 @@ export const useAppDetailFiles: UseAppDetailFiles = function (
     });
   }, []);
 
-  const filesContentsAreLoading =
-    firstSelectedFileDataIsLoading || fileBatchIsLoading;
+  const filesContentsAreLoading = fileBatchIsLoading;
 
   return {
     appDetail,
     appDetailIsLoading,
     appBricks,
     appBricksAreLoading,
-    mainFile: firstSelectedFileIsSketchIno
-      ? firstSelectedFileData
-      : sketchInoFileData,
-    filesList: filesList,
+    defaultFile,
+    filesList,
     filesListIsLoading,
     filesListIsLoaded,
-    filesContents: _filesContents,
+    filesContents,
     filesContentsAreLoading,
     allContentsRetrieved,
     fileTree,
@@ -275,7 +189,7 @@ export const useAppDetailFiles: UseAppDetailFiles = function (
     refetchAppDetail,
     moveFileHandler,
     refetchAppYaml,
-    refetchSketchYaml: refetchSketchYamlFileData,
+    refetchSketchYaml,
     refetchAppBricks,
     refetchAppFiles,
     removeFileFromPending,

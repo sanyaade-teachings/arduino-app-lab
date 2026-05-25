@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=$VERSION
+Type=Application
+Name=Arduino App Lab
+Comment=Program your Arduino® UNO Q board with Python and C++
+Exec="$BINARY_PATH" %u
+Icon=$ICON
+StartupNotify=false
+Terminal=false
+MimeType=x-scheme-handler/arduino-app-lab;
+Categories=Development;Utility;
+StartupWMClass=$WM_CLASS

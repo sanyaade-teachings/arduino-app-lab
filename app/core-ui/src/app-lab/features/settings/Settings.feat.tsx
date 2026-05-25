@@ -14,15 +14,13 @@ const Settings: React.FC = () => {
 
   const router = useRouter();
   const goBack = useCallback(() => {
-    // In case we want to re-enable going back to previous page in the future:
-    // const currentUrl = router.state.location.pathname;
-    // const prevUrl = prevUrlRef.current;
-    // if (canGoBack && prevUrl !== currentUrl) {
-    //   router.history.back();
-    // } else {
-    //   router.navigate({ to: '/learn' }); // fallback
-    // }
-    router.navigate({ to: '/' });
+    // Check if we can go back in history
+    if (window.history.length > 1) {
+      router.history.back();
+    } else {
+      // Fallback to examples if no history
+      router.navigate({ to: '/examples' });
+    }
   }, [router]);
 
   return (

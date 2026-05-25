@@ -22,6 +22,14 @@ vi.mock('../../store/boardLifecycle', () => ({
   ),
 }));
 
+vi.mock('../../hooks/useBoards', () => ({
+  useBoards: vi.fn(() => ({
+    selectedBoard: {
+      fqbn: 'arduino:zephyr:unoq',
+    },
+  })),
+}));
+
 const Wrapper: React.FC<{ children: ReactNode }> = ({ children }) => (
   <TestProviderWrapper>{children}</TestProviderWrapper>
 );

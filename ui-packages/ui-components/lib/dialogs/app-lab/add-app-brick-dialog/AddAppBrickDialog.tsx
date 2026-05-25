@@ -41,6 +41,7 @@ export type AddAppBrickDialogLogic = () => {
   createAppBrickDialogLogic: CustomBrickDialogLogic;
   openCreateAppBrickDialog: () => void;
   createAppBrickDialogOpen: boolean;
+  onOpenExternal: (url: string) => void;
 };
 
 type AddAppBrickDialogProps = { logic: AddAppBrickDialogLogic };
@@ -61,6 +62,7 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
     createAppBrickDialogLogic,
     openCreateAppBrickDialog,
     createAppBrickDialogOpen,
+    onOpenExternal,
   } = logic();
   const [loading, setLoading] = useState(false);
   const [selectedBrick, setSelectedBrick] = useState<BrickListItem>();
@@ -78,9 +80,10 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
   };
 
   useEffect(() => {
-    setSelectedBrick(
-      bricks.find((brick) => appBricks?.every((it) => it.id !== brick.id)),
+    const newlySelectedBrick = bricks.find((brick) =>
+      appBricks?.every((it) => it.id !== brick.id),
     );
+    setSelectedBrick(newlySelectedBrick);
   }, [appBricks, bricks, open]);
 
   const { formatMessage } = useI18n();
@@ -151,6 +154,7 @@ export const AddAppBrickDialog: React.FC<AddAppBrickDialogProps> = ({
       appId={appId}
       brickId={brickDetails.id}
       logic={configureDialogLogic}
+      onOpenExternal={onOpenExternal}
     />
   ) : (
     <>

@@ -66,7 +66,7 @@ const ConnectToNetwork: React.FC<ConnectToNetworkProps> = (
           type="text"
           name={formatMessage(networkMessages.networkName)}
           value={networkCredentials.name}
-          disabled={isConnecting}
+          disabled={!manualNetworkSetup || isConnecting}
           onChange={(value): void =>
             onChangeCredentials({
               ...networkCredentials,

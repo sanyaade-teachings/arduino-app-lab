@@ -15,6 +15,7 @@ export enum SystemPropKey {
   SetupKeyboard = 'setup-keyboard-name',
   SetupCredentials = 'setup-credentials',
   SetupNetwork = 'setup-network',
+  CarrierAcknowledged = 'carrier-acknowledged',
 }
 
 export const useSystemPropsStore = create<SystemPropsStore>((set, get) => ({

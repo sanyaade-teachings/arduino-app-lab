@@ -15,4 +15,6 @@ export interface AppItemProps {
   onExport?: () => void;
   onSetAsDefault?: () => void;
   onDelete?: () => void;
+  onMenuOpen?: (isOpen: boolean) => void;
+  isAnimating?: boolean;
 }

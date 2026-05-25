@@ -4,21 +4,25 @@ import styleVars from '../code-editor-variables.module.scss';
 
 export const editorViewStyle = {
   '.cm-scroller': {
-    overflowX: 'hidden',
     fontFamily: typographyStyles.robotoMonoFontFamily,
     fontSize: `calc(${styleVars.editorFontSizeVar} * 1px)`,
     lineHeight: '1.4',
     letterSpacing: '0.02em',
+    overscrollBehavior: 'none',
   },
   '.cm-content': {
-    width: 'calc(100% - 45px)',
+    width: 'calc(100% - 48px)',
     padding: '8px 16px',
     paddingBottom: `calc(${styleVars.editorPaddingBottomVar} * 1px)`,
   },
   '.cm-line': {
-    whiteSpace: 'break-spaces',
-    wordBreak: 'break-word',
     padding: '0px',
+
+    // Browsers stop painting ultra-long lines for memory reasons.
+    // These 3D rules trick the browser into promoting the line to a dedicated GPU layer.
+    // NOTE: can be improved by implementing a "show more" button for long lines
+    transform: 'translateZ(0)',
+    willChange: 'transform',
   },
   '.cm-line.cm-activeLine': {
     background: `${styles.editorActiveLineBackground}`,
@@ -55,6 +59,7 @@ export const editorViewStyle = {
     backgroundColor: 'unset',
     borderRight: 'none',
     minWidth: '48px',
+    background: styles.editorBackground,
   },
   '.cm-gutters .cm-lineNumbers': {
     flexGrow: 1,

@@ -141,6 +141,8 @@ import LoginIllustration from '../login-illustration.svg?react';
 import LoginIllustrationArduinoConnected from '../login-illustration-arduino-connected.svg?react';
 import LoginIllustrationEIConnected from '../login-illustration-ei-connected.svg?react';
 import ManualSelectBoard from '../manual-select-board-icon.svg?react';
+import MediaCamera from '../media-camera.svg?react';
+import MediaDisplay from '../media-display.svg?react';
 import MediaLibraryBooksNormal from '../media-library_books-normal.svg?react';
 import Models from '../models.svg?react';
 import Monitor from '../monitor.svg?react';
@@ -228,6 +230,7 @@ import Unlink from '../unlink-icon.svg?react';
 import UnsavedBadge from '../unsaved-badge.svg?react';
 import Upload from '../upload.svg?react';
 import UploadClock from '../upload-clock.svg?react';
+import UploadFolder from '../upload-folder.svg?react';
 import UploadLight from '../upload-light.svg?react';
 import Usb from '../usb.svg?react';
 import UsbPort from '../usb-port.svg?react';
@@ -390,6 +393,8 @@ export {
   LoginIllustrationArduinoConnected,
   LoginIllustrationEIConnected,
   ManualSelectBoard,
+  MediaCamera,
+  MediaDisplay,
   MediaLibraryBooksNormal,
   Models,
   Monitor,
@@ -476,6 +481,7 @@ export {
   UnsavedBadge,
   Upload,
   UploadClock,
+  UploadFolder,
   UploadLight,
   Usb,
   UsbPort,

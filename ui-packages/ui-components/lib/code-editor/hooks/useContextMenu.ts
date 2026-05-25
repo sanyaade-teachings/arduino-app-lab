@@ -14,9 +14,7 @@ import {
 import { openSearchPanel } from '@codemirror/search';
 import { EditorView } from '@codemirror/view';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AriaMenuOptions, useMenuTrigger } from 'react-aria';
-import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
-import { useClickAway, useEvent as useEventListener } from 'react-use';
+import { useEvent as useEventListener } from 'react-use';
 
 import { CodeMirrorEventAnnotation } from '../../code-mirror/codeMirror.type';
 import {
@@ -24,10 +22,8 @@ import {
   getCurrentSelectedStrings,
 } from '../../code-mirror/utils';
 import {
-  ClickPosition,
   ContextMenuHandlerDictionary,
   ContextMenuItemIds,
-  ContextMenuItemType,
 } from '../../context-menu/contextMenu.type';
 import { OnChangeHandlerSetCode } from '../codeEditor.type';
 
@@ -36,15 +32,12 @@ type UseContextMenu = (
   setCode: OnChangeHandlerSetCode,
   code?: string | null,
 ) => {
-  clickPosition?: ClickPosition;
-  onContextMenuOpen: (e: Event) => void;
   onContextMenuClose: (e: KeyboardEvent) => void;
   containerRef: React.RefObject<HTMLDivElement>;
-  menuRef: React.RefObject<HTMLDivElement>;
-  menuProps: AriaMenuOptions<ContextMenuItemType>;
   clickHandlers: ContextMenuHandlerDictionary;
   disabledKeys: ContextMenuItemIds[];
-  state: MenuTriggerState;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 };
 
 export const useContextMenu: UseContextMenu = function (
@@ -52,22 +45,12 @@ export const useContextMenu: UseContextMenu = function (
   setCode: OnChangeHandlerSetCode,
   code?: string | null,
 ): ReturnType<UseContextMenu> {
-  const [clickPosition, setClickPosition] = useState<ClickPosition>();
-  const [controlledOpen, setControlledOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [disabledKeys, setDisabledKeys] = useState<ContextMenuItemIds[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const internalClipboard = useRef<string | null>(null);
-
-  const state = useMenuTriggerState({});
-
-  const { menuProps } = useMenuTrigger<ContextMenuItemType>(
-    {},
-    state,
-    containerRef,
-  );
 
   const currentSelectedStrings = getCurrentSelectedStrings(
     code,
@@ -259,35 +242,14 @@ export const useContextMenu: UseContextMenu = function (
       setDisabledKeys(keys);
     }
 
-    if (state.isOpen) {
+    if (isOpen) {
       setKeys();
     }
-  }, [state.isOpen]);
+  }, [isOpen]);
 
   const closeContextMenu = useCallback(() => {
-    setControlledOpen(false);
-    state.close();
-  }, [state]);
-
-  const onContextMenuOpen: EventListener = useCallback(
-    (e: Event) => {
-      if (!(e instanceof MouseEvent)) {
-        return;
-      }
-      e.preventDefault();
-      if (e.ctrlKey) {
-        setControlledOpen(true);
-      } else {
-        state.open();
-      }
-
-      setClickPosition({
-        clickPosX: e.clientX,
-        clickPosY: e.clientY,
-      });
-    },
-    [state],
-  );
+    setIsOpen(false);
+  }, []);
 
   const onContextMenuClose = useCallback(
     (e: KeyboardEvent) => {
@@ -296,20 +258,14 @@ export const useContextMenu: UseContextMenu = function (
     [closeContextMenu],
   );
 
-  useClickAway(menuRef, closeContextMenu, ['click']);
-
-  useEventListener('contextmenu', onContextMenuOpen, containerRef.current);
   useEventListener('keydown', onContextMenuClose);
 
   return {
-    clickPosition,
-    onContextMenuOpen,
     onContextMenuClose,
     containerRef,
-    menuRef,
-    menuProps,
     clickHandlers,
     disabledKeys,
-    state: controlledOpen ? { ...state, isOpen: true } : state, // fix wrong behavior of react-stately useMenuTriggerState
+    isOpen,
+    setIsOpen,
   };
 };

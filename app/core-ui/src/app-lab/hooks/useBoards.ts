@@ -319,6 +319,9 @@ export const useBoards: UseBoards = () => {
     async (board: Board) => {
       setIsAutoSelectingBoard(false);
 
+      // Reset couldNotAutoSelectBoard when user manually selects a board
+      setCouldNotAutoSelectBoard(false);
+
       dispatch({
         type: 'START_BOARD_SELECTION',
         payload: { board },
@@ -337,7 +340,11 @@ export const useBoards: UseBoards = () => {
       // Save current board list as reference for future auto-selection
       // Get fresh boards array to avoid closure issues
       const currentBoards = await getBoards();
-      const boardSerialsToSave = currentBoards.map((b) => b.serial);
+      // Filter out network boards for auto-selection logic
+      const nonNetworkBoards = currentBoards.filter(
+        (b) => b.connectionType !== 'Network',
+      );
+      const boardSerialsToSave = nonNetworkBoards.map((b) => b.serial);
 
       if (board.connectionType !== 'Network') {
         await set(PREVIOUS_BOARD_SERIALS, boardSerialsToSave);
@@ -438,12 +445,16 @@ export const useBoards: UseBoards = () => {
       const boardSerial = selectedConnectedBoard?.serial;
       if (!boardSerial) {
         setLastAppInfo(undefined);
+        // Reset couldNotAutoSelectBoard when no board is connected
+        setCouldNotAutoSelectBoard(false);
         return;
       }
       const mapping = {
         ...((await get<Record<string, BoardAppInfo>>(BOARD_APP_MAPPING)) || {}),
       };
       setLastAppInfo(mapping[boardSerial]);
+      // Reset couldNotAutoSelectBoard when board changes
+      setCouldNotAutoSelectBoard(false);
     };
     loadLastAppInfo();
   }, [selectedConnectedBoard?.serial]);
@@ -503,10 +514,18 @@ export const useBoards: UseBoards = () => {
       if (!boards.length) {
         if (!isLoadingBoards) {
           setIsAutoSelectingBoard(false);
-          setTimeout(() => {
-            setCouldNotAutoSelectBoard(true);
-          }, 1000);
         }
+        return;
+      }
+
+      const board = boards.find((board) => board.serial === boardSerial);
+
+      // user can select the board
+      if (!board) {
+        setIsAutoSelectingBoard(false);
+        setCouldNotAutoSelectBoard(true);
+        // Clear the invalid board ID to prevent infinite loop
+        del(AUTO_SELECT_BOARD_SERIAL);
         return;
       }
 
@@ -516,7 +535,11 @@ export const useBoards: UseBoards = () => {
 
       // If we have previous board serials stored, check if board list changed during session
       if (previousBoardSerials.length > 0) {
-        const currentBoardSerials = boards.map((b) => b.serial);
+        // Filter out network boards for auto-selection logic
+        const nonNetworkBoards = boards.filter(
+          (b) => b.connectionType !== 'Network',
+        );
+        const currentBoardSerials = nonNetworkBoards.map((b) => b.serial);
         const boardListChanged =
           previousBoardSerials.length !== currentBoardSerials.length ||
           !previousBoardSerials.every((serial) =>
@@ -533,17 +556,6 @@ export const useBoards: UseBoards = () => {
         }
       }
 
-      const board = boards.find((board) => board.serial === boardSerial);
-
-      // user can select the board
-      if (!board) {
-        setIsAutoSelectingBoard(false);
-        // Clear the invalid board ID to prevent infinite loop
-        del(AUTO_SELECT_BOARD_SERIAL);
-        setCouldNotAutoSelectBoard(true);
-        return;
-      }
-
       // no autoselect in network mode
       if (board.connectionType === 'Network') {
         setIsAutoSelectingBoard(false);
@@ -553,6 +565,11 @@ export const useBoards: UseBoards = () => {
       handleSelectBoard(board).catch(() => {
         setIsAutoSelectingBoard(false);
       });
+
+      // Reset couldNotAutoSelectBoard when auto-selection succeeds
+      if (board) {
+        setCouldNotAutoSelectBoard(false);
+      }
     };
 
     autoSelectBoard();

@@ -30,7 +30,7 @@
     left: 28px;
     top: 16px;
     max-width: unset;
-}
+  }
 
   &.selectable {
     cursor: pointer;
@@ -55,17 +55,15 @@
     .radio:after {
       background: var(--icon-inverted-subtle, #5D6A6B);
     }
-    &:not(.disabled-radio-only) {
-      .ai-model-name {
-        color: var(--text-inverted-subtle, #5D6A6B);
-      }
-      .ai-model-description {
-        color: var(--text-inverted-subtle, #5D6A6B);
-      }
-      .ai-model-in-use,
-      .ai-impulse-in-use {
-        opacity: 0.5;
-      }
+    .ai-model-name {
+      color: var(--text-inverted-subtle, #5D6A6B);
+    }
+    .ai-model-description {
+      color: var(--text-inverted-subtle, #5D6A6B);
+    }
+    .ai-model-in-use,
+    .ai-impulse-in-use {
+      opacity: 0.5;
     }
   }
 
@@ -143,10 +141,10 @@
       overflow: hidden;
 
       transition:
-        max-height 0.4s cubic-bezier(0, 1, 0, 1),
-        opacity 0.4s ease-in-out,
-        gap 0.4s ease,
-        margin 0.4s ease;
+              max-height 0.4s cubic-bezier(0, 1, 0, 1),
+              opacity 0.4s ease-in-out,
+              gap 0.4s ease,
+              margin 0.4s ease;
 
       > ::before {
         content: url(css-images.$bullet);
@@ -178,8 +176,8 @@
         margin-bottom: 4px;
 
         transition:
-          max-height 0.5s ease-in-out,
-          opacity 0.5s ease-in-out;
+                max-height 0.5s ease-in-out,
+                opacity 0.5s ease-in-out;
       }
     }
   }
@@ -204,29 +202,6 @@
     font-weight: 700;
     color: var(--text-default, #fff);
     flex-shrink: 0;
-  }
-
-  .ai-model-in-use,
-  .ai-impulse-in-use {
-    padding: 0 4px;
-    border-radius: 4px;
-    background-color: var(--feedback-success-default, #16a588);
-    color: var(--text-inverted, #171e21);
-    font-size: 10px;
-    font-weight: 500;
-    font-family: "Roboto Mono";
-    text-transform: uppercase;
-    max-width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .ai-model-in-use {
-    flex-shrink: 0;
-  }
-  .ai-impulse-in-use {
-    color: var(--text-default, white);
-    background: var(--component-bg-flexible, #aeb8b826);
   }
 
   .disk-warning {

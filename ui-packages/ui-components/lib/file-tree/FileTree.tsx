@@ -57,6 +57,7 @@ interface FileTreeProps {
     filesToUpdate?: Array<{ oldPath: string; newPath: string }>,
   ) => Promise<void>;
   onFolderCreate: (path: string) => Promise<void>;
+  onResourceImport: (params: { path?: string; isFolder?: boolean }) => void;
   isBricksSelected: boolean;
   openFiles?: { fileId: string }[];
   updateOpenFile?: (currFileId: string, nextFileId: string) => void;
@@ -80,6 +81,7 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
     onFileDelete,
     onFileMove,
     onFolderCreate,
+    onResourceImport,
     defaultOpenFoldersState,
     isBricksSelected,
     renderNodeIcon,
@@ -180,11 +182,12 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
       let createAtPath = path || '';
 
       if (path === undefined) {
+        const treeApi = treeApiRef.current;
         // Use selectedFolder for file creation when present, otherwise use selectedNode
         // This ensures files are created in the right location without affecting open files
-        if (selectedFolder) {
+        if (selectedFolder && treeApi?.get(selectedFolder.path)) {
           createAtPath = selectedFolder.path;
-        } else if (selectedNode) {
+        } else if (selectedNode && treeApi?.get(selectedNode.path)) {
           createAtPath = selectedNode.path;
           if (isFileNode(selectedNode)) {
             // If a file is selected, get its parent folder path
@@ -376,10 +379,39 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
     ],
   );
 
+  const handleResourceImport = useCallback(
+    (params: { isFolder?: boolean }): void => {
+      const { isFolder = false } = params;
+
+      if (isReadOnly) {
+        console.warn('File tree is read-only. Cannot import.');
+        return;
+      }
+
+      let importAtPath = '';
+      const treeApi = treeApiRef.current;
+
+      if (selectedFolder && treeApi?.get(selectedFolder.path)) {
+        importAtPath = selectedFolder.path;
+      } else if (selectedNode && treeApi?.get(selectedNode.path)) {
+        importAtPath = selectedNode.path;
+        if (isFileNode(selectedNode)) {
+          const parts = selectedNode.path.split('/');
+          parts.pop();
+          importAtPath = parts.join('/');
+        }
+      }
+
+      onResourceImport({ path: importAtPath, isFolder });
+    },
+    [isReadOnly, selectedNode, selectedFolder, onResourceImport],
+  );
+
   useImperativeHandle(ref, () => ({
     handleFileCreate,
     handleFolderCreate,
     handleDrop,
+    handleResourceImport,
   }));
 
   const renderFileNode = useCallback(
@@ -565,9 +597,10 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
                         onRename={(): void =>
                           setIsEditingAt(rowProps.node.data.path)
                         }
+                        onResourceImport={onResourceImport}
                         isProjectReadOnly={isReadOnly}
                         isBricksSelected={isBricksSelected}
-                      ></FileRow>
+                      />
                     );
                   }}
                 >
@@ -585,6 +618,7 @@ const FileTree = forwardRef<FileTreeApi, FileTreeProps>((props, ref) => {
               }}
               onAddBrick={onAddBrick}
               onAddSketchLibrary={onAddSketchLibrary}
+              onResourceImport={onResourceImport}
             />
           </ContextMenu.Root>
         ) : (

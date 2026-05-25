@@ -1,4 +1,3 @@
-import { ImportAppResult } from '@cloud-editor-mono/core-ui/src/app-lab/features/app/app-list/importAppDialog.type';
 import {
   AIModelItem,
   AppConfig,
@@ -20,7 +19,10 @@ import {
   UpdateCheckResult,
   WebSocketHandlers,
 } from '@cloud-editor-mono/infrastructure';
-import { TreeNode } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
+import {
+  ImportResourceResult,
+  TreeNode,
+} from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 export interface OrchestratorService {
   getApps(params: ListAppParams): Promise<AppInfo[]>;
@@ -107,9 +109,8 @@ export interface OrchestratorService {
   getAppSketchLibraries(appId: string): Promise<{ libraries: string[] }>;
   addAppSketchLibrary(appId: string, libRef: string): Promise<void>;
   deleteAppSketchLibrary(appId: string, libRef: string): Promise<void>;
-  importApp(): Promise<ImportAppResult | null>;
-  importAppFromPath(filePath: string): Promise<ImportAppResult>;
-  importAppFromFile(file: File): Promise<ImportAppResult>;
+  selectAppPathToImport: () => Promise<string | string[] | null>;
+  importAppFromPath(filePath: string): Promise<ImportResourceResult>;
   getAIModels(): Promise<AIModelItem[]>;
   installEIModel(projectId: string, impulseId: string): Promise<AIModelItem>;
   deleteAIModel(id: string): Promise<void>;

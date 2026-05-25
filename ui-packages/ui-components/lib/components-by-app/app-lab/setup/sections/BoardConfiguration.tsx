@@ -100,7 +100,10 @@ const BoardConfiguration = forwardRef((props: BoardConfigurationProps, ref) => {
   ]);
 
   return (
-    <form className={styles['container']}>
+    <form
+      className={styles['container']}
+      onSubmit={(e): void => e.preventDefault()}
+    >
       <div className={setupStyles['input-container']}>
         <Select
           id="keyboard-layout"

@@ -1,6 +1,7 @@
 import {
   Board2,
   Download,
+  InfoSetup,
   NavigationGroupOutline,
   OperationSort,
   Pencil,
@@ -17,14 +18,20 @@ import {
   ChangePasswordDialog,
   DropdownMenuButton,
   NetworkSettingsDialog,
+  PasswordDialog,
+  ToggleButton,
+  UnsupportedCarrierDialog,
   XXSmall,
   XXXSmall,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
+import { Fragment, useMemo } from 'react';
 
+import { AttachCarrierDialog } from '../../../dialogs/app-lab/attach-carrier-dialog/AttachCarrierDialog';
 import { useI18n } from '../../../i18n/useI18n';
 import { SettingsSection } from '../settings-section';
 import {
   appMessages,
+  carrierMessages,
   deviceMessages,
   networkMessages,
   osMessages,
@@ -33,6 +40,7 @@ import {
 } from './messages';
 import styles from './settings.module.scss';
 import { SettingsProps } from './settings.type';
+import { CarrierOption } from './subcomponents/CarrierOption';
 import { DeviceHeader } from './subcomponents/DeviceHeader';
 import { DeviceSerialNumber } from './subcomponents/DeviceSerialNumber';
 import { DeviceStorage } from './subcomponents/DeviceStorage';
@@ -43,8 +51,14 @@ export const Settings: React.FC<SettingsProps> = ({
 }: SettingsProps) => {
   const { formatMessage } = useI18n();
 
+  // Documentation URLs
+  const ARDUINO_DOCS_BASE_URL = 'https://docs.arduino.cc/software/app-lab';
+  const DOCUMENTATION_URL = `${ARDUINO_DOCS_BASE_URL}/`;
+  const RELEASE_NOTES_URL = `${ARDUINO_DOCS_BASE_URL}/getting-started/release-notes/`;
+
   const {
     boardSettingsLogic,
+    carrierSettingsLogic,
     networkModeLogic,
     networkSettingsLogic,
     systemSettingsLogic,
@@ -68,6 +82,18 @@ export const Settings: React.FC<SettingsProps> = ({
   } = boardSettingsLogic();
 
   const {
+    unsupportedLogic,
+    attachLogic,
+    enabled: isCarriersEnabled,
+    pristine: isCarriersPristine,
+    onEnabledChange: onCarriersEnabledChange,
+    carriers,
+    status: carriersStatus,
+    setStatus: setCarriersStatus,
+    passwordLogic: carriersPasswordLogic,
+  } = carrierSettingsLogic();
+
+  const {
     selectedConnectedNetwork,
     selectedConnectedIPAddress,
     openNetworkSettingsDialog,
@@ -86,6 +112,40 @@ export const Settings: React.FC<SettingsProps> = ({
     openFlasher,
     startUpdate,
   } = systemSettingsLogic();
+
+  const keyboardLayoutItems = useMemo(
+    () => [
+      {
+        name: 'Actions',
+        items: keyboardLayouts.map((layout) => ({
+          id: layout.id,
+          label: layout.label,
+        })),
+      },
+    ],
+    [keyboardLayouts],
+  );
+
+  const dropdownClasses = useMemo(
+    () => ({
+      dropdownMenu: styles['dropdown-menu'],
+      dropdownMenuButton: styles['dropdown-menu-button'],
+      dropdownMenuButtonOpen: styles['dropdown-menu-button-open'],
+      dropdownMenuButtonWrapper: styles['dropdown-menu-button-wrapper'],
+      dropdownMenuPopover: styles['dropdown-menu-popover'],
+    }),
+    [],
+  );
+
+  const buttonChildren = useMemo(
+    () => (
+      <>
+        {keyboardLayout?.label}
+        <Sort />
+      </>
+    ),
+    [keyboardLayout?.label],
+  );
 
   return (
     <>
@@ -125,7 +185,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 label={formatMessage(appMessages.documentation)}
               >
                 <SettingsSection.ExternalLink
-                  href="https://docs.arduino.cc/software/app-lab/"
+                  href={DOCUMENTATION_URL}
                   onOpenExternal={onOpenExternal}
                   label={formatMessage(appMessages.viewDocumentation)}
                 />
@@ -169,6 +229,72 @@ export const Settings: React.FC<SettingsProps> = ({
       </section>
       <section>
         <SettingsSection.Title
+          title={formatMessage(carrierMessages.title)}
+          variant="secondary"
+        />
+        <SettingsSection.Card>
+          <UnsupportedCarrierDialog logic={unsupportedLogic} />
+          <AttachCarrierDialog logic={attachLogic} />
+          <SettingsSection.Row
+            label={formatMessage(carrierMessages.carrierToggle, {
+              boardType: board?.type.replace(/arduino/i, '').trim(),
+            })}
+          >
+            <ToggleButton
+              isSelected={isCarriersEnabled}
+              onChange={onCarriersEnabledChange}
+            />
+          </SettingsSection.Row>
+          {isCarriersEnabled &&
+            carriers.map((group, index) => (
+              <Fragment key={index}>
+                <SettingsSection.Divider />
+                <SettingsSection.Row
+                  label={formatMessage(carrierMessages.carrierType)}
+                >
+                  {group.name}
+                </SettingsSection.Row>
+                <SettingsSection.Row
+                  label={formatMessage(carrierMessages.carrierDescription)}
+                >
+                  <Fragment />
+                </SettingsSection.Row>
+                {group.devices.map((device, deviceIndex) => (
+                  <CarrierOption
+                    key={deviceIndex}
+                    carrierName={group.name}
+                    device={device}
+                    status={carriersStatus}
+                    onChange={setCarriersStatus}
+                  />
+                ))}
+              </Fragment>
+            ))}
+          {!isCarriersPristine && (
+            <SettingsSection.Banner
+              className={styles['carrier-banner-container']}
+            >
+              <PasswordDialog logic={carriersPasswordLogic} />
+              <div className={styles['carrier-banner']}>
+                <div className={styles['carrier-banner-label']}>
+                  <InfoSetup />
+                  <XXSmall>
+                    {formatMessage(carrierMessages.carrierInfo)}
+                  </XXSmall>
+                </div>
+                <Button
+                  size={ButtonSize.XXSmall}
+                  onClick={(): void => carriersPasswordLogic.onOpenChange(true)}
+                >
+                  {formatMessage(carrierMessages.carrierButton)}
+                </Button>
+              </div>
+            </SettingsSection.Banner>
+          )}
+        </SettingsSection.Card>
+      </section>
+      <section>
+        <SettingsSection.Title
           title={formatMessage(systemMessages.title)}
           variant="secondary"
         />
@@ -198,7 +324,7 @@ export const Settings: React.FC<SettingsProps> = ({
             label={formatMessage(systemMessages.releaseNotes)}
           >
             <SettingsSection.ExternalLink
-              href="https://docs.arduino.cc/software/app-lab/tutorials/release-notes/"
+              href={RELEASE_NOTES_URL}
               onOpenExternal={onOpenExternal}
               label={formatMessage(systemMessages.viewReleaseNotes)}
             />
@@ -207,31 +333,11 @@ export const Settings: React.FC<SettingsProps> = ({
             label={formatMessage(systemMessages.keyboardLanguage)}
           >
             <DropdownMenuButton
-              sections={[
-                {
-                  name: 'Actions',
-                  items: keyboardLayouts.map((layout) => ({
-                    id: layout.id,
-                    label: layout.label,
-                  })),
-                },
-              ]}
-              buttonChildren={
-                <>
-                  {keyboardLayout?.label}
-                  <Sort />
-                </>
-              }
+              sections={keyboardLayoutItems}
+              buttonChildren={buttonChildren}
               useStaticPosition={false}
               onAction={(key): void => setKeyboardLayout(key as string)}
-              classes={{
-                dropdownMenu: styles['dropdown-menu'],
-                dropdownMenuButton: styles['dropdown-menu-button'],
-                dropdownMenuButtonOpen: styles['dropdown-menu-button-open'],
-                dropdownMenuButtonWrapper:
-                  styles['dropdown-menu-button-wrapper'],
-                dropdownMenuPopover: styles['dropdown-menu-popover'],
-              }}
+              classes={dropdownClasses}
             />
           </SettingsSection.Row>
           <SettingsSection.Row label={formatMessage(systemMessages.osPassword)}>

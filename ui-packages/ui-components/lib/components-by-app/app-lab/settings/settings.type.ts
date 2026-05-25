@@ -1,11 +1,15 @@
 import {
+  AttachCarrierDialogLogic,
   Board,
   BoardResources,
+  Carrier,
+  CarriersStatus,
   ChangePasswordDialogLogic,
   KeyboardLayout,
   NetworkItem,
   NetworkSettingsDialogLogic,
   PasswordDialogLogic,
+  UnsupportedCarrierDialogLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
 export type UseBoardSettingsLogic = () => {
@@ -18,6 +22,18 @@ export type UseBoardSettingsLogic = () => {
   bytesToGiB: (bytes: unknown) => string;
   setBoardName: (name: string) => void;
   setKeyboardLayout: (layout: string) => void;
+};
+
+export type UseCarrierSettingsLogic = () => {
+  enabled: boolean;
+  pristine: boolean;
+  onEnabledChange: (enabled: boolean) => void;
+  carriers: Carrier[];
+  status: CarriersStatus;
+  setStatus: (carrierName: string, device: string, option: string) => void;
+  unsupportedLogic: UnsupportedCarrierDialogLogic;
+  attachLogic: AttachCarrierDialogLogic;
+  passwordLogic: PasswordDialogLogic;
 };
 
 export type UseNetworkModeLogic = () => PasswordDialogLogic & {
@@ -49,6 +65,7 @@ export type UsePasswordSettingsLogic = () => ChangePasswordDialogLogic & {
 
 export type UseSettingsLogic = () => {
   boardSettingsLogic: UseBoardSettingsLogic;
+  carrierSettingsLogic: UseCarrierSettingsLogic;
   networkModeLogic: UseNetworkModeLogic;
   networkSettingsLogic: UseNetworkSettingsLogic;
   systemSettingsLogic: UseSystemSettingsLogic;

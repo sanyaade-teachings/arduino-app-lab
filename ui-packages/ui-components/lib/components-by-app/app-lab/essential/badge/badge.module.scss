@@ -1,0 +1,129 @@
+@use "../../../../../public/shared.module.scss";
+@use "../../../../typography/typography.module.scss";
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  padding: 2px 8px 2px 4px;
+  height: 24px;
+  box-sizing: border-box;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .badge-text {
+    font-family: typography.$open-sans-font-family;
+    font-weight: 600;
+    font-size: 12px;
+
+    &.uppercase {
+      font-family: typography.$roboto-mono-font-family;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+  }
+
+  &.small {
+    height: 20px;
+    padding: 4px 4px 4px 2px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .badge-text {
+      font-size: 10px;
+    }
+  }
+
+  &.light {
+    .badge-text {
+      color: #2C353A;
+    }
+  }
+
+  &.neutral {
+    background-color: #AEB8B8;
+
+    .badge-text {
+      color: #171E21;
+    }
+
+    &.light {
+      background-color: #4E5B61;
+
+      .badge-text {
+        color: #FFFFFF;
+      }
+    }
+  }
+
+  &.positive {
+    background-color: #16A588;
+
+    .badge-text {
+      color: #171E21;
+    }
+
+    &.light {
+      background-color: #213D3C;
+
+      .badge-text {
+        color: #DCF2ED;
+      }
+    }
+  }
+
+  &.warning {
+    background-color: #C1AB15;
+
+    .badge-text {
+      color: #FFFFFF;
+    }
+
+    &.light {
+      background-color: #938210;
+
+      .badge-text {
+        color: #FFF5CC;
+      }
+    }
+  }
+
+  &.error {
+    background-color: #FF8878;
+
+    .badge-text {
+      color: #171E21;
+    }
+
+    &.light {
+      background-color: #702419;
+
+      .badge-text {
+        color: #FFBDB4;
+      }
+    }
+  }
+
+  &.accent {
+    background-color: #25C2C7;
+
+    .badge-text {
+      color: #171E21;
+    }
+
+    &.light {
+      background: linear-gradient(0deg, var(--component-bg-baseline, #232B2E), var(--component-bg-baseline, #232B2E)), linear-gradient(0deg, var(--component-bg-banner, rgba(37, 194, 199, 0.2)), var(--component-bg-banner, rgba(37, 194, 199, 0.2)));
+
+      .badge-text {
+        color: #7FCBCD;
+      }
+    }
+  }
+}

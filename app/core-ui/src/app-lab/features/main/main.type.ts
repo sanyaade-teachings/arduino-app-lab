@@ -2,6 +2,8 @@ import {
   AppLabWelcomeDialogLogic,
   BoardUpdateDialogLogic,
   FlashBoardDialogLogic,
+  NetworkSettingsDialogLogic,
+  OfflineWarningDialogLogic,
   SidePanelLogic,
 } from '@cloud-editor-mono/ui-components/lib/components-by-app/app-lab';
 
@@ -12,6 +14,8 @@ export type UseMainLogic = () => {
   boardUpdateDialogLogic: BoardUpdateDialogLogic;
   flashBoardDialogLogic: FlashBoardDialogLogic;
   appLabWelcomeDialogLogic: AppLabWelcomeDialogLogic;
+  offlineWarningDialogLogic: OfflineWarningDialogLogic;
+  networkSettingsDialogLogic: NetworkSettingsDialogLogic;
   boardsProps: ReturnType<UseBoards>;
   boardIsFlashing: boolean | undefined;
   showRoutes: boolean;

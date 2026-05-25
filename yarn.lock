@@ -6669,10 +6669,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-dnd/asap@npm:^5.0.1":
+  version: 5.0.2
+  resolution: "@react-dnd/asap@npm:5.0.2"
+  checksum: 18f040e53512983f11c542ef21e6e4cac605d585a10cd764b13bc1b2f3ac7490e0fa40503adc348d8387aa45bc8e7eebe9cb33003b960a30bb5fde666ff2adde
+  languageName: node
+  linkType: hard
+
 "@react-dnd/invariant@npm:^2.0.0":
   version: 2.0.0
   resolution: "@react-dnd/invariant@npm:2.0.0"
   checksum: ef1e989920d70b15c80dccb01af9b598081d76993311aa22d2e9a3ec41d10a88540eeec4b4de7a8b2a2ea52dfc3495ab45e39192c2d27795a9258bd6b79d000e
+  languageName: node
+  linkType: hard
+
+"@react-dnd/invariant@npm:^4.0.1":
+  version: 4.0.2
+  resolution: "@react-dnd/invariant@npm:4.0.2"
+  checksum: 594f6d78896c19bb8f023e101334fd91a9fdff686117bd8e830ba53737ec0a6042dab66971d3d63c7afbc622103909aff7a64c5c6767e0aa8d9561fd42705016
   languageName: node
   linkType: hard
 
@@ -13400,12 +13414,14 @@ __metadata:
     react: 18.2.0
     react-arborist: ^3.4.3
     react-aria: 3.25.0
+    react-dnd-html5-backend: ^16.0.1
     react-dom: 18.2.0
-    react-helmet-async: 2.0.4
+    react-helmet-async: ^3.0.0
     react-intl: 6.2.5
     react-joyride: 2.7.1
     react-markdown: 8.0.6
     react-modal: 3.16.1
+    react-resizable-panels: ^4.10.0
     react-split: 2.0.14
     react-split-grid: 1.0.4
     react-stately: 3.24.0
@@ -14863,6 +14879,17 @@ __metadata:
     "@react-dnd/invariant": ^2.0.0
     redux: ^4.1.1
   checksum: dbc50727f53baad1cb1e0430a2a1b81c5c291389322f90fdc46edeb2fd49cc206ce4fa30a95afb53d88238945228e34866d7465f7ea49285c296baf883551301
+  languageName: node
+  linkType: hard
+
+"dnd-core@npm:^16.0.1":
+  version: 16.0.1
+  resolution: "dnd-core@npm:16.0.1"
+  dependencies:
+    "@react-dnd/asap": ^5.0.1
+    "@react-dnd/invariant": ^4.0.1
+    redux: ^4.2.0
+  checksum: b7d3ef4664f433af796f440ddd27ad9d7fef0205f26c4b7c0af6ebf612ffa9b33e64d095d3e79190c4baaed34aa36570f321ebe0d2cc8ff1031ff158a0907b3f
   languageName: node
   linkType: hard
 
@@ -25180,6 +25207,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dnd-html5-backend@npm:^16.0.1":
+  version: 16.0.1
+  resolution: "react-dnd-html5-backend@npm:16.0.1"
+  dependencies:
+    dnd-core: ^16.0.1
+  checksum: e2368bf85d5632a5cd867b743feb54c9052d909ea5331608860fa455edf3c633ac791f5b338e3db29b19ea8670c0ba5fb43c9c1c2510760bea030811d726cdfa
+  languageName: node
+  linkType: hard
+
 "react-dnd@npm:^14.0.3":
   version: 14.0.5
   resolution: "react-dnd@npm:14.0.5"
@@ -25325,6 +25361,19 @@ __metadata:
     react: ^16.6.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.6.0 || ^17.0.0 || ^18.0.0
   checksum: 1bd16e6be6d15cf3d4b4c0853d1e122941a05d3fb2bad1fb1c5037069c5f142fcab063c342b95c58a998a81f093bdf1bd1bb00852a5a3a84d49e48790d5142bb
+  languageName: node
+  linkType: hard
+
+"react-helmet-async@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "react-helmet-async@npm:3.0.0"
+  dependencies:
+    invariant: ^2.2.4
+    react-fast-compare: ^3.2.2
+    shallowequal: ^1.1.0
+  peerDependencies:
+    react: ^16.6.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 78273903cbdbbf4ed555b38ec95e9080d7526e4194845f664c0374146fcdeb6ab4e02aee70b3b852b88272a3992c8c1dae2bf3fed188ccfa2d19b8e5e2432545
   languageName: node
   linkType: hard
 
@@ -25549,6 +25598,16 @@ __metadata:
     "@types/react":
       optional: true
   checksum: a4afd320435cc25a6ee39d7cef2f605dca14cc7618e1cdab24ed0924fa71d8c3756626334dedc9a578945d7ba6f8f87d7b8b66b48034853dc4dbfbda0a1b228b
+  languageName: node
+  linkType: hard
+
+"react-resizable-panels@npm:^4.10.0":
+  version: 4.10.0
+  resolution: "react-resizable-panels@npm:4.10.0"
+  peerDependencies:
+    react: ^18.0.0 || ^19.0.0
+    react-dom: ^18.0.0 || ^19.0.0
+  checksum: 0bbdbfe4943e7993d9e59c2f52e992808694797fc13dee5aa22daab17411d102563f623188b52101c17fea4f8e9611bba91f6ecd409fcf160a4974acf9ebe7d3
   languageName: node
   linkType: hard
 
@@ -25971,7 +26030,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redux@npm:^4.1.1":
+"redux@npm:^4.1.1, redux@npm:^4.2.0":
   version: 4.2.1
   resolution: "redux@npm:4.2.1"
   dependencies:

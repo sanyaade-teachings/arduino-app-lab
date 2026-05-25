@@ -59,6 +59,7 @@ export const BasicInput = forwardRef(
       onKeyDown?.(event);
 
       if (event.key === 'Enter') {
+        event.preventDefault();
         if (blurOnEnter) {
           inputRef.current?.blur();
         }
